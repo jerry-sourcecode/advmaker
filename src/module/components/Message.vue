@@ -1,6 +1,6 @@
 <template>
     <div class="outer-div">
-        <div class="room-title">
+        <div>
             <n-divider class="room-title-text">
                 <p>{{ stateStore.location }}</p>
             </n-divider>
@@ -17,7 +17,7 @@
                     :key="idx"
                     style="margin-bottom: 10px"
                 >
-                    <p>{{ it.content }}</p>
+                    <p :style="`color: ${getColor(it.type)}`">{{ it.content }}</p>
                 </div>
             </TransitionGroup>
             <div class="hint-text" v-if="isWaitClick">点击屏幕继续</div>
@@ -50,6 +50,12 @@ function onScreenClick() {
     resList.forEach((v) => v());
     resList = [];
 }
+
+function getColor(type: string) {
+    if (type === 'story') return 'black';
+    else if (type === 'system') return '#E6A23C';
+    return 'black';
+}
 </script>
 
 <style scoped>
@@ -58,15 +64,12 @@ function onScreenClick() {
     flex-direction: column;
     height: 100%;
     flex: 1;
+    min-height: 0;
 }
 .message-box {
-    padding: 30px;
+    padding: 0 10px 10px;
     font-size: 17px;
     margin: 5px;
-}
-
-.room-title {
-    margin: 10px;
 }
 
 .room-title-text {

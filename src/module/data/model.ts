@@ -52,3 +52,21 @@ export class ADVItem {
         this.id = '';
     }
 }
+
+export class ADVStatus {
+    name: string;
+    id: string;
+    max: number;
+    min: number;
+    value: number;
+    color: string;
+
+    constructor(name: string, max: number, min: number, value: number) {
+        this.name = name;
+        this.max = max;
+        this.min = min;
+        this.value = value;
+        this.id = '';
+        this.color = 'blue';
+    }
+}

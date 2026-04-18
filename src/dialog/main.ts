@@ -1,7 +1,31 @@
 import { ADVMaker } from '../module/api.ts';
 
 export default ADVMaker.appendDialog('main-dialog', {
-    script: ['你好', "I'm your friend.", 'Hello World!', "Let's start"],
+    script: [
+        '你好',
+        "I'm your friend.",
+        'Hello World!',
+        "Let's start",
+        "Let's start",
+        "Let's start",
+        "Let's start",
+        "Let's start",
+        "Let's start",
+        "Let's start",
+        "Let's start",
+        "Let's start",
+        "Let's start",
+        "Let's start",
+        "Let's start",
+        "Let's start",
+        "Let's start",
+        "Let's start",
+        "Let's start",
+        "Let's start",
+        "Let's start",
+        "Let's start",
+        "Let's start",
+    ],
     next: [
         {
             content: '选择1',

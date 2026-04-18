@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { Game, RuntimeError } from '../game.ts';
+import type { ADVStatus } from '../data/model.ts';
 
 export const useStateStore = defineStore('state', () => {
     const location = ref('');
@@ -9,6 +10,7 @@ export const useStateStore = defineStore('state', () => {
     const deadDesc = ref('');
 
     const backpack = ref(new Map<string, number>());
+    const status = ref(new Map<string, ADVStatus>());
 
     function obtainItem(item: string, number: number = 1) {
         const currentCount = backpack.value.get(item) || 0;
@@ -18,9 +20,21 @@ export const useStateStore = defineStore('state', () => {
         backpack.value.set(item, currentCount + number);
     }
 
+    function obtainStatus(id: string, number: number) {
+        const ori = status.value.get(id);
+        if (ori === undefined) {
+            Game.error(new RuntimeError(2, `Can't Find Status: ${id}.`));
+            return;
+        }
+        ori.value += number;
+        ori.value = Math.max(ori.min, ori.value);
+        ori.value = Math.min(ori.max, ori.value);
+        status.value.set(id, ori);
+    }
+
     function init() {
         backpack.value.clear();
     }
 
-    return { location, backpack, obtainItem, isDead, deadDesc, init };
+    return { location, backpack, obtainItem, isDead, deadDesc, init, status, obtainStatus };
 });
