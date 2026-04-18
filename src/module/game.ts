@@ -2,6 +2,8 @@ import { useStoryStore } from './store/story.ts';
 import { useStateStore } from './store/state.ts';
 import { useMessageStore } from './store/message.ts';
 import { useEmitter } from './store/emitter.ts';
+import type { ADVChoice } from './data/model.ts';
+import { toObjectId } from './api.ts';
 
 /**
  * 运行时错误类，错误码以 1 开头，可以调用 Game.error 抛出错误
@@ -23,22 +25,29 @@ export class RuntimeError extends Error {
     }
 }
 
-async function toNext(nextId: string) {
+async function toNext(nextId: string | ADVChoice[]) {
     const stateStore = useStateStore();
-    if (nextId.startsWith('_END&')) {
-        stateStore.isDead = true;
-        stateStore.deadDesc = nextId.slice(5);
+    const emitter = useEmitter();
+    if (typeof nextId === 'string') {
+        if (nextId.startsWith('_END&')) {
+            stateStore.isDead = true;
+            stateStore.deadDesc = nextId.slice(5);
+            return;
+        }
+        const storyStore = useStoryStore();
+        const next = storyStore.tryGet(nextId, storyStore.TP.SCENE | storyStore.TP.DIALOG);
+        if (next === undefined)
+            Game.error(new RuntimeError(2, `Can't Find Scene or Dialog, Id: '${nextId}'.`));
+        if (next?.type === 'Scene') {
+            await Game.enter(next.id);
+        }
+        if (next?.type === 'Dialog') {
+            await Game.speak(next.id);
+        }
         return;
-    }
-    const storyStore = useStoryStore();
-    const next = storyStore.tryGet(nextId, storyStore.TP.SCENE | storyStore.TP.DIALOG);
-    if (next === undefined)
-        Game.error(new RuntimeError(2, `Can't Find Scene or Dialog, Id: '${nextId}'.`));
-    if (next?.type === 'Scene') {
-        await Game.enter(next.id);
-    }
-    if (next?.type === 'Dialog') {
-        await Game.speak(next.id);
+    } else {
+        const res = await emitter.emit('make-choice', nextId);
+        await toNext(toObjectId(nextId[res].next));
     }
 }
 

@@ -1,5 +1,5 @@
 import { useStoryStore } from './store/story.ts';
-import { ADVDialog, ADVItem, ADVScene } from './data/model.ts';
+import { ADVChoice, ADVDialog, ADVItem, ADVScene } from './data/model.ts';
 import { useStateStore } from './store/state.ts';
 import { useMessageStore } from './store/message.ts';
 
@@ -14,7 +14,7 @@ type GameConfig = {
     gameName: string;
 };
 
-function toObjectId(scene: string | ADVScene | ADVDialog | ADVItem): string {
+export function toObjectId(scene: string | ADVScene | ADVDialog | ADVItem): string {
     if (typeof scene === 'string') return scene;
     return scene.id;
 }
@@ -59,13 +59,13 @@ export const ADVMaker = {
     },
     appendDialog(
         id: string,
-        config: { script: string | string[]; next: ADVScene | ADVDialog | string },
+        config: { script: string | string[]; next: ADVScene | ADVDialog | string | ADVChoice[] },
     ): ADVDialog {
         const storyStore = useStoryStore();
         return storyStore.dialogMap
             .set(id, {
                 script: config.script,
-                next: toObjectId(config.next),
+                next: Array.isArray(config.next) ? config.next : toObjectId(config.next),
                 id,
                 type: 'Dialog',
             })

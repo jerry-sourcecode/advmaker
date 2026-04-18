@@ -9,15 +9,17 @@ export class ADVMessage {
 
 export class ADVChoice {
     content: string;
+    next: string | ADVScene | ADVDialog;
 
     constructor(content: string) {
         this.content = content;
+        this.next = '';
     }
 }
 
 export class ADVScene {
     name: string;
-    next: string;
+    next: string | ADVChoice[];
     id: string;
     type: 'Scene' = 'Scene';
     constructor(name: string, next: string) {
@@ -29,7 +31,7 @@ export class ADVScene {
 
 export class ADVDialog {
     script: string[] | string;
-    next: string;
+    next: string | ADVChoice[];
     id: string;
     type: 'Dialog' = 'Dialog';
     constructor(script: string[] | string, next: string) {
