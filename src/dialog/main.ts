@@ -5,6 +5,7 @@ export default ADVMaker.appendDialog('main-dialog', {
     next: [
         {
             content: '选择1',
+            visible: () => false,
             next: {
                 target: 10,
                 modifier: [{ name: '智慧', value: () => 4 }],

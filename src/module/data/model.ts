@@ -14,8 +14,8 @@ export class ADVMessage {
 
 export class ADVChoice {
     content: string;
+    visible?: () => boolean;
     next: string | ADVScene | ADVDialog | ADVCheck;
-
     constructor(content: string) {
         this.content = content;
         this.next = '';

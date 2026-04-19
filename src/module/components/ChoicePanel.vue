@@ -7,12 +7,12 @@
         :height="251"
     >
         <n-drawer-content title="你的选择">
-            <div class="choice-div">
+            <div class="choice-div" v-for="(it, idx) in choices">
                 <n-button
-                    v-for="(it, idx) in choices"
+                    v-if="it.visible !== undefined ? it.visible() : true"
+                    block
                     class="choice-div-btn"
                     @click="onClick(idx)"
-                    block
                 >
                     <div class="choice-btn-main">
                         {{ it.content }}
