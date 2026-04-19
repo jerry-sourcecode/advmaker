@@ -1,7 +1,12 @@
+import type { DiceExpression } from '../utils/dice.ts';
+
+export type ADVNext = string | ADVChoice[] | ADVCheck;
+export type MessageType = 'story' | 'system' | 'user';
+
 export class ADVMessage {
-    type: 'story' | 'system';
+    type: MessageType;
     content: string;
-    constructor(content: string, type: 'story' | 'system') {
+    constructor(content: string, type: MessageType) {
         this.content = content;
         this.type = type;
     }
@@ -9,7 +14,7 @@ export class ADVMessage {
 
 export class ADVChoice {
     content: string;
-    next: string | ADVScene | ADVDialog;
+    next: string | ADVScene | ADVDialog | ADVCheck;
 
     constructor(content: string) {
         this.content = content;
@@ -19,7 +24,7 @@ export class ADVChoice {
 
 export class ADVScene {
     name: string;
-    next: string | ADVChoice[];
+    next: ADVNext;
     id: string;
     type: 'Scene' = 'Scene';
     constructor(name: string, next: string) {
@@ -31,7 +36,7 @@ export class ADVScene {
 
 export class ADVDialog {
     script: string[] | string;
-    next: string | ADVChoice[];
+    next: ADVNext;
     id: string;
     type: 'Dialog' = 'Dialog';
     constructor(script: string[] | string, next: string) {
@@ -68,5 +73,31 @@ export class ADVStatus {
         this.value = value;
         this.id = '';
         this.color = 'blue';
+    }
+}
+
+export class ADVDice {
+    name: string;
+    func: () => number;
+
+    constructor(name: string, func: () => number) {
+        this.name = name;
+        this.func = func;
+    }
+}
+
+export class ADVCheck {
+    dice?: ADVDice | DiceExpression;
+    target: (() => number) | number;
+    modifier?: { name: string; value: () => number }[];
+    success: ADVNext;
+    fail: ADVNext;
+    onSuccess?: () => void;
+    onFail?: () => void;
+
+    constructor(tgt: number) {
+        this.target = tgt;
+        this.success = '';
+        this.fail = '';
     }
 }

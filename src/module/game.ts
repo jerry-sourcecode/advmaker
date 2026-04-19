@@ -2,8 +2,20 @@ import { useStoryStore } from './store/story.ts';
 import { useStateStore } from './store/state.ts';
 import { useMessageStore } from './store/message.ts';
 import { useEmitter } from './store/emitter.ts';
-import type { ADVChoice } from './data/model.ts';
-import { toObjectId } from './api.ts';
+import { ADVCheck, type ADVNext } from './data/model.ts';
+import { ADVMaker, toObjectId } from './api.ts';
+import { dice } from './utils/dice.ts';
+import { instanceType } from './utils/util.ts';
+
+async function resolveValueAsync<T>(
+    valueOrGetter: T | (() => T) | (() => Promise<T>) | Promise<T>,
+): Promise<T> {
+    if (typeof valueOrGetter === 'function') {
+        const result = (valueOrGetter as () => T | Promise<T>)();
+        return result instanceof Promise ? result : Promise.resolve(result);
+    }
+    return Promise.resolve(valueOrGetter);
+}
 
 /**
  * 运行时错误类，错误码以 1 开头，可以调用 Game.error 抛出错误
@@ -13,6 +25,7 @@ import { toObjectId } from './api.ts';
  * 目前错误码有：
  * - 101：物品数量不能为负数
  * - 102：找不到场景
+ * - 103：骰子错误
  */
 export class RuntimeError extends Error {
     code: number;
@@ -25,7 +38,7 @@ export class RuntimeError extends Error {
     }
 }
 
-async function toNext(nextId: string | ADVChoice[]) {
+async function toNext(nextId: ADVNext) {
     const stateStore = useStateStore();
     const emitter = useEmitter();
     if (typeof nextId === 'string') {
@@ -45,9 +58,46 @@ async function toNext(nextId: string | ADVChoice[]) {
             await Game.speak(next.id);
         }
         return;
-    } else {
+    } else if (Array.isArray(nextId)) {
         const res = await emitter.emit('make-choice', nextId);
-        await toNext(toObjectId(nextId[res].next));
+        if (instanceType(nextId[res].next) === 'Check') await toNext(nextId[res].next as ADVCheck);
+        else await toNext(toObjectId(nextId[res].next as any));
+    } else {
+        const dc = nextId.dice ?? 'd6';
+        let pt = 0;
+        if (typeof dc === 'object') {
+            pt = dc.func();
+        } else {
+            pt = dice(dc);
+        }
+
+        const ori = pt;
+
+        nextId.modifier?.forEach((v) => {
+            pt += v.value();
+        });
+
+        const diff = pt - ori;
+        let diff_str = '';
+        if (diff > 0) diff_str = `+${diff}`;
+        else if (diff < 0) diff_str = `${diff}`;
+
+        const res = await resolveValueAsync(nextId.target);
+        if (pt >= res) {
+            ADVMaker.appendMessage(
+                `检定成功！掷出 ${ori}${diff_str}=${pt} 点，目标 ${res} 点。`,
+                'system',
+            );
+            if (nextId.onSuccess) nextId.onSuccess();
+            await toNext(nextId.success);
+        } else {
+            ADVMaker.appendMessage(
+                `检定失败！掷出 ${ori}${diff_str}=${pt} 点，目标 ${res} 点。`,
+                'system',
+            );
+            if (nextId.onFail) nextId.onFail();
+            await toNext(nextId.fail);
+        }
     }
 }
 

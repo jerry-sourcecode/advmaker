@@ -17,7 +17,9 @@
                     :key="idx"
                     style="margin-bottom: 10px"
                 >
-                    <p :style="`color: ${getColor(it.type)}`">{{ it.content }}</p>
+                    <p :style="`color: ${getColor(it.type)}; font-style: ${getFontStyle(it.type)}`">
+                        {{ it.content }}
+                    </p>
                 </div>
             </TransitionGroup>
             <div class="hint-text" v-if="isWaitClick">点击屏幕继续</div>
@@ -30,6 +32,7 @@ import { useMessageStore } from '../store/message.ts';
 import { useStateStore } from '../store/state.ts';
 import { useEmitter } from '../store/emitter.ts';
 import { ref } from 'vue';
+import type { MessageType } from '../data/model.ts';
 
 const messageStore = useMessageStore();
 const stateStore = useStateStore();
@@ -51,10 +54,15 @@ function onScreenClick() {
     resList = [];
 }
 
-function getColor(type: string) {
+function getColor(type: MessageType) {
     if (type === 'story') return 'black';
-    else if (type === 'system') return '#E6A23C';
+    else if (type === 'system') return '#888';
+    else if (type === 'user') return '#E6A23C';
     return 'black';
+}
+function getFontStyle(type: MessageType) {
+    if (type === 'system') return 'italic';
+    return 'normal';
 }
 </script>
 

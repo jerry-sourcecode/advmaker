@@ -1,5 +1,13 @@
 import { useStoryStore } from './store/story.ts';
-import { ADVChoice, ADVDialog, ADVItem, ADVScene, ADVStatus } from './data/model.ts';
+import {
+    ADVChoice,
+    ADVDialog,
+    ADVItem,
+    ADVMessage,
+    ADVScene,
+    ADVStatus,
+    type MessageType,
+} from './data/model.ts';
 import { useStateStore } from './store/state.ts';
 import { useMessageStore } from './store/message.ts';
 
@@ -62,27 +70,25 @@ export const ADVMaker = {
         item = toObjectId(item);
         const stateStore = useStateStore();
         const storyStore = useStoryStore();
-        const messageStore = useMessageStore();
         stateStore.obtainItem(item, number);
         const res = storyStore.objectMap.get(item)!;
-        messageStore.appendMessage({ content: `获取 ${res.name} ${number}个。`, type: 'system' });
+        ADVMaker.appendMessage(`获取 ${res.name} ${number}个。`, 'user');
     },
     obtainStatus(item: string | ADVStatus, number: number) {
         item = toObjectId(item);
         const stateStore = useStateStore();
-        const messageStore = useMessageStore();
         stateStore.obtainStatus(item, number);
         const res = stateStore.status.get(item)!;
         if (number >= 0)
-            messageStore.appendMessage({
-                content: `属性 ${res.name} 增加 ${number} 点，剩余 ${res.value} 点。`,
-                type: 'system',
-            });
+            ADVMaker.appendMessage(
+                `属性 ${res.name} 增加 ${number} 点，剩余 ${res.value} 点。`,
+                'user',
+            );
         else
-            messageStore.appendMessage({
-                content: `属性 ${res.name} 减少 ${-number} 点，剩余 ${res.value} 点。`,
-                type: 'system',
-            });
+            ADVMaker.appendMessage(
+                `属性 ${res.name} 减少 ${-number} 点，剩余 ${res.value} 点。`,
+                'user',
+            );
     },
     getStatue(item: string | ADVStatus) {
         item = toObjectId(item);
@@ -124,5 +130,9 @@ export const ADVMaker = {
             id: `_END&${desc}`,
             type: 'Scene',
         };
+    },
+    appendMessage(content: string, type: MessageType = 'story') {
+        const message = useMessageStore();
+        message.appendMessage(new ADVMessage(content, type));
     },
 };

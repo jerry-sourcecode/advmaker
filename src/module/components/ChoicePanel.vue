@@ -8,9 +8,25 @@
     >
         <n-drawer-content title="你的选择">
             <div class="choice-div">
-                <n-button v-for="(it, idx) in choices" class="choice-div-btn" @click="onClick(idx)">
-                    <div>
+                <n-button
+                    v-for="(it, idx) in choices"
+                    class="choice-div-btn"
+                    @click="onClick(idx)"
+                    block
+                >
+                    <div class="choice-btn-main">
                         {{ it.content }}
+                    </div>
+                    <div v-if="instanceType(it.next) === 'Check'" class="choice-btn-desc">
+                        检定 {{ getDiceName((it.next as ADVCheck).dice ?? 'd6') }}: 目标
+                        {{ resolveValue((it.next as ADVCheck).target) }}
+                        |
+                        <span v-for="(obj, idx) in (it.next as ADVCheck).modifier">
+                            {{ obj.name }} <span v-if="obj.value() >= 0">+</span>{{ obj.value()
+                            }}<span v-if="idx !== (it.next as ADVCheck).modifier!.length - 1">
+                                ,
+                            </span>
+                        </span>
                     </div>
                 </n-button>
             </div>
@@ -19,10 +35,12 @@
 </template>
 
 <script setup lang="ts">
-import { ADVChoice } from '../data/model.ts';
+import { ADVCheck, ADVChoice, ADVDice } from '../data/model.ts';
 import { ref } from 'vue';
 import { useEmitter } from '../store/emitter.ts';
 import { useMessageStore } from '../store/message.ts';
+import { instanceType, resolveValue } from '../utils/util.ts';
+import type { DiceExpression } from '../utils/dice.ts';
 
 const emitter = useEmitter();
 const messageStore = useMessageStore();
@@ -39,6 +57,14 @@ function onClick(idx: number) {
     resolve(idx);
 }
 
+function getDiceName(dice: ADVDice | DiceExpression) {
+    if (typeof dice === 'object') {
+        return dice.name;
+    } else {
+        return dice;
+    }
+}
+
 emitter.on('make-choice', (chs: ADVChoice[], title: string = '你的选择') => {
     choices.value = chs;
     choiceName.value = title;
@@ -49,16 +75,42 @@ emitter.on('make-choice', (chs: ADVChoice[], title: string = '你的选择') => 
     });
 });
 </script>
-
 <style scoped>
 .choice-div {
     display: flex;
     flex-direction: column;
 }
+
 .choice-div-btn {
     width: 100%;
-    justify-content: flex-start;
-    padding: 25px;
+    height: auto; /* 关键：取消固定高度 */
+    align-items: flex-start;
+    flex-direction: column;
     margin-bottom: 10px;
+    padding: 12px 16px; /* 按钮本身的内边距，让文字不贴边 */
+}
+
+/* 覆盖内部 span 样式 */
+.choice-div-btn :deep(.n-button__content) {
+    display: flex; /* 变为弹性容器，确保能撑开 */
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%; /* 占满宽度 */
+    white-space: normal; /* 允许换行 */
+    word-break: break-word;
+    /* 如果还想用 margin，可以保留，但 padding 更稳定 */
+    /* margin: 20px; */
+}
+
+.choice-btn-main {
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.choice-btn-desc {
+    font-size: 12px;
+    color: #888;
+    line-height: 1.4;
 }
 </style>
