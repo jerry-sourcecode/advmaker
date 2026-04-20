@@ -1,11 +1,12 @@
 import { useStoryStore } from './store/story.ts';
 import {
-    ADVChoice,
     ADVDialog,
     ADVItem,
     ADVMessage,
     ADVScene,
     ADVStatus,
+    ADVUserDialog,
+    ADVUserScene,
     type MessageType,
 } from './data/model.ts';
 import { useStateStore } from './store/state.ts';
@@ -27,7 +28,7 @@ type GameConfig = {
             color?: string;
         };
     };
-    mainScene: string | ADVScene;
+    mainScene: string;
     gameName: string;
 };
 
@@ -61,7 +62,7 @@ export const ADVMaker = {
             });
         }
 
-        storyStore.mainScene = toObjectId(config.mainScene);
+        storyStore.mainScene = config.mainScene;
         storyStore.gameName = config.gameName;
 
         return config;
@@ -95,33 +96,13 @@ export const ADVMaker = {
         const stateStore = useStateStore();
         return stateStore.status.get(item)?.value;
     },
-    appendScene(
-        id: string,
-        config: { name: string; next: ADVScene | ADVDialog | string },
-    ): ADVScene {
+    appendScene(id: string, config: ADVUserScene): ADVScene {
         const storyStore = useStoryStore();
-        return storyStore.sceneMap
-            .set(id, {
-                name: config.name,
-                next: toObjectId(config.next),
-                id,
-                type: 'Scene',
-            })
-            .get(id)!;
+        return storyStore.sceneMap.set(id, new ADVScene(id, config)).get(id)!;
     },
-    appendDialog(
-        id: string,
-        config: { script: string | string[]; next: ADVScene | ADVDialog | string | ADVChoice[] },
-    ): ADVDialog {
+    appendDialog(id: string, config: ADVUserDialog): ADVDialog {
         const storyStore = useStoryStore();
-        return storyStore.dialogMap
-            .set(id, {
-                script: config.script,
-                next: Array.isArray(config.next) ? config.next : toObjectId(config.next),
-                id,
-                type: 'Dialog',
-            })
-            .get(id)!;
+        return storyStore.dialogMap.set(id, new ADVDialog(id, config)).get(id)!;
     },
     end(desc: string): ADVScene {
         return {

@@ -23,6 +23,6 @@ ADVMaker.defineConfig({
             name: '什么值',
         },
     },
-    mainScene: MAIN,
+    mainScene: MAIN.id,
     gameName: '新游戏',
 });

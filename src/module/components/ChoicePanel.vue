@@ -18,7 +18,7 @@
                         {{ it.content }}
                     </div>
                     <div v-if="instanceType(it.next) === 'Check'" class="choice-btn-desc">
-                        检定 {{ getDiceName((it.next as ADVCheck).dice ?? 'd6') }}: 目标
+                        检定 {{ getDiceName((it.next as ADVCheck).dice) }}: 目标
                         {{ resolveValue((it.next as ADVCheck).target) }}
                         |
                         <span v-for="(obj, idx) in (it.next as ADVCheck).modifier">

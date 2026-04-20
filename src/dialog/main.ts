@@ -5,7 +5,6 @@ export default ADVMaker.appendDialog('main-dialog', {
     next: [
         {
             content: '选择1',
-            visible: () => false,
             next: {
                 target: 10,
                 modifier: [{ name: '智慧', value: () => 4 }],
@@ -16,7 +15,7 @@ export default ADVMaker.appendDialog('main-dialog', {
         },
         {
             content: '选择2',
-            next: ADVMaker.end('游戏结束2'),
+            next: ADVMaker.end('游戏结束2').id,
         },
     ],
 });

@@ -1,4 +1,4 @@
-import { ADVCheck, ADVDialog, ADVScene } from '../data/model.ts';
+import { type ADVNext } from '../data/model.ts';
 
 /**
  * 如果提供一个变量，返回变量
@@ -23,24 +23,10 @@ export function resolveValue<T>(valueOrGetter: T | (() => T)): T {
 /**
  * 判断对象的类型
  * @param obj 要判断的对象
- * @returns 对应的类型字符串 "Scene" | "Check" | "Dialog" | "Other"
- * @throws 如果对象不符合任何已知类型，会返回 ”Other“
+ * @returns 对应的类型字符串 'Array' | 'string' | 'Check'
  */
-export function instanceType(
-    obj: ADVScene | ADVCheck | ADVDialog | any,
-): 'Scene' | 'Check' | 'Dialog' | 'Other' {
-    // 1. 优先检查是否具有 type 属性（ADVScene 和 ADVDialog 特有）
-    if ('type' in obj) {
-        if (obj.type === 'Scene') return 'Scene';
-        if (obj.type === 'Dialog') return 'Dialog';
-        // 如果 type 值不是预期值，继续往下抛错
-    }
-
-    // 2. 检查是否具有 target 属性（ADVCheck 特有）
-    if ('target' in obj) {
-        return 'Check';
-    }
-
-    // 3. 都不符合
-    return 'Other';
+export function instanceType(obj: ADVNext): 'Array' | 'string' | 'Check' {
+    if (typeof obj === 'string') return 'string';
+    else if (Array.isArray(obj)) return 'Array';
+    return 'Check';
 }

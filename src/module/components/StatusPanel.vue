@@ -28,14 +28,9 @@
 <script setup lang="ts">
 import { useStateStore } from '../store/state.ts';
 import { ref } from 'vue';
-import { ADVMaker } from '../api.ts';
 const stateStore = useStateStore();
 
 const numberFrom = ref(new Map<string, number>());
-
-setInterval(() => {
-    ADVMaker.obtainStatus('hp', -10);
-}, 3000);
 
 function onFinish(id: string) {
     numberFrom.value.set(id, stateStore.status.get(id)?.value!);

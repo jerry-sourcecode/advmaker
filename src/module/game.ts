@@ -2,10 +2,9 @@ import { useStoryStore } from './store/story.ts';
 import { useStateStore } from './store/state.ts';
 import { useMessageStore } from './store/message.ts';
 import { useEmitter } from './store/emitter.ts';
-import { ADVCheck, type ADVNext } from './data/model.ts';
-import { ADVMaker, toObjectId } from './api.ts';
+import { type ADVNext } from './data/model.ts';
+import { ADVMaker } from './api.ts';
 import { dice } from './utils/dice.ts';
-import { instanceType } from './utils/util.ts';
 
 async function resolveValueAsync<T>(
     valueOrGetter: T | (() => T) | (() => Promise<T>) | Promise<T>,
@@ -60,10 +59,9 @@ async function toNext(nextId: ADVNext) {
         return;
     } else if (Array.isArray(nextId)) {
         const res = await emitter.emit('make-choice', nextId);
-        if (instanceType(nextId[res].next) === 'Check') await toNext(nextId[res].next as ADVCheck);
-        else await toNext(toObjectId(nextId[res].next as any));
+        await toNext(nextId[res].next);
     } else {
-        const dc = nextId.dice ?? 'd6';
+        const dc = nextId.dice;
         let pt = 0;
         if (typeof dc === 'object') {
             pt = dc.func();
@@ -73,7 +71,7 @@ async function toNext(nextId: ADVNext) {
 
         const ori = pt;
 
-        nextId.modifier?.forEach((v) => {
+        nextId.modifier.forEach((v) => {
             pt += v.value();
         });
 
@@ -88,14 +86,14 @@ async function toNext(nextId: ADVNext) {
                 `检定成功！掷出 ${ori}${diff_str}=${pt} 点，目标 ${res} 点。`,
                 'system',
             );
-            if (nextId.onSuccess) nextId.onSuccess();
+            nextId.onSuccess();
             await toNext(nextId.success);
         } else {
             ADVMaker.appendMessage(
                 `检定失败！掷出 ${ori}${diff_str}=${pt} 点，目标 ${res} 点。`,
                 'system',
             );
-            if (nextId.onFail) nextId.onFail();
+            nextId.onFail();
             await toNext(nextId.fail);
         }
     }
