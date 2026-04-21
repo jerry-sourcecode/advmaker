@@ -40,6 +40,7 @@ export class RuntimeError extends Error {
 async function toNext(nextId: ADVNext) {
     const stateStore = useStateStore();
     const emitter = useEmitter();
+    nextId = await resolveValueAsync(nextId);
     if (typeof nextId === 'string') {
         if (nextId.startsWith('_END&')) {
             stateStore.isDead = true;

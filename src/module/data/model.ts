@@ -1,11 +1,19 @@
 import type { DiceExpression } from '../utils/dice.ts';
 
-export type ADVNext = string | ADVChoice[] | ADVCheck;
-export type ADVUserNext = string | ADVUserChoice[] | ADVUserCheck;
+type ADVNextLiteral = string | ADVChoice[] | ADVCheck;
+export type ADVNext = ADVNextLiteral | (() => ADVNextLiteral);
+type ADVUserNextLiteral = string | ADVUserChoice[] | ADVUserCheck;
+export type ADVUserNext = ADVUserNextLiteral | (() => ADVUserNextLiteral);
 export type MessageType = 'story' | 'system' | 'user';
 
+function fromUserNectToNext(obj: ADVUserNextLiteral): ADVNextLiteral;
+function fromUserNectToNext(obj: ADVUserNext): ADVNext;
 function fromUserNectToNext(obj: ADVUserNext): ADVNext {
     if (typeof obj === 'string') return obj;
+    if (typeof obj === 'function')
+        return () => {
+            return fromUserNectToNext(obj());
+        };
     if (Array.isArray(obj)) {
         const returns: ADVChoice[] = [];
         obj.forEach((v) => {
