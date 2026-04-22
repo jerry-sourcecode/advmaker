@@ -1,4 +1,5 @@
 import type { DiceExpression } from '../utils/dice.ts';
+import type { Component } from 'vue';
 
 type ADVNextLiteral = string | ADVChoice[] | ADVCheck;
 export type ADVNext = ADVNextLiteral | (() => ADVNextLiteral);
@@ -25,15 +26,15 @@ function fromUserNectToNext(obj: ADVUserNext): ADVNext {
 }
 export class ADVMessage {
     type: MessageType;
-    content: string;
-    constructor(content: string, type: MessageType) {
+    content: string | Component;
+    constructor(content: string | Component, type: MessageType) {
         this.content = content;
         this.type = type;
     }
 }
 
 export class ADVUserChoice {
-    content: string;
+    content: string | Component;
     visible?: () => boolean;
     next: ADVUserNext;
     constructor(obj: ADVUserChoice) {
@@ -72,7 +73,7 @@ export class ADVScene extends ADVUserScene {
 }
 
 export class ADVUserDialog {
-    script: string[] | string;
+    script: string | Component | (string | Component)[];
     next: ADVUserNext;
     constructor(obj: ADVUserDialog) {
         this.script = obj.script;

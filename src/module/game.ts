@@ -141,15 +141,20 @@ export const Game = {
             this.error(new RuntimeError(2, `Can't Find Dialog, Id: '${dialogId}'.`));
             return;
         }
-        if (dialog.script instanceof String) {
-            dialog.script = [dialog.script as string];
+        if (!Array.isArray(dialog.script)) {
+            dialog.script = [dialog.script];
         }
-        for (const v of dialog.script as string[]) {
-            const id = (dialog.script as string[]).indexOf(v);
-            messageStore.appendMessage(v);
-            if (id !== dialog.script.length - 1) {
-                await emitter.emit('wait-for-click-screen');
+        if (Array.isArray(dialog.script))
+            for (let id = 0; id < dialog.script.length; id++) {
+                const v = dialog.script[id];
+                messageStore.appendMessage(v);
+                if (id !== dialog.script.length - 1) {
+                    await emitter.emit('wait-for-click-screen');
+                }
             }
+        else {
+            // 不可能到达
+            throw Error('Never Reach');
         }
         await toNext(dialog.next);
     },

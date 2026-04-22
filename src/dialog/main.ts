@@ -1,10 +1,11 @@
 import { ADVMaker } from '../module/api.ts';
+import Main from './main.vue';
 
 export default ADVMaker.appendDialog('main-dialog', {
-    script: ['你好', "I'm your friend.", 'Hello World!', "Let's start"],
+    script: ['你好', "I'm your friend.", 'Hello World!', "Let's start", Main],
     next: [
         {
-            content: '选择1',
+            content: Main,
             next: {
                 target: 10,
                 modifier: [{ name: '智慧', value: () => 4 }],

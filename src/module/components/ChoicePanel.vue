@@ -15,7 +15,8 @@
                     @click="onClick(idx)"
                 >
                     <div class="choice-btn-main">
-                        {{ it.content }}
+                        <div v-html="it.content" v-if="isContentString(it.content)" />
+                        <Component :is="it.content" v-else />
                     </div>
                     <div v-if="instanceType(it.next) === 'Check'" class="choice-btn-desc">
                         检定 {{ getDiceName((it.next as ADVCheck).dice) }}: 目标
@@ -36,7 +37,7 @@
 
 <script setup lang="ts">
 import { ADVCheck, ADVChoice, ADVDice } from '../data/model.ts';
-import { ref } from 'vue';
+import { type Component, ref } from 'vue';
 import { useEmitter } from '../store/emitter.ts';
 import { useMessageStore } from '../store/message.ts';
 import { instanceType, resolveValue } from '../utils/util.ts';
@@ -55,6 +56,10 @@ function onClick(idx: number) {
     isShow.value = false;
     messageStore.isMkChoice = false;
     resolve(idx);
+}
+
+function isContentString(obj: Component | string) {
+    return typeof obj === 'string';
 }
 
 function getDiceName(dice: ADVDice | DiceExpression) {
