@@ -9,7 +9,7 @@
         <n-drawer-content title="你的选择">
             <div class="choice-div" v-for="(it, idx) in choices">
                 <n-button
-                    v-if="it.visible !== undefined ? it.visible() : true"
+                    v-if="it.visible() && it.times < it.maxTimes"
                     block
                     class="choice-div-btn"
                     @click="onClick(idx)"

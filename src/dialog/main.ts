@@ -13,6 +13,7 @@ export default ADVMaker.appendDialog('main-dialog', {
                 fail: 'main-dialog',
                 dice: '2d6',
             },
+            maxTimes: 3,
         },
         {
             content: '选择2',

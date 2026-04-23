@@ -1,5 +1,5 @@
 import type { DiceExpression } from '../utils/dice.ts';
-import type { Component } from 'vue';
+import { type Component, markRaw } from 'vue';
 
 type ADVNextLiteral = string | ADVChoice[] | ADVCheck;
 export type ADVNext = ADVNextLiteral | (() => ADVNextLiteral);
@@ -37,18 +37,27 @@ export class ADVUserChoice {
     content: string | Component;
     visible?: () => boolean;
     next: ADVUserNext;
+    maxTimes?: number;
     constructor(obj: ADVUserChoice) {
-        this.content = obj.content;
+        if (typeof obj.content === 'string') this.content = obj.content;
+        else this.content = markRaw(obj.content);
         this.next = obj.next;
         this.visible = obj.visible;
+        this.maxTimes = obj.maxTimes;
     }
 }
 
 export class ADVChoice extends ADVUserChoice {
     next: ADVNext;
+    times: number;
+    maxTimes: number;
+    visible: () => boolean;
     constructor(obj: ADVUserChoice) {
         super(obj);
         this.next = fromUserNectToNext(obj.next);
+        this.times = 0;
+        this.maxTimes = obj.maxTimes ?? Infinity;
+        this.visible = obj.visible ?? (() => true);
     }
 }
 
@@ -77,6 +86,14 @@ export class ADVUserDialog {
     next: ADVUserNext;
     constructor(obj: ADVUserDialog) {
         this.script = obj.script;
+        // 为 Component 增加 markRow
+        if (Array.isArray(this.script)) {
+            this.script.forEach((_, id, ls) => {
+                if (typeof ls[id] !== 'string') ls[id] = markRaw(ls[id]);
+            });
+        } else {
+            if (typeof this.script !== 'string') this.script = markRaw(this.script);
+        }
         this.next = obj.next;
     }
 }

@@ -60,6 +60,7 @@ async function toNext(nextId: ADVNext) {
         return;
     } else if (Array.isArray(nextId)) {
         const res = await emitter.emit('make-choice', nextId);
+        nextId[res].times++;
         await toNext(nextId[res].next);
     } else {
         const dc = nextId.dice;
