@@ -141,11 +141,11 @@ export class ADVStatus {
 
 export class ADVDice {
     name: string;
-    func: () => number;
+    roll: () => number;
 
-    constructor(name: string, func: () => number) {
+    constructor(name: string, roll: () => number) {
         this.name = name;
-        this.func = func;
+        this.roll = roll;
     }
 }
 

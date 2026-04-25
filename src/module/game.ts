@@ -66,7 +66,7 @@ async function toNext(nextId: ADVNext) {
         const dc = nextId.dice;
         let pt = 0;
         if (typeof dc === 'object') {
-            pt = dc.func();
+            pt = dc.roll();
         } else {
             pt = dice(dc);
         }
@@ -149,9 +149,7 @@ export const Game = {
             for (let id = 0; id < dialog.script.length; id++) {
                 const v = dialog.script[id];
                 messageStore.appendMessage(v);
-                if (id !== dialog.script.length - 1) {
-                    await emitter.emit('wait-for-click-screen');
-                }
+                await emitter.emit('wait-for-click-screen');
             }
         else {
             // 不可能到达

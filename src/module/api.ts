@@ -1,16 +1,15 @@
 import { useStoryStore } from './store/story.ts';
 import {
     ADVDialog,
-    ADVItem,
     ADVMessage,
     ADVScene,
-    ADVStatus,
     ADVUserDialog,
     ADVUserScene,
     type MessageType,
 } from './data/model.ts';
 import { useStateStore } from './store/state.ts';
 import { useMessageStore } from './store/message.ts';
+import type { Component } from 'vue';
 
 type GameConfig = {
     items: {
@@ -32,11 +31,6 @@ type GameConfig = {
     gameName: string;
 };
 
-export function toObjectId(scene: string | ADVScene | ADVDialog | ADVItem | ADVStatus): string {
-    if (typeof scene === 'string') return scene;
-    return scene.id;
-}
-
 export const ADVMaker = {
     defineConfig(config: GameConfig): GameConfig {
         const storyStore = useStoryStore();
@@ -57,7 +51,7 @@ export const ADVMaker = {
                 id: itemsKey,
                 min: obj.min ?? 0,
                 max: obj.max ?? 100,
-                value: obj.defaultValue ?? 100,
+                value: obj.defaultValue ?? 0,
                 color: obj.color ?? 'blue',
             });
         }
@@ -67,16 +61,14 @@ export const ADVMaker = {
 
         return config;
     },
-    obtainItem(item: string | ADVItem, number: number = 1) {
-        item = toObjectId(item);
+    obtainItem(item: string, number: number = 1) {
         const stateStore = useStateStore();
         const storyStore = useStoryStore();
         stateStore.obtainItem(item, number);
         const res = storyStore.objectMap.get(item)!;
         ADVMaker.appendMessage(`获取 ${res.name} ${number}个。`, 'user');
     },
-    obtainStatus(item: string | ADVStatus, number: number) {
-        item = toObjectId(item);
+    obtainStatus(item: string, number: number) {
         const stateStore = useStateStore();
         stateStore.obtainStatus(item, number);
         const res = stateStore.status.get(item)!;
@@ -91,8 +83,11 @@ export const ADVMaker = {
                 'user',
             );
     },
-    getStatue(item: string | ADVStatus) {
-        item = toObjectId(item);
+    getItem(item: string): number | undefined {
+        const storyStore = useStoryStore();
+        return storyStore.objectMap.get(item)?.number;
+    },
+    getStatue(item: string): number | undefined {
         const stateStore = useStateStore();
         return stateStore.status.get(item)?.value;
     },
@@ -112,7 +107,7 @@ export const ADVMaker = {
             type: 'Scene',
         };
     },
-    appendMessage(content: string, type: MessageType = 'story') {
+    appendMessage(content: string | Component, type: MessageType = 'story') {
         const message = useMessageStore();
         message.appendMessage(new ADVMessage(content, type));
     },
