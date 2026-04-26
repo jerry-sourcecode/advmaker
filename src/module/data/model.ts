@@ -1,3 +1,9 @@
+/**
+ * 在命名中，如果一个类以 ADVUser 为前缀，则该类是面向用户代码，是用户代码提交配置的格式。
+ * 若不以 ADVUser 开头，但以 ADV 开头，就是程序内部流传的代码。
+ * 从 ADVUser 到 ADV 可以使用 ADV 的构造函数进行转化。
+ */
+
 import type { DiceExpression } from '../utils/dice.ts';
 import { type Component, markRaw } from 'vue';
 

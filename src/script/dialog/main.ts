@@ -1,6 +1,6 @@
 import Main from './main.vue';
 
-export default window.ADVMaker.appendDialog('succ', {
+export default window.ADVMaker.appendDialog('main-dialog', {
     script: ['你好！', '我是你的向导。', '接下来，让我们一同<b>冒险</b>吧', "Let's go!", Main],
     next: [
         {
@@ -8,7 +8,10 @@ export default window.ADVMaker.appendDialog('succ', {
             next: {
                 target: 10,
                 modifier: [{ name: '智慧', value: () => 4 }],
-                success: 'succ',
+                success: null,
+                onSuccess: () => {
+                    window.ADVMaker.goto('succ');
+                },
                 fail: 'fail',
                 dice: '2d6',
             },

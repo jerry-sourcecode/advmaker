@@ -9,16 +9,7 @@ import { useEmitter } from './store/emitter.ts';
 import { type ADVNext } from './data/model.ts';
 import { ADVMaker } from './api.ts';
 import { dice } from './utils/dice.ts';
-
-async function resolveValueAsync<T>(
-    valueOrGetter: T | (() => T) | (() => Promise<T>) | Promise<T>,
-): Promise<T> {
-    if (typeof valueOrGetter === 'function') {
-        const result = (valueOrGetter as () => T | Promise<T>)();
-        return result instanceof Promise ? result : Promise.resolve(result);
-    }
-    return Promise.resolve(valueOrGetter);
-}
+import { resolveValue } from './utils/util.ts';
 
 /**
  * 运行时错误类，错误码以 1 开头，可以调用 Game.error 抛出错误
@@ -42,75 +33,6 @@ export class RuntimeError extends Error {
     }
 }
 
-/**
- * 执行下一个动作
- * @param nextAct 下面要进行的动作
- */
-async function toNext(nextAct: ADVNext) {
-    if (nextAct === null) return;
-    const stateStore = useStateStore();
-    const emitter = useEmitter();
-    nextAct = await resolveValueAsync(nextAct);
-    if (typeof nextAct === 'string') {
-        if (nextAct.startsWith('_END&')) {
-            stateStore.isDead = true;
-            stateStore.deadDesc = nextAct.slice(5);
-            return;
-        }
-        const storyStore = useStoryStore();
-        const next = storyStore.tryGet(nextAct, storyStore.TP.SCENE | storyStore.TP.DIALOG);
-        if (next === undefined)
-            Game.error(new RuntimeError(2, `Can't Find Scene or Dialog, Id: '${nextAct}'.`));
-        if (next?.type === 'Scene') {
-            await Game.enter(next.id);
-        }
-        if (next?.type === 'Dialog') {
-            await Game.speak(next.id);
-        }
-        return;
-    } else if (Array.isArray(nextAct)) {
-        const res = await emitter.emit('make-choice', nextAct);
-        nextAct[res].times++;
-        await toNext(nextAct[res].next);
-    } else if (nextAct !== null) {
-        const dc = nextAct.dice;
-        let pt = 0;
-        if (typeof dc === 'object') {
-            pt = dc.roll();
-        } else {
-            pt = dice(dc);
-        }
-
-        const ori = pt;
-
-        nextAct.modifier.forEach((v) => {
-            pt += v.value();
-        });
-
-        const diff = pt - ori;
-        let diff_str = '';
-        if (diff > 0) diff_str = `+${diff}`;
-        else if (diff < 0) diff_str = `${diff}`;
-
-        const res = await resolveValueAsync(nextAct.target);
-        if (pt >= res) {
-            ADVMaker.appendMessage(
-                `检定成功！掷出 ${ori}${diff_str}=${pt} 点，目标 ${res} 点。`,
-                'system',
-            );
-            nextAct.onSuccess();
-            await toNext(nextAct.success);
-        } else {
-            ADVMaker.appendMessage(
-                `检定失败！掷出 ${ori}${diff_str}=${pt} 点，目标 ${res} 点。`,
-                'system',
-            );
-            nextAct.onFail();
-            await toNext(nextAct.fail);
-        }
-    }
-}
-
 export const Game = {
     /**
      * 游戏开始
@@ -130,13 +52,13 @@ export const Game = {
             stateStore.obtainItem(item.name, item.number);
         });
         // 进入初始场景
-        await this.enter(storyStore.mainScene!);
+        this.enter(storyStore.mainScene!);
     },
     /**
      * 进入一个场景
      * @param sceneId 场景 id
      */
-    async enter(sceneId: string) {
+    enter(sceneId: string) {
         const stateStore = useStateStore();
         const storyStore = useStoryStore();
         const messageStore = useMessageStore();
@@ -148,7 +70,7 @@ export const Game = {
 
         stateStore.location = scene.name;
         messageStore.messageList = [];
-        await toNext(scene.next);
+        Game.toNext(scene.next);
     },
     /**
      * 进行一次对话
@@ -176,7 +98,7 @@ export const Game = {
             // 不可能到达
             throw Error('Never Reach');
         }
-        await toNext(dialog.next);
+        Game.toNext(dialog.next);
     },
     /**
      * 抛出错误
@@ -184,5 +106,74 @@ export const Game = {
      */
     error(err: RuntimeError) {
         throw err;
+    },
+    /**
+     * 执行下一个动作
+     * @param nextAct 下面要进行的动作
+     */
+    toNext(nextAct: ADVNext) {
+        if (nextAct === null) return;
+        const stateStore = useStateStore();
+        const emitter = useEmitter();
+        nextAct = resolveValue(nextAct);
+        if (typeof nextAct === 'string') {
+            if (nextAct.startsWith('_END&')) {
+                stateStore.isDead = true;
+                stateStore.deadDesc = nextAct.slice(5);
+                return;
+            }
+            const storyStore = useStoryStore();
+            const next = storyStore.tryGet(nextAct, storyStore.TP.SCENE | storyStore.TP.DIALOG);
+            if (next === undefined)
+                Game.error(new RuntimeError(2, `Can't Find Scene or Dialog, Id: '${nextAct}'.`));
+            if (next?.type === 'Scene') {
+                Game.enter(next.id);
+            }
+            if (next?.type === 'Dialog') {
+                Game.speak(next.id);
+            }
+            return;
+        } else if (Array.isArray(nextAct)) {
+            emitter.emit('make-choice', nextAct).then((res) => {
+                nextAct[res].times++;
+                Game.toNext(nextAct[res].next);
+            });
+        } else if (nextAct !== null) {
+            const dc = nextAct.dice;
+            let pt = 0;
+            if (typeof dc === 'object') {
+                pt = dc.roll();
+            } else {
+                pt = dice(dc);
+            }
+
+            const ori = pt;
+
+            nextAct.modifier.forEach((v) => {
+                pt += v.value();
+            });
+
+            const diff = pt - ori;
+            let diff_str = '';
+            if (diff > 0) diff_str = `+${diff}`;
+            else if (diff < 0) diff_str = `${diff}`;
+
+            const res = resolveValue(nextAct.target);
+            if (pt >= res) {
+                ADVMaker.appendMessage(
+                    `检定成功！掷出 ${ori}${diff_str}=${pt} 点，目标 ${res} 点。`,
+                    'system',
+                );
+                nextAct.onSuccess();
+                Game.toNext(nextAct.success);
+            } else {
+                ADVMaker.appendMessage(
+                    `检定失败！掷出 ${ori}${diff_str}=${pt} 点，目标 ${res} 点。`,
+                    'system',
+                );
+                nextAct.onFail();
+                Game.toNext(nextAct.fail);
+            }
+        }
     },
 };

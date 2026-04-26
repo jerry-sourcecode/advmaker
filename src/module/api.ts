@@ -4,10 +4,14 @@
 
 import { useStoryStore } from './store/story.ts';
 import {
+    ADVCheck,
+    ADVChoice,
     ADVDialog,
     ADVMessage,
+    type ADVNext,
     ADVScene,
     ADVUserDialog,
+    type ADVUserNext,
     ADVUserScene,
     type MessageType,
 } from './data/model.ts';
@@ -116,6 +120,22 @@ export const ADVMaker = {
         const storyStore = useStoryStore();
         checkHasSameId(id);
         return storyStore.dialogMap.set(id, new ADVDialog(id, config)).get(id)!;
+    },
+    goto(next: ADVUserNext) {
+        let newNext: ADVNext;
+        if (typeof next === 'function') {
+            next = next();
+        }
+        if (Array.isArray(next)) {
+            newNext = [];
+            next.forEach((v) => {
+                (newNext as Array<ADVChoice>).push(new ADVChoice(v));
+            });
+        } else if (typeof next === 'string' || next === null) newNext = next;
+        else {
+            newNext = new ADVCheck(next);
+        }
+        Game.toNext(newNext);
     },
     end(desc: string): ADVScene {
         return {

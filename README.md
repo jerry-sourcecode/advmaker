@@ -210,6 +210,12 @@ window.ADVMaker.appendDialog('fail', {
 });
 ```
 
+你可以使用 `goto` 函数来手动跳转。
+
+```ts
+window.ADVMaker.goto(next: ADVUserNext): void;
+```
+
 此外，你可以用`appendMessage`函数来直接在屏幕上输出文字，其原型如下：
 
 ```ts
