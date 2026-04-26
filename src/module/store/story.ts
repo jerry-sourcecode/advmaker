@@ -1,3 +1,7 @@
+/**
+ * 这个仓库用于储存游戏的设置
+ */
+
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { ADVDialog, ADVItem, ADVScene } from '../data/model.ts';
@@ -9,6 +13,8 @@ export const useStoryStore = defineStore('story', () => {
     const sceneMap = ref(new Map<string, ADVScene>());
     const dialogMap = ref(new Map<string, ADVDialog>());
     const gameName = ref('');
+
+    const usedSceneAndDialogId = ref(new Set<string>());
 
     const TP = {
         DIALOG: 0x01,
@@ -26,5 +32,14 @@ export const useStoryStore = defineStore('story', () => {
         return undefined;
     }
 
-    return { mainScene, objectMap, sceneMap, dialogMap, gameName, TP, tryGet };
+    return {
+        mainScene,
+        objectMap,
+        sceneMap,
+        dialogMap,
+        gameName,
+        TP,
+        tryGet,
+        usedSceneAndDialogId,
+    };
 });

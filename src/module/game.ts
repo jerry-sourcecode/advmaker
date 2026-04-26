@@ -1,3 +1,7 @@
+/**
+ * 这个文件用于处理与游戏进程相关的逻辑
+ */
+
 import { useStoryStore } from './store/story.ts';
 import { useStateStore } from './store/state.ts';
 import { useMessageStore } from './store/message.ts';
@@ -25,6 +29,7 @@ async function resolveValueAsync<T>(
  * - 101：物品数量不能为负数
  * - 102：找不到场景
  * - 103：骰子错误
+ * - 104：发现两个场景或对话有相同的id
  */
 export class RuntimeError extends Error {
     code: number;
@@ -37,20 +42,25 @@ export class RuntimeError extends Error {
     }
 }
 
-async function toNext(nextId: ADVNext) {
+/**
+ * 执行下一个动作
+ * @param nextAct 下面要进行的动作
+ */
+async function toNext(nextAct: ADVNext) {
+    if (nextAct === null) return;
     const stateStore = useStateStore();
     const emitter = useEmitter();
-    nextId = await resolveValueAsync(nextId);
-    if (typeof nextId === 'string') {
-        if (nextId.startsWith('_END&')) {
+    nextAct = await resolveValueAsync(nextAct);
+    if (typeof nextAct === 'string') {
+        if (nextAct.startsWith('_END&')) {
             stateStore.isDead = true;
-            stateStore.deadDesc = nextId.slice(5);
+            stateStore.deadDesc = nextAct.slice(5);
             return;
         }
         const storyStore = useStoryStore();
-        const next = storyStore.tryGet(nextId, storyStore.TP.SCENE | storyStore.TP.DIALOG);
+        const next = storyStore.tryGet(nextAct, storyStore.TP.SCENE | storyStore.TP.DIALOG);
         if (next === undefined)
-            Game.error(new RuntimeError(2, `Can't Find Scene or Dialog, Id: '${nextId}'.`));
+            Game.error(new RuntimeError(2, `Can't Find Scene or Dialog, Id: '${nextAct}'.`));
         if (next?.type === 'Scene') {
             await Game.enter(next.id);
         }
@@ -58,12 +68,12 @@ async function toNext(nextId: ADVNext) {
             await Game.speak(next.id);
         }
         return;
-    } else if (Array.isArray(nextId)) {
-        const res = await emitter.emit('make-choice', nextId);
-        nextId[res].times++;
-        await toNext(nextId[res].next);
-    } else {
-        const dc = nextId.dice;
+    } else if (Array.isArray(nextAct)) {
+        const res = await emitter.emit('make-choice', nextAct);
+        nextAct[res].times++;
+        await toNext(nextAct[res].next);
+    } else if (nextAct !== null) {
+        const dc = nextAct.dice;
         let pt = 0;
         if (typeof dc === 'object') {
             pt = dc.roll();
@@ -73,7 +83,7 @@ async function toNext(nextId: ADVNext) {
 
         const ori = pt;
 
-        nextId.modifier.forEach((v) => {
+        nextAct.modifier.forEach((v) => {
             pt += v.value();
         });
 
@@ -82,26 +92,29 @@ async function toNext(nextId: ADVNext) {
         if (diff > 0) diff_str = `+${diff}`;
         else if (diff < 0) diff_str = `${diff}`;
 
-        const res = await resolveValueAsync(nextId.target);
+        const res = await resolveValueAsync(nextAct.target);
         if (pt >= res) {
             ADVMaker.appendMessage(
                 `检定成功！掷出 ${ori}${diff_str}=${pt} 点，目标 ${res} 点。`,
                 'system',
             );
-            nextId.onSuccess();
-            await toNext(nextId.success);
+            nextAct.onSuccess();
+            await toNext(nextAct.success);
         } else {
             ADVMaker.appendMessage(
                 `检定失败！掷出 ${ori}${diff_str}=${pt} 点，目标 ${res} 点。`,
                 'system',
             );
-            nextId.onFail();
-            await toNext(nextId.fail);
+            nextAct.onFail();
+            await toNext(nextAct.fail);
         }
     }
 }
 
 export const Game = {
+    /**
+     * 游戏开始
+     */
     async start() {
         const storyStore = useStoryStore();
         const stateStore = useStateStore();
@@ -119,6 +132,10 @@ export const Game = {
         // 进入初始场景
         await this.enter(storyStore.mainScene!);
     },
+    /**
+     * 进入一个场景
+     * @param sceneId 场景 id
+     */
     async enter(sceneId: string) {
         const stateStore = useStateStore();
         const storyStore = useStoryStore();
@@ -133,6 +150,10 @@ export const Game = {
         messageStore.messageList = [];
         await toNext(scene.next);
     },
+    /**
+     * 进行一次对话
+     * @param dialogId 对话 id
+     */
     async speak(dialogId: string) {
         const storyStore = useStoryStore();
         const messageStore = useMessageStore();

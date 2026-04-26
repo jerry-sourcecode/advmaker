@@ -1,3 +1,7 @@
+/**
+ * 这个仓库定义有关屏幕上信息的弹出相关部分。
+ */
+
 import { defineStore } from 'pinia';
 import { type Component, ref } from 'vue';
 import { ADVMessage } from '../data/model.ts';

@@ -69,6 +69,7 @@ window.ADVMaker.appendScene(id: string, config: ADVUserScene): ADVScene;
 - 字符串：表示下一个场景的ID。
 - 数组：表示多个选择，每个选择是一个 `ADVUserChoice` 对象。详见下文选项。
 - 检定对象（`ADVUserCheck`）：表示一个检定。详见下文检定。
+- null：表示什么也不干。
 - 函数：返回上述任意一种类型。
 
 `ADVScene` 相对 `ADVUserScene` 多了一个 `id` 属性（`string`），可以获取新建场景的 id（即函数参数中提供的 id）。

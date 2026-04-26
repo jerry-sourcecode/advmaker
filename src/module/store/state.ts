@@ -1,3 +1,7 @@
+/**
+ * 这个仓库用于储存玩家状态
+ */
+
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { Game, RuntimeError } from '../game.ts';

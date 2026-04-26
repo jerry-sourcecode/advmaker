@@ -1,6 +1,6 @@
 import Main from './main.vue';
 
-export default window.ADVMaker.appendDialog('main-dialog', {
+export default window.ADVMaker.appendDialog('succ', {
     script: ['你好！', '我是你的向导。', '接下来，让我们一同<b>冒险</b>吧', "Let's go!", Main],
     next: [
         {

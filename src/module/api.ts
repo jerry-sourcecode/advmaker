@@ -1,3 +1,7 @@
+/**、
+ * 这个文件用于处理提供给用户的API
+ */
+
 import { useStoryStore } from './store/story.ts';
 import {
     ADVDialog,
@@ -10,24 +14,36 @@ import {
 import { useStateStore } from './store/state.ts';
 import { useMessageStore } from './store/message.ts';
 import type { Component } from 'vue';
+import { Game, RuntimeError } from './game.ts';
 
 type GameConfig = {
+    // 物品
     items: {
+        // id 为物品的唯一标识符
         [id: string]: {
+            // 默认拥有
             defaultNumber: number;
+            // 展示的名称
             name?: string;
         };
     };
     status: {
         [id: string]: {
+            // 默认数字
             defaultValue?: number;
+            // 展示的名称
             name?: string;
+            // 上限
             max?: number;
+            // 下限
             min?: number;
+            // 主题色
             color?: string;
         };
     };
+    // 游戏入口，一个场景
     mainScene: string;
+    // 游戏名称
     gameName: string;
 };
 
@@ -93,10 +109,12 @@ export const ADVMaker = {
     },
     appendScene(id: string, config: ADVUserScene): ADVScene {
         const storyStore = useStoryStore();
+        checkHasSameId(id);
         return storyStore.sceneMap.set(id, new ADVScene(id, config)).get(id)!;
     },
     appendDialog(id: string, config: ADVUserDialog): ADVDialog {
         const storyStore = useStoryStore();
+        checkHasSameId(id);
         return storyStore.dialogMap.set(id, new ADVDialog(id, config)).get(id)!;
     },
     end(desc: string): ADVScene {
@@ -114,3 +132,11 @@ export const ADVMaker = {
 };
 
 window.ADVMaker = ADVMaker;
+
+function checkHasSameId(id: string) {
+    const storyStore = useStoryStore();
+    if (storyStore.usedSceneAndDialogId.has(id)) {
+        Game.error(new RuntimeError(4, `There is already a dialog or scene with the ID '${id}'.`));
+    }
+    storyStore.usedSceneAndDialogId.add(id);
+}

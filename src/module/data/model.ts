@@ -1,15 +1,21 @@
 import type { DiceExpression } from '../utils/dice.ts';
 import { type Component, markRaw } from 'vue';
 
-type ADVNextLiteral = string | ADVChoice[] | ADVCheck;
-export type ADVNext = ADVNextLiteral | (() => ADVNextLiteral);
-type ADVUserNextLiteral = string | ADVUserChoice[] | ADVUserCheck;
-export type ADVUserNext = ADVUserNextLiteral | (() => ADVUserNextLiteral);
+type ADVNextLiteral = string | ADVChoice[] | ADVCheck | null;
+export type ADVNext = ADVNextLiteral | (() => ADVNextLiteral) | null;
+type ADVUserNextLiteral = string | ADVUserChoice[] | ADVUserCheck | null;
+export type ADVUserNext = ADVUserNextLiteral | (() => ADVUserNextLiteral) | null;
 export type MessageType = 'story' | 'system' | 'user';
 
+/**
+ * 将用户下一步操作转换为系统可以识别的下一步操作
+ * @param obj 用户定义的下一步操作对象
+ * @returns 系统可识别的下一步操作对象
+ */
 function fromUserNectToNext(obj: ADVUserNextLiteral): ADVNextLiteral;
 function fromUserNectToNext(obj: ADVUserNext): ADVNext;
 function fromUserNectToNext(obj: ADVUserNext): ADVNext {
+    if (obj === null) return null;
     if (typeof obj === 'string') return obj;
     if (typeof obj === 'function')
         return () => {

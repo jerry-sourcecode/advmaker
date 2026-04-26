@@ -1,19 +1,13 @@
 import { type ADVNext } from '../data/model.ts';
 
 /**
- * 如果提供一个变量，返回变量
- * 如果提供函数，返回函数运行的值
- * @param valueOrGetter
+ * 解析给定的值或获取函数，并返回实际的值。
+ *
+ * 如果传入的是一个函数，则调用该函数并返回其结果；如果传入的是一个直接的值，则直接返回该值。
+ *
+ * @param valueOrGetter 可以是任何类型的值或者返回指定类型值的函数。
+ * @returns 返回解析后的值，无论输入是直接值还是通过函数获取的值。
  */
-export async function resolveValueAsync<T>(
-    valueOrGetter: T | (() => T) | (() => Promise<T>) | Promise<T>,
-): Promise<T> {
-    if (typeof valueOrGetter === 'function') {
-        const result = (valueOrGetter as () => T | Promise<T>)();
-        return result instanceof Promise ? result : Promise.resolve(result);
-    }
-    return Promise.resolve(valueOrGetter);
-}
 export function resolveValue<T>(valueOrGetter: T | (() => T)): T {
     if (typeof valueOrGetter === 'function') {
         return (valueOrGetter as () => T)();
