@@ -10,7 +10,7 @@ app.use(pinia);
 app.mount('#app');
 
 // 在 Pinia 安装后动态导入游戏配置
-import('../game.config.ts')
+import('./utils/import.ts')
     .then(() => {
         console.log('游戏配置已加载');
         Game.start();

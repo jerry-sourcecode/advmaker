@@ -1,6 +1,4 @@
-import { ADVMaker } from './module/api.ts';
-
-ADVMaker.defineConfig({
+window.ADVMaker.defineConfig({
     items: {
         Water: {
             defaultNumber: 10,

@@ -112,3 +112,5 @@ export const ADVMaker = {
         message.appendMessage(new ADVMessage(content, type));
     },
 };
+
+window.ADVMaker = ADVMaker;

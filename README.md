@@ -1,7 +1,7 @@
 这是一个帮助你制作互动小说的模板。使用 Vue + Typescript
 # 如何使用？
 
-本项目中的所有 api 都存放于 ADVMaker 类。
+本项目中的所有 api 都存放于 ADVMaker 类。ADVMaker 示例被挂载在 window 下。
 
 ## 全局设置
 
@@ -16,14 +16,12 @@
 | mainScene | `string` | 主要场景的 id，游戏的入口    |  
 | gameName  | `string` | 游戏名称，会显示在界面最上方    |  
 
-使用 `ADVMaker.defineConfig(config: GameConfig)` 来定义全局配置。
+使用 `window.ADVMaker.defineConfig(config: GameConfig)` 来定义全局配置。
 
 简明示例：
 
 ```ts
-import { ADVMaker } from './module/api.ts';
-
-ADVMaker.defineConfig({
+window.ADVMaker.defineConfig({
     items: {
         Water: {
             defaultNumber: 10,
@@ -54,7 +52,7 @@ ADVMaker.defineConfig({
 场景的定义方式如下：
 
 ```ts  
-ADVMaker.appendScene(id: string, config: ADVUserScene): ADVScene;  
+window.ADVMaker.appendScene(id: string, config: ADVUserScene): ADVScene;  
 ```  
 
 `id` 是场景的唯一标识符，`config` 是场景的设置。
@@ -76,14 +74,14 @@ ADVMaker.appendScene(id: string, config: ADVUserScene): ADVScene;
 `ADVScene` 相对 `ADVUserScene` 多了一个 `id` 属性（`string`），可以获取新建场景的 id（即函数参数中提供的 id）。
 
 
-如果想要让游戏结束，可以调用 `ADVMaker.end(desc): ADVScene`，这个函数会返回一个表示游戏结束的场景。参数`desc`表示游戏结束时给的描述。
+如果想要让游戏结束，可以调用 `window.ADVMaker.end(desc): ADVScene`，这个函数会返回一个表示游戏结束的场景。参数`desc`表示游戏结束时给的描述。
 
 ### 对话
 
 对话的定义方式如下：
 
 ```ts
-ADVMaker.appendDialog(id: string, config: ADVUserDialog): ADVDialog;  
+window.ADVMaker.appendDialog(id: string, config: ADVUserDialog): ADVDialog;  
 ```  
 
 `id` 是对话的唯一标识符，`config` 是对话的设置。
@@ -154,8 +152,7 @@ $m$ 可以省略，默认为 1，即投掷一次。
 #### 场景示例
 
 ```ts
-import { ADVMaker } from '../module/api.ts';
-export default ADVMaker.appendScene('main' /*这个场景的id为main*/, {  
+export default window.ADVMaker.appendScene('main' /*这个场景的id为main*/, {  
     name: '家中', // 会渲染在页面正中央
     next: 'main_dialog', // 接下来跳转到 main_dialog
 });
@@ -164,10 +161,9 @@ export default ADVMaker.appendScene('main' /*这个场景的id为main*/, {
 #### 对话示例
 
 ```ts
-import { ADVMaker } from '../module/api.ts';
 import Main from './main.vue';  
   
-export default ADVMaker.appendDialog('main-dialog', {  
+export default window.ADVMaker.appendDialog('main-dialog', {  
     script: [
 	    '你好！', 
 	    '我是你的向导。', 
@@ -195,28 +191,28 @@ export default ADVMaker.appendDialog('main-dialog', {
         {  
             content: '选择2',  
             // 跳转到结局
-            next: ADVMaker.end('你失败了，游戏结束').id,  
+            next: window.ADVMaker.end('你失败了，游戏结束').id,  
         },  
     ],  
 });  
 
 // 定义一个id为succ的对话
-ADVMaker.appendDialog('succ', {  
+window.ADVMaker.appendDialog('succ', {  
     script: '恭喜你，成功了！',  
     next: 'main-dialog',  
 });  
 
 // 定义一个id为fail的对话
-ADVMaker.appendDialog('fail', {  
+window.ADVMaker.appendDialog('fail', {  
     script: '很遗憾，失败了！',  
-    next: ADVMaker.end('游戏结束，你失败了').id,  
+    next: window.ADVMaker.end('游戏结束，你失败了').id,  
 });
 ```
 
 此外，你可以用`appendMessage`函数来直接在屏幕上输出文字，其原型如下：
 
 ```ts
-ADVMaker.appendMessage(content: string | Component, type: MessageType = 'story');
+window.ADVMaker.appendMessage(content: string | Component, type: MessageType = 'story');
 ```
 
 其中，`MessageType`是一个枚举类，其取值如下：
@@ -258,10 +254,10 @@ status: {
 ```ts
 // 查询属性值，若属性未被注册则返回 undefined
 // item 为属性的 id
-ADVMaker.getStatue(item: string): number | undefined;
+window.ADVMaker.getStatue(item: string): number | undefined;
 // 将属性值增加 number，若属性未被注册则报错
 // item 为属性的 id
-ADVMaker.obtainStatus(item: string, number: number): void;
+window.ADVMaker.obtainStatus(item: string, number: number): void;
 ```
 
 ## 关于物品
@@ -287,9 +283,9 @@ items: {
 ```ts
 // 查询物品有多少个，若物品未被注册则返回 undefined
 // item 为物品的 id
-ADVMaker.getItem(item: string): number | undefined;
+window.ADVMaker.getItem(item: string): number | undefined;
 // 获得 number 个物品，若物品未被注册则报错，若生效后物品数量少于0也会报错
-ADVMaker.obtainitem(item: string, number: number): void;
+window.ADVMaker.obtainitem(item: string, number: number): void;
 ```
 
 

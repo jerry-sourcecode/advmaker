@@ -1,7 +1,6 @@
-import { ADVMaker } from '../module/api.ts';
 import Main from './main.vue';
 
-export default ADVMaker.appendDialog('main-dialog', {
+export default window.ADVMaker.appendDialog('main-dialog', {
     script: ['你好！', '我是你的向导。', '接下来，让我们一同<b>冒险</b>吧', "Let's go!", Main],
     next: [
         {
@@ -17,17 +16,17 @@ export default ADVMaker.appendDialog('main-dialog', {
         },
         {
             content: '选择2',
-            next: ADVMaker.end('你失败了，游戏结束').id,
+            next: window.ADVMaker.end('你失败了，游戏结束').id,
         },
     ],
 });
 
-ADVMaker.appendDialog('succ', {
+window.ADVMaker.appendDialog('succ', {
     script: '恭喜你，成功了！',
     next: 'main-dialog',
 });
 
-ADVMaker.appendDialog('fail', {
+window.ADVMaker.appendDialog('fail', {
     script: '很遗憾，失败了！',
-    next: ADVMaker.end('游戏结束，你失败了').id,
+    next: window.ADVMaker.end('游戏结束，你失败了').id,
 });
