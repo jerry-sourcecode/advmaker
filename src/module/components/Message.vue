@@ -89,7 +89,7 @@ function getFontStyle(type: MessageType) {
 
 .room-title-text {
     color: #909399;
-    font-size: 25px;
+    font-size: 21px;
 }
 
 .hint-text {
