@@ -20,3 +20,15 @@ html, body {
     flex: 1;
     overflow-y: scroll;
 }
+
+.responsive-dialog {
+    width: 80vw;
+    height: 80vh;
+}
+
+/* 当屏幕宽度 ≤ 768px（典型手机断点）时 */
+@media (max-width: 768px) {
+    .responsive-dialog {
+        width: 100%;
+    }
+}

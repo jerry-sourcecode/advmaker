@@ -7,7 +7,7 @@ import './api.ts';
 import StatusPanel from './components/StatusPanel.vue';
 import GameOver from './components/GameOver.vue';
 import { ref } from 'vue';
-import Menu from './components/Menu.vue';
+import Menu from './components/Menu/Menu.vue';
 import { Icon } from '@iconify/vue';
 
 const storyStore = useStoryStore();
