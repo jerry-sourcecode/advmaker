@@ -16,7 +16,7 @@ import {
     ADVUserItem,
     type ADVUserNext,
     ADVUserScene,
-    ADVUserStatus,
+    ADVUserStatusGroup,
     type MessageType,
 } from './data/model.ts';
 import { useStateStore } from './store/state.ts';
@@ -31,7 +31,7 @@ type GameConfig = {
         [id: string]: ADVUserItem;
     };
     status: {
-        [id: string]: ADVUserStatus;
+        [id: string]: ADVUserStatusGroup;
     };
     // 游戏入口，一个场景
     mainScene: string;
@@ -50,7 +50,17 @@ export const ADVMaker = {
 
         for (let itemsKey in config.status) {
             const obj = config.status[itemsKey];
-            stateStore.status.set(itemsKey, new ADVStatus(obj, itemsKey));
+            const name = obj.name ?? itemsKey;
+            for (let statusId in obj.content) {
+                const status = obj.content[statusId];
+                const newStatus = new ADVStatus(status, statusId, name);
+                if (stateStore.status.has(statusId)) {
+                    Game.error(
+                        new RuntimeError(4, `There is already a status with the ID '${statusId}'.`),
+                    );
+                }
+                stateStore.status.set(statusId, newStatus);
+            }
         }
 
         storyStore.mainScene = config.mainScene;

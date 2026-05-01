@@ -31,35 +31,31 @@ window.ADVMaker.defineConfig({
         },
     },
     status: {
-        hp: {
-            default: 100,
-            name: '生命',
-            color: 'red',
-            min: 10,
+        base: {
+            name: '基础属性',
+            content: {
+                hp: {
+                    name: '生命值',
+                    default: 10,
+                },
+                mp: {
+                    name: '能量槽',
+                    default: 10,
+                },
+            },
         },
-        sp: {
-            default: 50,
-            name: '魔力值',
-        },
-        aaap: {
-            default: 50,
-        },
-        aap: {
-            default: 50,
-            group: '基础属性',
-        },
-        aaaap: {
-            default: 50,
-            group: '全局属性',
-        },
-        aaaaap: {
-            default: 50,
-        },
-        aaaaaaap: {
-            default: 50,
-        },
-        apaaaaa: {
-            default: 50,
+        now: {
+            name: '当前属性',
+            content: {
+                hp: {
+                    name: '生命值n',
+                    default: 10,
+                },
+                mpn: {
+                    name: '能量槽n',
+                    default: 10,
+                },
+            },
         },
     },
     mainScene: 'main',

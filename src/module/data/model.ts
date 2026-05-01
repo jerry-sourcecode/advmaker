@@ -168,7 +168,6 @@ export class ADVUserStatus {
     min?: number;
     default: number = 0;
     color?: string | (() => string);
-    group?: string;
     isDisplay?: false | 'number' | 'process';
 
     constructor(obj: ADVUserStatus) {
@@ -186,7 +185,7 @@ export class ADVStatus extends ADVUserStatus {
     group: string;
     isDisplay: false | 'number' | 'process';
 
-    constructor(obj: ADVUserStatus, id: string) {
+    constructor(obj: ADVUserStatus, id: string, group: string) {
         super(obj);
         this.name = obj.name ?? id;
         this.id = id;
@@ -195,7 +194,15 @@ export class ADVStatus extends ADVUserStatus {
         this.value = obj.default;
         this.color = obj.color ?? 'black';
         this.isDisplay = obj.isDisplay ?? false;
-        this.group = obj.group ?? '';
+        this.group = group;
+    }
+}
+
+export class ADVUserStatusGroup {
+    name?: string;
+    content: { [id: string]: ADVUserStatus } = {};
+    constructor(obj: ADVUserStatusGroup) {
+        Object.assign(this, obj);
     }
 }
 

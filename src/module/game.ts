@@ -20,7 +20,7 @@ import { resolveValue } from './utils/util.ts';
  * - 101：物品数量不能为负数
  * - 102：找不到场景
  * - 103：骰子错误
- * - 104：发现两个场景或对话有相同的id
+ * - 104：发现两个场景或对话、属性有相同的id
  */
 export class RuntimeError extends Error {
     code: number;
