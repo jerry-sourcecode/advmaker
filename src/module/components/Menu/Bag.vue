@@ -1,6 +1,6 @@
 <template>
     <n-modal v-model:show="showModal">
-        <n-card class="responsive-dialog" title="背包">
+        <n-card class="responsive-dialog responsive-non-fit" title="背包">
             <div class="parent responsive-dialog-scrollBar">
                 <n-thing
                     v-for="it in stateStore.backpack"
@@ -170,6 +170,7 @@ function actionDiscard() {
     padding: 16px 32px;
     border-radius: 8px;
     cursor: pointer;
+    min-height: 200px;
 
     /* ③ 持久阴影 */
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);

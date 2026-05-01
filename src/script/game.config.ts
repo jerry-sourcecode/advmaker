@@ -32,13 +32,34 @@ window.ADVMaker.defineConfig({
     },
     status: {
         hp: {
-            defaultValue: 100,
+            default: 100,
             name: '生命',
             color: 'red',
+            min: 10,
         },
         sp: {
-            defaultValue: 50,
+            default: 50,
             name: '魔力值',
+        },
+        aaap: {
+            default: 50,
+        },
+        aap: {
+            default: 50,
+            group: '基础属性',
+        },
+        aaaap: {
+            default: 50,
+            group: '全局属性',
+        },
+        aaaaap: {
+            default: 50,
+        },
+        aaaaaaap: {
+            default: 50,
+        },
+        apaaaaa: {
+            default: 50,
         },
     },
     mainScene: 'main',

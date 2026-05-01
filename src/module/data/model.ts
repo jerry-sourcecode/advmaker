@@ -122,7 +122,7 @@ export class ADVDialog extends ADVUserDialog {
 }
 
 export class ADVUserItem {
-    name: string;
+    name?: string;
     desc?: string;
     summary?: string;
     number?: number;
@@ -130,17 +130,12 @@ export class ADVUserItem {
     onUse?: ((num: number) => void) | null;
     onDiscard?: ((num: number) => void) | null;
     constructor(obj: ADVUserItem) {
-        this.name = obj.name;
-        this.number = obj.number;
-        this.desc = obj.desc;
-        this.summary = obj.summary;
-        this.lore = obj.lore;
-        this.onUse = obj.onUse;
-        this.onDiscard = obj.onDiscard;
+        Object.assign(this, obj);
     }
 }
 
 export class ADVItem extends ADVUserItem {
+    name: string;
     desc: string;
     summary: string;
     lore: string;
@@ -151,6 +146,7 @@ export class ADVItem extends ADVUserItem {
     type: 'Item' = 'Item';
     constructor(obj: ADVUserItem, id: string) {
         super(obj);
+        this.name = obj.name ?? id;
         this.desc = obj.desc ?? '';
         this.summary = obj.summary ?? '';
         this.number = obj.number ?? 0;
@@ -166,21 +162,40 @@ export class ADVItem extends ADVUserItem {
     }
 }
 
-export class ADVStatus {
+export class ADVUserStatus {
+    name?: string;
+    max?: number;
+    min?: number;
+    default: number = 0;
+    color?: string | (() => string);
+    group?: string;
+    isDisplay?: false | 'number' | 'process';
+
+    constructor(obj: ADVUserStatus) {
+        Object.assign(this, obj);
+    }
+}
+
+export class ADVStatus extends ADVUserStatus {
     name: string;
     id: string;
     max: number;
     min: number;
     value: number;
-    color: string;
+    color: string | (() => string);
+    group: string;
+    isDisplay: false | 'number' | 'process';
 
-    constructor(name: string, max: number, min: number, value: number) {
-        this.name = name;
-        this.max = max;
-        this.min = min;
-        this.value = value;
-        this.id = '';
-        this.color = 'blue';
+    constructor(obj: ADVUserStatus, id: string) {
+        super(obj);
+        this.name = obj.name ?? id;
+        this.id = id;
+        this.max = obj.max ?? Infinity;
+        this.min = obj.min ?? 0;
+        this.value = obj.default;
+        this.color = obj.color ?? 'black';
+        this.isDisplay = obj.isDisplay ?? false;
+        this.group = obj.group ?? '';
     }
 }
 
@@ -196,21 +211,15 @@ export class ADVDice {
 
 export class ADVUserCheck {
     dice?: ADVDice | DiceExpression;
-    target: (() => number) | number;
+    target: (() => number) | number = () => 0;
     modifier?: { name: string; value: () => number }[];
-    success: ADVUserNext;
-    fail: ADVUserNext;
+    success: ADVUserNext = '';
+    fail: ADVUserNext = '';
     onSuccess?: () => void;
     onFail?: () => void;
 
     constructor(obj: ADVUserCheck) {
-        this.dice = obj.dice;
-        this.target = obj.target;
-        this.modifier = obj.modifier;
-        this.success = obj.success;
-        this.fail = obj.fail;
-        this.onSuccess = obj.onSuccess;
-        this.onFail = obj.onFail;
+        Object.assign(this, obj);
     }
 }
 

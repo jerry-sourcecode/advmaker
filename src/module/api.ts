@@ -11,10 +11,12 @@ import {
     ADVMessage,
     type ADVNext,
     ADVScene,
+    ADVStatus,
     ADVUserDialog,
     ADVUserItem,
     type ADVUserNext,
     ADVUserScene,
+    ADVUserStatus,
     type MessageType,
 } from './data/model.ts';
 import { useStateStore } from './store/state.ts';
@@ -29,18 +31,7 @@ type GameConfig = {
         [id: string]: ADVUserItem;
     };
     status: {
-        [id: string]: {
-            // 默认数字
-            defaultValue?: number;
-            // 展示的名称
-            name?: string;
-            // 上限
-            max?: number;
-            // 下限
-            min?: number;
-            // 主题色
-            color?: string;
-        };
+        [id: string]: ADVUserStatus;
     };
     // 游戏入口，一个场景
     mainScene: string;
@@ -53,19 +44,13 @@ export const ADVMaker = {
         const storyStore = useStoryStore();
         const stateStore = useStateStore();
         for (let itemsKey in config.items) {
-            storyStore.objectMap.set(itemsKey, new ADVItem(config.items[itemsKey], itemsKey));
+            const obj = config.items[itemsKey];
+            storyStore.objectMap.set(itemsKey, new ADVItem(obj, itemsKey));
         }
 
         for (let itemsKey in config.status) {
             const obj = config.status[itemsKey];
-            stateStore.status.set(itemsKey, {
-                name: obj.name ?? itemsKey,
-                id: itemsKey,
-                min: obj.min ?? 0,
-                max: obj.max ?? 100,
-                value: obj.defaultValue ?? 0,
-                color: obj.color ?? 'blue',
-            });
+            stateStore.status.set(itemsKey, new ADVStatus(obj, itemsKey));
         }
 
         storyStore.mainScene = config.mainScene;
