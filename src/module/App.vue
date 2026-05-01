@@ -17,30 +17,32 @@ const active = ref(false);
 </script>
 
 <template>
-    <div v-if="!stateStore.isDead" style="height: 100vh; display: flex; flex-direction: column">
-        <div class="page-header">
-            <n-button text color="white" @click="active = true">
-                <template #icon>
-                    <n-icon size="30">
-                        <Icon icon="material-symbols:menu" />
-                    </n-icon>
-                </template>
-            </n-button>
-            <span style="color: white; font-size: 20px; font-weight: bold; margin-left: 20px">{{
-                storyStore.gameName
-            }}</span>
-        </div>
-        <StatusPanel />
-        <Message />
-        <ChoicePanel />
+    <n-dialog-provider>
+        <div v-if="!stateStore.isDead" style="height: 100vh; display: flex; flex-direction: column">
+            <div class="page-header">
+                <n-button text color="white" @click="active = true">
+                    <template #icon>
+                        <n-icon size="30">
+                            <Icon icon="material-symbols:menu" />
+                        </n-icon>
+                    </template>
+                </n-button>
+                <span style="color: white; font-size: 20px; font-weight: bold; margin-left: 20px">{{
+                    storyStore.gameName
+                }}</span>
+            </div>
+            <StatusPanel />
+            <Message />
+            <ChoicePanel />
 
-        <n-drawer v-model:show="active" :width="300" placement="left">
-            <n-drawer-content title="菜单" closable>
-                <Menu />
-            </n-drawer-content>
-        </n-drawer>
-    </div>
-    <GameOver v-else />
+            <n-drawer v-model:show="active" :width="300" placement="left">
+                <n-drawer-content title="菜单" closable>
+                    <Menu />
+                </n-drawer-content>
+            </n-drawer>
+        </div>
+        <GameOver v-else />
+    </n-dialog-provider>
 </template>
 
 <style>

@@ -49,7 +49,7 @@ export const Game = {
         messageStore.messageList = [];
         // 获取默认物品
         storyStore.objectMap.forEach((item) => {
-            stateStore.obtainItem(item.name, item.number);
+            stateStore.obtainItem(item.id, item.number);
         });
         // 进入初始场景
         this.enter(storyStore.mainScene!);

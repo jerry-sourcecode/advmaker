@@ -121,15 +121,48 @@ export class ADVDialog extends ADVUserDialog {
     }
 }
 
-export class ADVItem {
+export class ADVUserItem {
     name: string;
+    desc?: string;
+    summary?: string;
     number?: number;
+    lore?: string;
+    onUse?: ((num: number) => void) | null;
+    onDiscard?: ((num: number) => void) | null;
+    constructor(obj: ADVUserItem) {
+        this.name = obj.name;
+        this.number = obj.number;
+        this.desc = obj.desc;
+        this.summary = obj.summary;
+        this.lore = obj.lore;
+        this.onUse = obj.onUse;
+        this.onDiscard = obj.onDiscard;
+    }
+}
+
+export class ADVItem extends ADVUserItem {
+    desc: string;
+    summary: string;
+    lore: string;
+    number: number;
     id: string;
+    onUse: ((num: number) => void) | null;
+    onDiscard: ((num: number) => void) | null;
     type: 'Item' = 'Item';
-    constructor(name: string, number: number = 1) {
-        this.name = name;
-        this.number = number;
-        this.id = '';
+    constructor(obj: ADVUserItem, id: string) {
+        super(obj);
+        this.desc = obj.desc ?? '';
+        this.summary = obj.summary ?? '';
+        this.number = obj.number ?? 0;
+        this.type = 'Item';
+        this.id = id;
+        this.lore = obj.lore ?? '';
+        this.onUse = obj.onUse ?? null;
+        if (obj.onDiscard === null) {
+            this.onDiscard = null;
+        } else {
+            this.onDiscard = obj.onDiscard ?? (() => true);
+        }
     }
 }
 

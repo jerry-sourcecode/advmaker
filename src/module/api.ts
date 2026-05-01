@@ -7,10 +7,12 @@ import {
     ADVCheck,
     ADVChoice,
     ADVDialog,
+    ADVItem,
     ADVMessage,
     type ADVNext,
     ADVScene,
     ADVUserDialog,
+    ADVUserItem,
     type ADVUserNext,
     ADVUserScene,
     type MessageType,
@@ -24,12 +26,7 @@ type GameConfig = {
     // 物品
     items: {
         // id 为物品的唯一标识符
-        [id: string]: {
-            // 默认拥有
-            defaultNumber: number;
-            // 展示的名称
-            name?: string;
-        };
+        [id: string]: ADVUserItem;
     };
     status: {
         [id: string]: {
@@ -56,12 +53,7 @@ export const ADVMaker = {
         const storyStore = useStoryStore();
         const stateStore = useStateStore();
         for (let itemsKey in config.items) {
-            storyStore.objectMap.set(itemsKey, {
-                name: config.items[itemsKey].name ?? itemsKey,
-                number: config.items[itemsKey].defaultNumber,
-                id: itemsKey,
-                type: 'Item',
-            });
+            storyStore.objectMap.set(itemsKey, new ADVItem(config.items[itemsKey], itemsKey));
         }
 
         for (let itemsKey in config.status) {
