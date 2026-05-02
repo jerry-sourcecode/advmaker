@@ -8,7 +8,7 @@ import { type ADVNext } from '../data/model.ts';
  * @param valueOrGetter 可以是任何类型的值或者返回指定类型值的函数。
  * @returns 返回解析后的值，无论输入是直接值还是通过函数获取的值。
  */
-export function resolveValue<T>(valueOrGetter: T | (() => T)): T {
+export function RV<T>(valueOrGetter: T | (() => T)): T {
     if (typeof valueOrGetter === 'function') {
         return (valueOrGetter as () => T)();
     }

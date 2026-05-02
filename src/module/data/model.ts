@@ -162,13 +162,15 @@ export class ADVItem extends ADVUserItem {
     }
 }
 
+type displayType = 'none' | 'hide' | 'number' | 'process';
+
 export class ADVUserStatus {
     name?: string;
     max?: number;
     min?: number;
     default: number = 0;
     color?: string | (() => string);
-    isDisplay?: false | 'number' | 'process';
+    isDisplay?: displayType | (() => displayType);
 
     constructor(obj: ADVUserStatus) {
         Object.assign(this, obj);
@@ -183,7 +185,7 @@ export class ADVStatus extends ADVUserStatus {
     value: number;
     color: string | (() => string);
     group: string;
-    isDisplay: false | 'number' | 'process';
+    isDisplay: displayType | (() => displayType);
 
     constructor(obj: ADVUserStatus, id: string, group: string) {
         super(obj);
@@ -193,7 +195,7 @@ export class ADVStatus extends ADVUserStatus {
         this.min = obj.min ?? 0;
         this.value = obj.default;
         this.color = obj.color ?? 'black';
-        this.isDisplay = obj.isDisplay ?? false;
+        this.isDisplay = obj.isDisplay ?? 'hide';
         this.group = group;
     }
 }

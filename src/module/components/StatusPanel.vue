@@ -1,7 +1,7 @@
 <template>
     <div class="outer-div" v-if="isAllHide">
-        <div v-for="item in stateStore.status" style="flex: 1">
-            <div v-if="item[1].isDisplay !== false">
+        <div v-for="item in stateStore.status" class="status-div">
+            <div v-if="!['none', 'hide'].includes(RV(item[1].isDisplay))">
                 <n-statistic tabular-nums>
                     <template #prefix>
                         <span style="font-size: 14px"> {{ item[1].name }}:</span>
@@ -18,10 +18,10 @@
                 </n-statistic>
                 <n-progress
                     type="line"
-                    :color="resolveValue(item[1].color)"
+                    :color="RV(item[1].color)"
                     :percentage="(item[1].value * 100) / item[1].max"
                     :show-indicator="false"
-                    :v-if="item[1].isDisplay === 'process'"
+                    v-if="RV(item[1].isDisplay) === 'process'"
                 />
             </div>
         </div>
@@ -31,7 +31,7 @@
 <script setup lang="ts">
 import { useStateStore } from '../store/state.ts';
 import { computed, ref } from 'vue';
-import { resolveValue } from '../utils/util.ts';
+import { RV } from '../utils/util.ts';
 const stateStore = useStateStore();
 
 const numberFrom = ref(new Map<string, number>());
@@ -43,7 +43,7 @@ function onFinish(id: string) {
 const isAllHide = computed(() => {
     let res = false;
     stateStore.status.forEach((v) => {
-        if (v.isDisplay !== false) res = true;
+        if (!['none', 'hide'].includes(RV(v.isDisplay))) res = true;
     });
     return res;
 });
@@ -57,7 +57,13 @@ const isAllHide = computed(() => {
     padding-bottom: 10px;
     width: 100%;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    gap: 5px;
+    gap: 10px;
     height: 61px;
+}
+.status-div {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
 }
 </style>

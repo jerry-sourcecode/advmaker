@@ -20,7 +20,7 @@
                     </div>
                     <div v-if="instanceType(it.next) === 'Check'" class="choice-btn-desc">
                         检定 {{ getDiceName((it.next as ADVCheck).dice) }}: 目标
-                        {{ resolveValue((it.next as ADVCheck).target) }}
+                        {{ RV((it.next as ADVCheck).target) }}
                         |
                         <span v-for="(obj, idx) in (it.next as ADVCheck).modifier">
                             {{ obj.name }} <span v-if="obj.value() >= 0">+</span>{{ obj.value()
@@ -40,7 +40,7 @@ import { ADVCheck, ADVChoice, ADVDice } from '../data/model.ts';
 import { type Component, ref } from 'vue';
 import { useEmitter } from '../store/emitter.ts';
 import { useMessageStore } from '../store/message.ts';
-import { instanceType, resolveValue } from '../utils/util.ts';
+import { instanceType, RV } from '../utils/util.ts';
 import type { DiceExpression } from '../utils/dice.ts';
 
 const emitter = useEmitter();

@@ -37,23 +37,27 @@ window.ADVMaker.defineConfig({
                 hp: {
                     name: '生命值',
                     default: 10,
+                    isDisplay: 'process',
                 },
                 mp: {
                     name: '能量槽',
                     default: 10,
+                    isDisplay: 'number',
                 },
             },
         },
         now: {
             name: '当前属性',
             content: {
-                hp: {
+                hpn: {
                     name: '生命值n',
                     default: 10,
+                    isDisplay: 'hide',
                 },
                 mpn: {
                     name: '能量槽n',
                     default: 10,
+                    isDisplay: 'none',
                 },
             },
         },

@@ -1,16 +1,18 @@
 <template>
     <n-modal v-model:show="showModal">
         <n-card class="responsive-dialog responsive-non-fit" title="属性">
-            <div class="responsive-dialog-scrollBar">
+            <div class="responsive-dialog-scrollBar" style="padding-top: 0">
                 <div v-for="gp in groups" class="attu-div">
                     <n-divider title-placement="left" v-if="gp[0] !== ''">{{ gp[0] }}</n-divider>
                     <div class="attu-outer">
                         <div v-for="att in gp[1]">
-                            <span>{{ att.name }}：</span>
-                            <span :style="`color: ${resolveValue(att.color)}`" class="bold">{{
-                                att.value
-                            }}</span>
-                            <span class="bold" v-if="att.max < Infinity"> / {{ att.max }}</span>
+                            <div v-if="RV(att.isDisplay) !== 'none'">
+                                <span>{{ att.name }}：</span>
+                                <span :style="`color: ${RV(att.color)}`" class="bold">{{
+                                    att.value
+                                }}</span>
+                                <span class="bold" v-if="att.max < Infinity"> / {{ att.max }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -21,7 +23,7 @@
 
 <script setup lang="ts">
 import { useStateStore } from '../../store/state.ts';
-import { resolveValue } from '../../utils/util.ts';
+import { RV } from '../../utils/util.ts';
 import { computed } from 'vue';
 import type { ADVStatus } from '../../data/model.ts';
 

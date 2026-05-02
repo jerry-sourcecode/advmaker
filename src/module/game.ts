@@ -9,7 +9,7 @@ import { useEmitter } from './store/emitter.ts';
 import { type ADVNext } from './data/model.ts';
 import { ADVMaker } from './api.ts';
 import { dice } from './utils/dice.ts';
-import { resolveValue } from './utils/util.ts';
+import { RV } from './utils/util.ts';
 
 /**
  * 运行时错误类，错误码以 1 开头，可以调用 Game.error 抛出错误
@@ -115,7 +115,7 @@ export const Game = {
         if (nextAct === null) return;
         const stateStore = useStateStore();
         const emitter = useEmitter();
-        nextAct = resolveValue(nextAct);
+        nextAct = RV(nextAct);
         if (typeof nextAct === 'string') {
             if (nextAct.startsWith('_END&')) {
                 stateStore.isDead = true;
@@ -158,7 +158,7 @@ export const Game = {
             if (diff > 0) diff_str = `+${diff}`;
             else if (diff < 0) diff_str = `${diff}`;
 
-            const res = resolveValue(nextAct.target);
+            const res = RV(nextAct.target);
             if (pt >= res) {
                 ADVMaker.appendMessage(
                     `检定成功！掷出 ${ori}${diff_str}=${pt} 点，目标 ${res} 点。`,
