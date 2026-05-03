@@ -261,7 +261,7 @@ status: {
 ```ts
 // 查询属性值，若属性未被注册则返回 undefined
 // item 为属性的 id
-window.ADVMaker.getStatue(item: string): number | undefined;
+window.ADVMaker.getStatus(item: string): number | undefined;
 // 将属性值增加 number，若属性未被注册则报错
 // item 为属性的 id
 window.ADVMaker.obtainStatus(item: string, number: number): void;

@@ -43,6 +43,7 @@ n-card内的内容默认拉伸占满n-card，如果想要禁用拉伸，在n-car
     height: 100%;
     overflow-y: auto;
     padding: 5px;
+    font-size: 18px;
 }
 
 .responsive-dialog .n-card-content,.responsive-dialog-small .n-card-content{

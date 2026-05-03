@@ -70,7 +70,8 @@ export const ADVMaker = {
                         new RuntimeError(4, `There is already a status with the ID '${statusId}'.`),
                     );
                 }
-                stateStore.status.set(statusId, newStatus);
+                stateStore.status.set(statusId, newStatus.default);
+                storyStore.statusMap.set(statusId, newStatus);
             }
         }
 
@@ -89,26 +90,22 @@ export const ADVMaker = {
     },
     obtainStatus(item: string, number: number) {
         const stateStore = useStateStore();
+        const storyStore = useStoryStore();
         stateStore.obtainStatus(item, number);
-        const res = stateStore.status.get(item)!;
+        const res = stateStore.qryStatus(item)!;
+        const obj = storyStore.statusMap.get(item)!;
         if (number >= 0)
-            ADVMaker.appendMessage(
-                `属性 ${res.name} 增加 ${number} 点，剩余 ${res.value} 点。`,
-                'user',
-            );
+            ADVMaker.appendMessage(`属性 ${obj.name} 增加 ${number} 点，剩余 ${res} 点。`, 'user');
         else
-            ADVMaker.appendMessage(
-                `属性 ${res.name} 减少 ${-number} 点，剩余 ${res.value} 点。`,
-                'user',
-            );
+            ADVMaker.appendMessage(`属性 ${obj.name} 减少 ${-number} 点，剩余 ${res} 点。`, 'user');
     },
     getItem(item: string): number {
         const stateStore = useStateStore();
-        return stateStore.backpack.get(item) ?? 0;
+        return stateStore.qryItem(item);
     },
-    getStatue(item: string): number | undefined {
+    getStatus(item: string): number {
         const stateStore = useStateStore();
-        return stateStore.status.get(item)?.value;
+        return stateStore.qryStatus(item);
     },
     appendScene(id: string, config: ADVUserScene): ADVScene {
         const storyStore = useStoryStore();

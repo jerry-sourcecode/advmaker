@@ -83,7 +83,7 @@ function getFontStyle(type: MessageType) {
 }
 .message-box {
     padding: 0 10px 10px;
-    font-size: 17px;
+    font-size: 20px;
     margin: 5px;
 }
 

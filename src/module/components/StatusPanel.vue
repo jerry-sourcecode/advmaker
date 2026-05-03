@@ -1,27 +1,27 @@
 <template>
     <div class="outer-div" v-if="isAllHide">
         <div v-for="item in stateStore.status" class="status-div">
-            <div v-if="!['none', 'hide'].includes(RV(item[1].isDisplay))">
+            <div v-if="!['none', 'hide'].includes(RV(qryStatus(item[0]).isDisplay))">
                 <n-statistic tabular-nums>
                     <template #prefix>
-                        <span style="font-size: 14px"> {{ item[1].name }}:</span>
+                        <span style="font-size: 14px"> {{ qryStatus(item[0]).name }}:</span>
                     </template>
                     <n-number-animation
                         :active="true"
-                        :to="stateStore.status.get(item[1].id)?.value ?? 0"
-                        :from="numberFrom.get(item[1].id)"
-                        @finish="onFinish(item[1].id)"
+                        :to="stateStore.qryStatus(qryStatus(item[0]).id) ?? 0"
+                        :from="numberFrom.get(qryStatus(item[0]).id)"
+                        @finish="onFinish(qryStatus(item[0]).id)"
                     />
-                    <template #suffix v-if="item[1].max < Infinity">
-                        <span style="font-size: 12px">/ {{ item[1].max }}</span>
+                    <template #suffix v-if="qryStatus(item[0]).max < Infinity">
+                        <span style="font-size: 12px">/ {{ qryStatus(item[0]).max }}</span>
                     </template>
                 </n-statistic>
                 <n-progress
                     type="line"
-                    :color="RV(item[1].color)"
-                    :percentage="(item[1].value * 100) / item[1].max"
+                    :color="RV(qryStatus(item[0]).color)"
+                    :percentage="(item[1] * 100) / qryStatus(item[0]).max"
                     :show-indicator="false"
-                    v-if="RV(item[1].isDisplay) === 'process'"
+                    v-if="RV(qryStatus(item[0]).isDisplay) === 'process'"
                 />
             </div>
         </div>
@@ -32,21 +32,27 @@
 import { useStateStore } from '../store/state.ts';
 import { computed, ref } from 'vue';
 import { RV } from '../utils/util.ts';
+import { useStoryStore } from '../store/story.ts';
 const stateStore = useStateStore();
+const storyStore = useStoryStore();
 
 const numberFrom = ref(new Map<string, number>());
 
 function onFinish(id: string) {
-    numberFrom.value.set(id, stateStore.status.get(id)?.value!);
+    numberFrom.value.set(id, stateStore.qryStatus(id));
 }
 
 const isAllHide = computed(() => {
     let res = false;
-    stateStore.status.forEach((v) => {
-        if (!['none', 'hide'].includes(RV(v.isDisplay))) res = true;
+    stateStore.status.forEach((_, id) => {
+        if (!['none', 'hide'].includes(RV(qryStatus(id).isDisplay))) res = true;
     });
     return res;
 });
+
+function qryStatus(id: string) {
+    return storyStore.statusMap.get(id)!;
+}
 </script>
 
 <style scoped>

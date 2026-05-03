@@ -5,7 +5,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { Game, RuntimeError } from '../game.ts';
-import type { ADVStatus } from '../data/model.ts';
+import { useStoryStore } from './story.ts';
 
 export const useStateStore = defineStore('state', () => {
     const location = ref('');
@@ -15,7 +15,7 @@ export const useStateStore = defineStore('state', () => {
 
     const backpack = ref(new Map<string, number>());
     const shop = ref(new Map<string, number>());
-    const status = ref(new Map<string, ADVStatus>());
+    const status = ref(new Map<string, number>());
 
     function obtainItem(item: string, number: number = 1) {
         const currentCount = backpack.value.get(item) || 0;
@@ -27,20 +27,47 @@ export const useStateStore = defineStore('state', () => {
     }
 
     function obtainStatus(id: string, number: number) {
-        const ori = status.value.get(id);
-        if (ori === undefined) {
+        const storyStore = useStoryStore();
+        let ori = status.value.get(id)!;
+        const obj = storyStore.statusMap.get(id);
+        if (obj === undefined) {
             Game.error(new RuntimeError(2, `Can't Find Status: ${id}.`));
             return;
         }
-        ori.value += number;
-        ori.value = Math.max(ori.min, ori.value);
-        ori.value = Math.min(ori.max, ori.value);
+        ori += number;
+        ori = Math.max(obj.min, ori);
+        ori = Math.min(obj.max, ori);
         status.value.set(id, ori);
+    }
+
+    function qryItem(id: string) {
+        const res = backpack.value.get(id);
+        return res ?? 0;
+    }
+
+    function qryStatus(id: string) {
+        const res = status.value.get(id);
+        if (res === undefined) {
+            Game.error(new RuntimeError(2, `Can't Find Status name ${id}.`));
+        }
+        return res ?? 0;
     }
 
     function init() {
         backpack.value.clear();
     }
 
-    return { location, backpack, obtainItem, isDead, deadDesc, init, status, obtainStatus, shop };
+    return {
+        location,
+        obtainItem,
+        isDead,
+        deadDesc,
+        init,
+        obtainStatus,
+        shop,
+        qryItem,
+        qryStatus,
+        status,
+        backpack,
+    };
 });

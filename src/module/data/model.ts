@@ -186,7 +186,7 @@ export class ADVStatus extends ADVUserStatus {
     id: string;
     max: number;
     min: number;
-    value: number;
+    default: number;
     color: VlAndFn<string>;
     group: string;
     isDisplay: VlAndFn<displayType>;
@@ -197,7 +197,7 @@ export class ADVStatus extends ADVUserStatus {
         this.id = id;
         this.max = obj.max ?? Infinity;
         this.min = obj.min ?? 0;
-        this.value = obj.default;
+        this.default = obj.default;
         this.color = obj.color ?? 'black';
         this.isDisplay = obj.isDisplay ?? 'hide';
         this.group = group;

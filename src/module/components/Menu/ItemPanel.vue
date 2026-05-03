@@ -73,7 +73,7 @@ function getItemDetail(id: string) {
 <style scoped>
 .parent {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px;
 }
 
@@ -91,6 +91,7 @@ function getItemDetail(id: string) {
     border-radius: 8px;
     cursor: pointer;
     min-height: 200px;
+    font-size: 17px;
 
     /* ③ 持久阴影 */
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);

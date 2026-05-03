@@ -12,7 +12,7 @@
                     <n-list bordered style="margin: 10px">
                         <n-list-item
                             v-for="(item, id) in goodsMap"
-                            :style="`color: ${stateStore.backpack.get(id as string)! >= item * detailValue ? 'black' : '#F56C6C'};`"
+                            :style="`color: ${stateStore.qryItem(id as string) >= item * detailValue ? 'black' : '#F56C6C'};`"
                         >
                             {{ storyStore.objectMap.get(id as string)?.name }} ×
                             {{ item * detailValue }}
@@ -96,7 +96,7 @@ const maxiBuyNumber = computed(() => {
     let maxi = detailObjValue.value;
     for (let itemsKey in goodsMap.value) {
         const val = goodsMap.value[itemsKey];
-        maxi = Math.min(Math.floor((stateStore.backpack.get(itemsKey) ?? 0) / val), maxi);
+        maxi = Math.min(Math.floor(stateStore.qryItem(itemsKey) / val), maxi);
     }
     return maxi;
 });

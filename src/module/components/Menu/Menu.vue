@@ -64,7 +64,7 @@ const showStoryModal = ref(false);
     height: 50px;
 }
 .menu-p {
-    font-size: 18px;
+    font-size: 20px;
 }
 .icon {
     margin-right: 20px;

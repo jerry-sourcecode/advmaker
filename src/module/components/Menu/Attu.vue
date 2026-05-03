@@ -6,12 +6,14 @@
                     <n-divider title-placement="left" v-if="gp[0] !== ''">{{ gp[0] }}</n-divider>
                     <div class="attu-outer">
                         <div v-for="att in gp[1]">
-                            <div v-if="RV(att.isDisplay) !== 'none'">
-                                <span>{{ att.name }}：</span>
-                                <span :style="`color: ${RV(att.color)}`" class="bold">{{
-                                    att.value
+                            <div v-if="RV(qry_status(att).isDisplay) !== 'none'">
+                                <span>{{ qry_status(att).name }}：</span>
+                                <span :style="`color: ${RV(qry_status(att).color)}`" class="bold">{{
+                                    stateStore.qryStatus(att)
                                 }}</span>
-                                <span class="bold" v-if="att.max < Infinity"> / {{ att.max }}</span>
+                                <span class="bold" v-if="qry_status(att).max < Infinity">
+                                    / {{ qry_status(att).max }}</span
+                                >
                             </div>
                         </div>
                     </div>
@@ -25,24 +27,30 @@
 import { useStateStore } from '../../store/state.ts';
 import { RV } from '../../utils/util.ts';
 import { computed } from 'vue';
-import type { ADVStatus } from '../../data/model.ts';
+import { useStoryStore } from '../../store/story.ts';
 
 const showModal = defineModel({ type: Boolean });
 const stateStore = useStateStore();
+const storyStore = useStoryStore();
 
 const groups = computed(() => {
-    const obj = new Map<string, ADVStatus[]>();
-    stateStore.status.forEach((v) => {
-        if (obj.has(v.group)) {
-            const ori = obj.get(v.group)!;
-            ori.push(v);
-            obj.set(v.group, ori);
+    const obj = new Map<string, string[]>();
+    stateStore.status.forEach((_, id) => {
+        const st_obj = storyStore.statusMap.get(id)!;
+        if (obj.has(st_obj.group)) {
+            const ori = obj.get(st_obj.group)!;
+            ori.push(id);
+            obj.set(st_obj.group, ori);
         } else {
-            obj.set(v.group, [v]);
+            obj.set(st_obj.group, [id]);
         }
     });
     return obj;
 });
+
+function qry_status(id: string) {
+    return storyStore.statusMap.get(id)!;
+}
 </script>
 
 <style scoped>
