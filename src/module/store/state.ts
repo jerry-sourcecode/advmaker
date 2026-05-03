@@ -14,6 +14,7 @@ export const useStateStore = defineStore('state', () => {
     const deadDesc = ref('');
 
     const backpack = ref(new Map<string, number>());
+    const shop = ref(new Map<string, number>());
     const status = ref(new Map<string, ADVStatus>());
 
     function obtainItem(item: string, number: number = 1) {
@@ -22,6 +23,7 @@ export const useStateStore = defineStore('state', () => {
             Game.error(new RuntimeError(1, 'Item count cannot be negative.'));
         }
         backpack.value.set(item, currentCount + number);
+        if (currentCount + number === 0) backpack.value.delete(item);
     }
 
     function obtainStatus(id: string, number: number) {
@@ -40,5 +42,5 @@ export const useStateStore = defineStore('state', () => {
         backpack.value.clear();
     }
 
-    return { location, backpack, obtainItem, isDead, deadDesc, init, status, obtainStatus };
+    return { location, backpack, obtainItem, isDead, deadDesc, init, status, obtainStatus, shop };
 });

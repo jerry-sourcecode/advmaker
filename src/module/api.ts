@@ -7,12 +7,14 @@ import {
     ADVCheck,
     ADVChoice,
     ADVDialog,
+    ADVGoods,
     ADVItem,
     ADVMessage,
     type ADVNext,
     ADVScene,
     ADVStatus,
     ADVUserDialog,
+    ADVUserGoods,
     ADVUserItem,
     type ADVUserNext,
     ADVUserScene,
@@ -33,6 +35,9 @@ type GameConfig = {
     status: {
         [id: string]: ADVUserStatusGroup;
     };
+    goods: {
+        [id: string]: ADVUserGoods;
+    };
     // 游戏入口，一个场景
     mainScene: string;
     // 游戏名称
@@ -46,6 +51,12 @@ export const ADVMaker = {
         for (let itemsKey in config.items) {
             const obj = config.items[itemsKey];
             storyStore.objectMap.set(itemsKey, new ADVItem(obj, itemsKey));
+        }
+
+        for (let itemsKey in config.goods) {
+            const obj = new ADVGoods(config.goods[itemsKey], itemsKey);
+            storyStore.goodsMap.set(itemsKey, obj);
+            stateStore.shop.set(itemsKey, obj.inventory);
         }
 
         for (let itemsKey in config.status) {
@@ -73,7 +84,8 @@ export const ADVMaker = {
         const storyStore = useStoryStore();
         stateStore.obtainItem(item, number);
         const res = storyStore.objectMap.get(item)!;
-        ADVMaker.appendMessage(`获取 ${res.name} ${number}个。`, 'user');
+        if (number >= 0) ADVMaker.appendMessage(`获取 ${res.name} ${number}个。`, 'user');
+        else ADVMaker.appendMessage(`失去 ${res.name} ${-number}个。`, 'user');
     },
     obtainStatus(item: string, number: number) {
         const stateStore = useStateStore();
@@ -90,9 +102,9 @@ export const ADVMaker = {
                 'user',
             );
     },
-    getItem(item: string): number | undefined {
-        const storyStore = useStoryStore();
-        return storyStore.objectMap.get(item)?.number;
+    getItem(item: string): number {
+        const stateStore = useStateStore();
+        return stateStore.backpack.get(item) ?? 0;
     },
     getStatue(item: string): number | undefined {
         const stateStore = useStateStore();

@@ -21,6 +21,7 @@ import { RV } from './utils/util.ts';
  * - 102：找不到场景
  * - 103：骰子错误
  * - 104：发现两个场景或对话、属性有相同的id
+ * - 105：发现合成图谱的材料列表为空
  */
 export class RuntimeError extends Error {
     code: number;
@@ -49,7 +50,7 @@ export const Game = {
         messageStore.messageList = [];
         // 获取默认物品
         storyStore.objectMap.forEach((item) => {
-            stateStore.obtainItem(item.id, item.number);
+            stateStore.obtainItem(item.id, item.default);
         });
         // 进入初始场景
         this.enter(storyStore.mainScene!);

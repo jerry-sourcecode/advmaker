@@ -6,12 +6,16 @@
 
 import type { DiceExpression } from '../utils/dice.ts';
 import { type Component, markRaw } from 'vue';
+import { Game, RuntimeError } from '../game.ts';
 
 type ADVNextLiteral = string | ADVChoice[] | ADVCheck | null;
-export type ADVNext = ADVNextLiteral | (() => ADVNextLiteral) | null;
+export type ADVNext = VlAndFn<ADVNextLiteral>;
 type ADVUserNextLiteral = string | ADVUserChoice[] | ADVUserCheck | null;
-export type ADVUserNext = ADVUserNextLiteral | (() => ADVUserNextLiteral) | null;
+export type ADVUserNext = VlAndFn<ADVUserNextLiteral>;
 export type MessageType = 'story' | 'system' | 'user';
+export type IdKVType<T> = { [id: string]: T };
+export type VlAndFn<T> = T | (() => T);
+export type VlAndLs<T> = T | T[];
 
 /**
  * 将用户下一步操作转换为系统可以识别的下一步操作
@@ -94,7 +98,7 @@ export class ADVScene extends ADVUserScene {
 }
 
 export class ADVUserDialog {
-    script: string | Component | (string | Component)[];
+    script: VlAndLs<string | Component>;
     next: ADVUserNext;
     constructor(obj: ADVUserDialog) {
         this.script = obj.script;
@@ -125,7 +129,7 @@ export class ADVUserItem {
     name?: string;
     desc?: string;
     summary?: string;
-    number?: number;
+    default?: number;
     lore?: string;
     onUse?: ((num: number) => void) | null;
     onDiscard?: ((num: number) => void) | null;
@@ -139,7 +143,7 @@ export class ADVItem extends ADVUserItem {
     desc: string;
     summary: string;
     lore: string;
-    number: number;
+    default: number;
     id: string;
     onUse: ((num: number) => void) | null;
     onDiscard: ((num: number) => void) | null;
@@ -149,7 +153,7 @@ export class ADVItem extends ADVUserItem {
         this.name = obj.name ?? id;
         this.desc = obj.desc ?? '';
         this.summary = obj.summary ?? '';
-        this.number = obj.number ?? 0;
+        this.default = obj.default ?? 0;
         this.type = 'Item';
         this.id = id;
         this.lore = obj.lore ?? '';
@@ -169,8 +173,8 @@ export class ADVUserStatus {
     max?: number;
     min?: number;
     default: number = 0;
-    color?: string | (() => string);
-    isDisplay?: displayType | (() => displayType);
+    color?: VlAndFn<string>;
+    isDisplay?: VlAndFn<displayType>;
 
     constructor(obj: ADVUserStatus) {
         Object.assign(this, obj);
@@ -183,9 +187,9 @@ export class ADVStatus extends ADVUserStatus {
     max: number;
     min: number;
     value: number;
-    color: string | (() => string);
+    color: VlAndFn<string>;
     group: string;
-    isDisplay: displayType | (() => displayType);
+    isDisplay: VlAndFn<displayType>;
 
     constructor(obj: ADVUserStatus, id: string, group: string) {
         super(obj);
@@ -202,9 +206,35 @@ export class ADVStatus extends ADVUserStatus {
 
 export class ADVUserStatusGroup {
     name?: string;
-    content: { [id: string]: ADVUserStatus } = {};
+    content: IdKVType<ADVUserStatus> = {};
     constructor(obj: ADVUserStatusGroup) {
         Object.assign(this, obj);
+    }
+}
+
+export class ADVUserGoods {
+    inventory?: number;
+    need: VlAndLs<IdKVType<number>> = [];
+    constructor(obj: ADVUserGoods) {
+        Object.assign(this, obj);
+    }
+}
+
+export class ADVGoods extends ADVUserGoods {
+    id: string;
+    inventory: number;
+    need: IdKVType<number>[];
+    constructor(obj: ADVUserGoods, id: string) {
+        super(obj);
+        this.id = id;
+        if (obj.need.length === 0) {
+            Game.error(new RuntimeError(5, `The goods ${id} do not need any ingredients.`));
+        }
+        if (!Array.isArray(obj.need)) {
+            obj.need = [obj.need];
+        }
+        this.need = obj.need;
+        this.inventory = obj.inventory ?? Infinity;
     }
 }
 
@@ -220,7 +250,7 @@ export class ADVDice {
 
 export class ADVUserCheck {
     dice?: ADVDice | DiceExpression;
-    target: (() => number) | number = () => 0;
+    target: VlAndFn<number> = () => 0;
     modifier?: { name: string; value: () => number }[];
     success: ADVUserNext = '';
     fail: ADVUserNext = '';

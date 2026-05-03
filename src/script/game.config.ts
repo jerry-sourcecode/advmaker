@@ -1,7 +1,7 @@
 window.ADVMaker.defineConfig({
     items: {
         Water: {
-            number: 10,
+            default: 10,
             name: '水',
             summary: '水是生命之源',
             onUse: (v) => {
@@ -10,24 +10,42 @@ window.ADVMaker.defineConfig({
             desc: '增加5点魔力',
         },
         Fire: {
-            number: 5,
+            default: 0,
             name: '火',
             summary: '或是生命之源',
         },
         Au: {
-            number: 5,
+            default: 10,
             name: '金',
             summary: '或是生命之源',
         },
         Wood: {
-            number: 5,
+            default: 5,
             name: '木',
             summary: '或是生命之源',
         },
         Tu: {
-            number: 5,
+            default: 10,
             name: '土',
             summary: '或是生命之源',
+        },
+    },
+    goods: {
+        Water: {
+            need: [
+                {
+                    Au: 1,
+                    Tu: 2,
+                },
+                {
+                    Au: 3,
+                    Tu: 3,
+                },
+                {
+                    Au: 3,
+                    Tu: 100,
+                },
+            ],
         },
     },
     status: {
@@ -37,9 +55,9 @@ window.ADVMaker.defineConfig({
                 hp: {
                     name: '生命值',
                     default: 10,
-                    isDisplay: 'process',
+                    isDisplay: 'number',
                 },
-                mp: {
+                sp: {
                     name: '能量槽',
                     default: 10,
                     isDisplay: 'number',

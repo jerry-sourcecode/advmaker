@@ -30,13 +30,13 @@ div.responsive-dialog-scrollBar 一定是 n-card.responsive-dialog(-small) 的�
 n-card内的内容默认拉伸占满n-card，如果想要禁用拉伸，在n-card上增加.responsive-non-fit类
 */
 .responsive-dialog {
-    width: 80vw;
-    height: 80vh;
+    width: 90vw;
+    height: 90vh;
 }
 
 .responsive-dialog-small {
-    width: 60vw;
-    height: 60vh;
+    width: 80vw;
+    height: 80vh;
 }
 
 .responsive-dialog-scrollBar {
