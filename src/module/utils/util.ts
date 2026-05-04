@@ -24,3 +24,18 @@ export function instanceType(obj: ADVNext): 'Array' | 'string' | 'Check' {
     else if (Array.isArray(obj)) return 'Array';
     return 'Check';
 }
+
+export function formatDate(date: Date = new Date()): string {
+    const y = date.getFullYear();
+    const m = (date.getMonth() + 1).toString().padStart(2, '0');
+    const d = date.getDate().toString().padStart(2, '0');
+    const hh = date.getHours().toString().padStart(2, '0');
+    const mm = date.getMinutes().toString().padStart(2, '0');
+    const ss = date.getSeconds().toString().padStart(2, '0');
+    return `${y}-${m}-${d} ${hh}:${mm}:${ss}`;
+}
+
+export function formatDateWithMs(date: Date = new Date()): string {
+    const ms = date.getMilliseconds().toString().padStart(3, '0');
+    return `${formatDate(date)}.${ms}`;
+}

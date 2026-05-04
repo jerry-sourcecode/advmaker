@@ -11,6 +11,8 @@
   "dependencies": {
     "@iconify/vue": "^5.0.0",
     "pinia": "^3.0.4",
+    "pinia-plugin-persistedstate": "^4.7.1",
+    "superjson": "^2.2.6",
     "unplugin-auto-import": "^21.0.0",
     "unplugin-vue-components": "^32.0.0",
     "vue": "^3.5.32"

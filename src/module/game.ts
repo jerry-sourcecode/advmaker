@@ -10,6 +10,7 @@ import { type ADVNext } from './data/model.ts';
 import { ADVMaker } from './api.ts';
 import { dice } from './utils/dice.ts';
 import { RV } from './utils/util.ts';
+import { useSaveManager } from './store/saveManager.ts';
 
 /**
  * 运行时错误类，错误码以 1 开头，可以调用 Game.error 抛出错误
@@ -42,18 +43,23 @@ export const Game = {
         const storyStore = useStoryStore();
         const stateStore = useStateStore();
         const messageStore = useMessageStore();
+        const saveManager = useSaveManager();
 
         console.log('Game Start!');
 
         // 初始化
-        stateStore.init();
         messageStore.messageList = [];
         // 获取默认物品
         storyStore.objectMap.forEach((item) => {
             stateStore.obtainItem(item.id, item.default);
         });
+        if (saveManager.shouldRun !== null) {
+            const run = saveManager.shouldRun;
+            saveManager.shouldRun = null;
+            saveManager.run(run);
+        }
         // 进入初始场景
-        this.enter(storyStore.mainScene!);
+        else this.enter(storyStore.mainScene!);
     },
     /**
      * 进入一个场景
@@ -116,6 +122,7 @@ export const Game = {
         if (nextAct === null) return;
         const stateStore = useStateStore();
         const emitter = useEmitter();
+        stateStore.last = nextAct;
         nextAct = RV(nextAct);
         if (typeof nextAct === 'string') {
             if (nextAct.startsWith('_END&')) {
@@ -124,6 +131,9 @@ export const Game = {
                 return;
             }
             const storyStore = useStoryStore();
+            if (nextAct === '_START') {
+                this.toNext(storyStore.mainScene);
+            }
             const next = storyStore.tryGet(nextAct, storyStore.TP.SCENE | storyStore.TP.DIALOG);
             if (next === undefined)
                 Game.error(new RuntimeError(2, `Can't Find Scene or Dialog, Id: '${nextAct}'.`));

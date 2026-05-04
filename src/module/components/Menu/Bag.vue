@@ -1,6 +1,12 @@
 <template>
     <n-modal v-model:show="showModal">
         <n-card class="responsive-dialog responsive-non-fit" title="背包">
+            <n-empty
+                description="这里空空如也。"
+                v-if="stateStore.backpack.size === 0"
+                size="huge"
+                style="margin-top: 30vh"
+            />
             <item-panel
                 @on-detail-open="showDetail"
                 v-model:detail-obj="detailObj"
@@ -74,21 +80,10 @@ const showDetailAction = computed(() => {
 });
 
 function actionUse() {
-    dialog.warning({
-        title: '警告',
-        content: `你确定要使用 ${detailValue.value} 个${detailObj.value?.name}？`,
-        positiveText: '确定',
-        negativeText: '取消',
-        onPositiveClick: () => {
-            ADVMaker.appendMessage(
-                `玩家使用 ${detailValue.value} 个${detailObj.value?.name}。`,
-                'user',
-            );
-            detailObj.value!.onUse!(detailValue.value);
-            showDetailModal.value = false;
-            stateStore.obtainItem(detailObj.value!.id, -detailValue.value);
-        },
-    });
+    ADVMaker.appendMessage(`玩家使用 ${detailValue.value} 个${detailObj.value?.name}。`, 'user');
+    detailObj.value!.onUse!(detailValue.value);
+    showDetailModal.value = false;
+    stateStore.obtainItem(detailObj.value!.id, -detailValue.value);
 }
 
 function actionDiscard() {

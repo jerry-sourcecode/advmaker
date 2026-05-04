@@ -3,12 +3,14 @@
  */
 
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { type Ref, ref } from 'vue';
 import { Game, RuntimeError } from '../game.ts';
 import { useStoryStore } from './story.ts';
+import type { ADVNext } from '../data/model.ts';
 
 export const useStateStore = defineStore('state', () => {
     const location = ref('');
+    const last: Ref<ADVNext> = ref('_START');
 
     const isDead = ref(false);
     const deadDesc = ref('');
@@ -53,21 +55,17 @@ export const useStateStore = defineStore('state', () => {
         return res ?? 0;
     }
 
-    function init() {
-        backpack.value.clear();
-    }
-
     return {
         location,
         obtainItem,
         isDead,
         deadDesc,
-        init,
         obtainStatus,
         shop,
         qryItem,
         qryStatus,
         status,
         backpack,
+        last,
     };
 });

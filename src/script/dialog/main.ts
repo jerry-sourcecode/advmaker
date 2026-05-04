@@ -19,7 +19,7 @@ export default window.ADVMaker.appendDialog('main-dialog', {
         },
         {
             content: '选择2',
-            next: window.ADVMaker.end('你失败了，游戏结束').id,
+            next: 'co',
         },
     ],
 });

@@ -34,6 +34,10 @@ n-card内的内容默认拉伸占满n-card，如果想要禁用拉伸，在n-car
     height: 90vh;
 }
 
+.responsive-dialog.narrow{
+    width: 50vw;
+}
+
 .responsive-dialog-small {
     width: 80vw;
     height: 80vh;
@@ -62,7 +66,7 @@ n-card内的内容默认拉伸占满n-card，如果想要禁用拉伸，在n-car
 
 /* 当屏幕宽度 ≤ 768px（典型手机断点）时 */
 @media (max-width: 768px) {
-    .responsive-dialog, .responsive-dialog-small {
+    .responsive-dialog, .responsive-dialog-small, .responsive-dialog.narrow {
         width: 100%;
     }
 }
