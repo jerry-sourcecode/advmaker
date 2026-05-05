@@ -4,7 +4,7 @@
 
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { ADVDialog, ADVGoods, ADVItem, ADVScene, ADVStatus } from '../data/model.ts';
+import { ADVCharacter, ADVDialog, ADVGoods, ADVItem, ADVScene, ADVStatus } from '../data/model.ts';
 
 export const useStoryStore = defineStore('story', () => {
     const mainScene = ref<string | null>(null);
@@ -14,6 +14,7 @@ export const useStoryStore = defineStore('story', () => {
     const statusMap = ref(new Map<string, ADVStatus>());
     const sceneMap = ref(new Map<string, ADVScene>());
     const dialogMap = ref(new Map<string, ADVDialog>());
+    const characterMap = ref(new Map<string, ADVCharacter>());
     const gameName = ref('');
 
     const usedSceneAndDialogId = ref(new Set<string>());
@@ -40,6 +41,7 @@ export const useStoryStore = defineStore('story', () => {
         sceneMap,
         dialogMap,
         goodsMap,
+        characterMap,
         gameName,
         TP,
         tryGet,

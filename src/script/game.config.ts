@@ -30,6 +30,13 @@ window.ADVMaker.defineConfig({
             summary: '或是生命之源',
         },
     },
+    character: {
+        boy: {
+            name: '男孩',
+            desc: '只是一个普通的男孩。',
+            impression: ['这是第一个男孩', '他的名字叫小帅', '注意看，这个男孩的名字叫小帅。'],
+        },
+    },
     goods: {
         Water: {
             need: [

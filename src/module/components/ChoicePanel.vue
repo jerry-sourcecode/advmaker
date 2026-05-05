@@ -16,7 +16,7 @@
                 >
                     <div class="choice-btn-main">
                         <div v-html="it.content" v-if="isContentString(it.content)" />
-                        <Component :is="it.content" v-else />
+                        <VNodeRenderer :VNode="it.content" v-else />
                     </div>
                     <div v-if="instanceType(it.next) === 'Check'" class="choice-btn-desc">
                         检定 {{ getDiceName((it.next as ADVCheck).dice) }}: 目标
@@ -42,6 +42,7 @@ import { useEmitter } from '../store/emitter.ts';
 import { useMessageStore } from '../store/message.ts';
 import { instanceType, RV } from '../utils/util.ts';
 import type { DiceExpression } from '../utils/dice.ts';
+import VNodeRenderer from './VNodeRenderer.vue';
 
 const emitter = useEmitter();
 const messageStore = useMessageStore();

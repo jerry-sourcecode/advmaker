@@ -5,7 +5,7 @@
  */
 
 import type { DiceExpression } from '../utils/dice.ts';
-import { type Component, markRaw } from 'vue';
+import { markRaw, type VNode } from 'vue';
 import { Game, RuntimeError } from '../game.ts';
 
 type ADVNextLiteral = string | ADVChoice[] | ADVCheck | null;
@@ -42,15 +42,15 @@ function fromUserNectToNext(obj: ADVUserNext): ADVNext {
 }
 export class ADVMessage {
     type: MessageType;
-    content: string | Component;
-    constructor(content: string | Component, type: MessageType) {
+    content: string | VNode;
+    constructor(content: string | VNode, type: MessageType) {
         this.content = content;
         this.type = type;
     }
 }
 
 export class ADVUserChoice {
-    content: string | Component;
+    content: string | VNode;
     visible?: () => boolean;
     next: ADVUserNext;
     maxTimes?: number;
@@ -78,11 +78,11 @@ export class ADVChoice extends ADVUserChoice {
 }
 
 export class ADVUserScene {
-    name: string;
-    next: ADVUserNext;
+    name: string = '';
+    next?: ADVUserNext;
+    onEnter?: () => void;
     constructor(obj: ADVUserScene) {
-        this.name = obj.name;
-        this.next = obj.next;
+        Object.assign(this, obj);
     }
 }
 
@@ -90,16 +90,19 @@ export class ADVScene extends ADVUserScene {
     id: string;
     type: 'Scene' = 'Scene';
     next: ADVNext;
+    onEnter: () => void;
     constructor(id: string, obj: ADVUserScene) {
         super(obj);
         this.id = id;
-        this.next = fromUserNectToNext(obj.next);
+        this.next = fromUserNectToNext(obj.next ?? null);
+        this.onEnter = obj.onEnter ?? (() => {});
     }
 }
 
 export class ADVUserDialog {
-    script: VlAndLs<string | Component>;
-    next: ADVUserNext;
+    script: VlAndLs<string | VNode>;
+    next?: ADVUserNext;
+    onStart?: () => void;
     constructor(obj: ADVUserDialog) {
         this.script = obj.script;
         // 为 Component 增加 markRow
@@ -111,6 +114,7 @@ export class ADVUserDialog {
             if (typeof this.script !== 'string') this.script = markRaw(this.script);
         }
         this.next = obj.next;
+        this.onStart = obj.onStart;
     }
 }
 
@@ -118,10 +122,12 @@ export class ADVDialog extends ADVUserDialog {
     id: string;
     type: 'Dialog' = 'Dialog';
     next: ADVNext;
+    onStart: () => void;
     constructor(id: string, obj: ADVUserDialog) {
         super(obj);
         this.id = id;
-        this.next = fromUserNectToNext(obj.next);
+        this.next = fromUserNectToNext(obj.next ?? null);
+        this.onStart = obj.onStart ?? (() => {});
     }
 }
 
@@ -279,5 +285,26 @@ export class ADVCheck extends ADVUserCheck {
         this.fail = fromUserNectToNext(obj.fail);
         this.onFail = obj.onFail ?? (() => {});
         this.onSuccess = obj.onSuccess ?? (() => {});
+    }
+}
+
+export class ADVUserCharacter {
+    name: string = '';
+    desc?: string;
+    impression?: string[];
+    constructor(obj: ADVUserCharacter) {
+        Object.assign(this, obj);
+    }
+}
+
+export class ADVCharacter extends ADVUserCharacter {
+    id: string;
+    impression: string[];
+    desc: string;
+    constructor(obj: ADVUserCharacter, id: string) {
+        super(obj);
+        this.impression = obj.impression ?? [];
+        this.id = id;
+        this.desc = obj.desc ?? '';
     }
 }

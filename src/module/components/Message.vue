@@ -22,7 +22,7 @@
                         v-html="it.content"
                         v-if="isContentString(it.content)"
                     />
-                    <Component :is="it.content" v-else />
+                    <VNodeRenderer :VNode="it.content" v-else />
                 </div>
             </TransitionGroup>
             <div class="hint-text" v-if="isWaitClick">点击屏幕继续</div>
@@ -36,6 +36,7 @@ import { useStateStore } from '../store/state.ts';
 import { useEmitter } from '../store/emitter.ts';
 import { type Component, ref } from 'vue';
 import type { MessageType } from '../data/model.ts';
+import VNodeRenderer from './VNodeRenderer.vue';
 
 const messageStore = useMessageStore();
 const stateStore = useStateStore();

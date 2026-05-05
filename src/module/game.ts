@@ -70,6 +70,7 @@ export const Game = {
         const storyStore = useStoryStore();
         const messageStore = useMessageStore();
         const scene = storyStore.sceneMap.get(sceneId);
+        scene?.onEnter();
         if (scene === undefined) {
             this.error(new RuntimeError(2, `Can't Find Scene, Id: '${sceneId}'.`));
             return;
@@ -88,6 +89,7 @@ export const Game = {
         const messageStore = useMessageStore();
         const emitter = useEmitter();
         const dialog = storyStore.dialogMap.get(dialogId);
+        dialog?.onStart();
         if (dialog === undefined) {
             this.error(new RuntimeError(2, `Can't Find Dialog, Id: '${dialogId}'.`));
             return;

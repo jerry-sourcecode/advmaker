@@ -18,6 +18,8 @@ export const useStateStore = defineStore('state', () => {
     const backpack = ref(new Map<string, number>());
     const shop = ref(new Map<string, number>());
     const status = ref(new Map<string, number>());
+    // 记录你认不认识这个角色
+    const character = ref(new Map<string, boolean>());
 
     function obtainItem(item: string, number: number = 1) {
         const currentCount = backpack.value.get(item) || 0;
@@ -67,5 +69,6 @@ export const useStateStore = defineStore('state', () => {
         status,
         backpack,
         last,
+        character,
     };
 });

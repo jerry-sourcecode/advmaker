@@ -4,6 +4,7 @@
 
 import { useStoryStore } from './store/story.ts';
 import {
+    ADVCharacter,
     ADVCheck,
     ADVChoice,
     ADVDialog,
@@ -13,6 +14,7 @@ import {
     type ADVNext,
     ADVScene,
     ADVStatus,
+    ADVUserCharacter,
     ADVUserDialog,
     ADVUserGoods,
     ADVUserItem,
@@ -28,20 +30,23 @@ import { Game, RuntimeError } from './game.ts';
 
 type GameConfig = {
     // 物品
-    items: {
+    items?: {
         // id 为物品的唯一标识符
         [id: string]: ADVUserItem;
     };
-    status: {
+    status?: {
         [id: string]: ADVUserStatusGroup;
     };
-    goods: {
+    goods?: {
         [id: string]: ADVUserGoods;
+    };
+    character?: {
+        [id: string]: ADVUserCharacter;
     };
     // 游戏入口，一个场景
     mainScene: string;
     // 游戏名称
-    gameName: string;
+    gameName?: string;
 };
 
 export const ADVMaker = {
@@ -57,6 +62,12 @@ export const ADVMaker = {
             const obj = new ADVGoods(config.goods[itemsKey], itemsKey);
             storyStore.goodsMap.set(itemsKey, obj);
             stateStore.shop.set(itemsKey, obj.inventory);
+        }
+
+        for (let itemsKey in config.character) {
+            const obj = new ADVCharacter(config.character[itemsKey], itemsKey);
+            storyStore.characterMap.set(itemsKey, obj);
+            stateStore.character.set(itemsKey, false);
         }
 
         for (let itemsKey in config.status) {
@@ -76,7 +87,7 @@ export const ADVMaker = {
         }
 
         storyStore.mainScene = config.mainScene;
-        storyStore.gameName = config.gameName;
+        storyStore.gameName = config.gameName ?? '新游戏';
 
         return config;
     },
@@ -133,17 +144,16 @@ export const ADVMaker = {
         }
         Game.toNext(newNext);
     },
-    end(desc: string): ADVScene {
-        return {
-            name: desc,
-            next: '',
-            id: `_END&${desc}`,
-            type: 'Scene',
-        };
+    end(desc: string): string {
+        return `_END&${desc}`;
     },
     appendMessage(content: string | Component, type: MessageType = 'story') {
         const message = useMessageStore();
         message.appendMessage(new ADVMessage(content, type));
+    },
+    know(characterId: string) {
+        const stateStore = useStateStore();
+        stateStore.character.set(characterId, true);
     },
 };
 
