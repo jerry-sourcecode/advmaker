@@ -1,7 +1,7 @@
 <template>
     <n-modal v-model:show="showModal">
         <n-card class="responsive-dialog responsive-non-fit" title="背包">
-            <Empty />
+            <Empty v-if="stateStore.backpack.size === 0" />
             <item-panel
                 @on-detail-open="showDetail"
                 v-model:detail-obj="detailObj"
