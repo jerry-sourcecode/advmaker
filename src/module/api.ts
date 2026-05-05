@@ -25,7 +25,7 @@ import {
 } from './data/model.ts';
 import { useStateStore } from './store/state.ts';
 import { useMessageStore } from './store/message.ts';
-import type { Component } from 'vue';
+import type { VNode } from 'vue';
 import { Game, RuntimeError } from './game.ts';
 
 type GameConfig = {
@@ -147,7 +147,7 @@ export const ADVMaker = {
     end(desc: string): string {
         return `_END&${desc}`;
     },
-    appendMessage(content: string | Component, type: MessageType = 'story') {
+    appendMessage(content: string | VNode, type: MessageType = 'story') {
         const message = useMessageStore();
         message.appendMessage(new ADVMessage(content, type));
     },
