@@ -8,115 +8,48 @@ import {
     ADVCheck,
     ADVChoice,
     ADVDialog,
-    ADVGoods,
-    ADVItem,
     ADVMessage,
     type ADVNext,
     ADVScene,
-    ADVStatus,
-    ADVUserCharacter,
     ADVUserDialog,
-    ADVUserGoods,
-    ADVUserItem,
     type ADVUserNext,
     ADVUserScene,
-    ADVUserStatusGroup,
     type MessageType,
 } from './data/model.ts';
 import { useStateStore } from './store/state.ts';
 import { useMessageStore } from './store/message.ts';
 import type { VNode } from 'vue';
 import { Game, RuntimeError } from './game.ts';
+import type { CharsIds, ItemIds, StatusIds } from './type/user';
+import { createRestrictedMapProxy, type MapProxy } from './utils/util.ts';
 
-type GameConfig = {
-    // 物品
-    items?: {
-        // id 为物品的唯一标识符
-        [id: string]: ADVUserItem;
-    };
-    status?: {
-        [id: string]: ADVUserStatusGroup;
-    };
-    goods?: {
-        [id: string]: ADVUserGoods;
-    };
-    character?: {
-        [id: string]: ADVUserCharacter;
-    };
-    // 游戏入口，一个场景
-    mainScene: string;
-    // 游戏名称
-    gameName?: string;
-};
+let backpackCache: MapProxy<Record<ItemIds, number>> | null = null;
+let statusCache: MapProxy<Record<StatusIds, number>> | null = null;
+let charsCache: MapProxy<Record<CharsIds, ADVCharacter>> | null = null;
 
 export const ADVMaker = {
-    defineConfig(config: GameConfig): GameConfig {
-        const storyStore = useStoryStore();
-        const stateStore = useStateStore();
-        for (let itemsKey in config.items) {
-            const obj = config.items[itemsKey];
-            storyStore.objectMap.set(itemsKey, new ADVItem(obj, itemsKey));
+    get bag() {
+        if (!backpackCache) {
+            const stateStore = useStateStore();
+            backpackCache = createRestrictedMapProxy<Record<ItemIds, number>>(stateStore.backpack);
         }
-
-        for (let itemsKey in config.goods) {
-            const obj = new ADVGoods(config.goods[itemsKey], itemsKey);
-            storyStore.goodsMap.set(itemsKey, obj);
-            stateStore.shop.set(itemsKey, obj.inventory);
+        return backpackCache;
+    },
+    get status() {
+        if (!statusCache) {
+            const stateStore = useStateStore();
+            statusCache = createRestrictedMapProxy<Record<StatusIds, number>>(stateStore.status);
         }
-
-        for (let itemsKey in config.character) {
-            const obj = new ADVCharacter(config.character[itemsKey], itemsKey);
-            storyStore.characterMap.set(itemsKey, obj);
-            stateStore.character.set(itemsKey, false);
+        return statusCache;
+    },
+    get char() {
+        if (!charsCache) {
+            const stateStore = useStateStore();
+            charsCache = createRestrictedMapProxy<Record<CharsIds, ADVCharacter>>(
+                stateStore.character,
+            );
         }
-
-        for (let itemsKey in config.status) {
-            const obj = config.status[itemsKey];
-            const name = obj.name ?? itemsKey;
-            for (let statusId in obj.content) {
-                const status = obj.content[statusId];
-                const newStatus = new ADVStatus(status, statusId, name);
-                if (stateStore.status.has(statusId)) {
-                    Game.error(
-                        new RuntimeError(4, `There is already a status with the ID '${statusId}'.`),
-                    );
-                }
-                stateStore.status.set(statusId, newStatus.default);
-                storyStore.statusMap.set(statusId, newStatus);
-            }
-        }
-
-        storyStore.mainScene = config.mainScene;
-        storyStore.gameName = config.gameName ?? '新游戏';
-
-        return config;
-    },
-    obtainItem(item: string, number: number = 1) {
-        const stateStore = useStateStore();
-        const storyStore = useStoryStore();
-        stateStore.obtainItem(item, number);
-        const res = storyStore.objectMap.get(item)!;
-        if (number >= 0) ADVMaker.appendMessage(`获取 ${res.name} ${number}个。`, 'user');
-        else ADVMaker.appendMessage(`失去 ${res.name} ${-number}个。`, 'user');
-    },
-    obtainStatus(item: string, number: number) {
-        const stateStore = useStateStore();
-        const storyStore = useStoryStore();
-        stateStore.obtainStatus(item, number);
-        const res = stateStore.qryStatus(item)!;
-        const obj = storyStore.statusMap.get(item)!;
-        if (number >= 0)
-            ADVMaker.appendMessage(`属性 ${obj.name} 增加 ${number} 点，剩余 ${res} 点。`, 'user');
-        else
-            ADVMaker.appendMessage(`属性 ${obj.name} 减少 ${-number} 点，剩余 ${res} 点。`, 'user');
-    },
-    getItem(item: string): number {
-        const stateStore = useStateStore();
-        return stateStore.qryItem(item);
-    },
-    getStatus(item: string): number {
-        const stateStore = useStateStore();
-        return stateStore.qryStatus(item);
+        return charsCache;
     },
     appendScene(id: string, config: ADVUserScene): ADVScene {
         const storyStore = useStoryStore();
@@ -151,11 +84,33 @@ export const ADVMaker = {
         const message = useMessageStore();
         message.appendMessage(new ADVMessage(content, type));
     },
-    know(characterId: string) {
+    know(characterId: CharsIds) {
         const stateStore = useStateStore();
-        stateStore.character.set(characterId, true);
+        const c = stateStore.character.get(characterId);
+        c!.know = true;
+        stateStore.character.set(characterId, c!);
     },
 };
+
+Object.defineProperty(ADVMaker, 'backpack', {
+    configurable: true,
+    enumerable: true,
+    get() {
+        const stateStore = useStateStore();
+        // 创建代理
+        const backpack = createRestrictedMapProxy<Record<ItemIds, number>>(stateStore.backpack);
+
+        // 将属性值替换为代理（覆盖 getter，后续直接返回值）
+        Object.defineProperty(ADVMaker, 'backpack', {
+            value: backpack,
+            writable: false,
+            enumerable: true,
+            configurable: false,
+        });
+
+        return backpack;
+    },
+});
 
 window.ADVMaker = ADVMaker;
 

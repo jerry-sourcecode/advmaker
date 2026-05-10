@@ -4,17 +4,17 @@
 
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { ADVCharacter, ADVDialog, ADVGoods, ADVItem, ADVScene, ADVStatus } from '../data/model.ts';
+import { ADVDialog, ADVGoods, ADVItem, ADVScene, ADVStatus } from '../data/model.ts';
+import type { GoodsIds, ItemIds, StatusIds } from '../type/user';
 
 export const useStoryStore = defineStore('story', () => {
     const mainScene = ref<string | null>(null);
 
-    const objectMap = ref(new Map<string, ADVItem>());
-    const goodsMap = ref(new Map<string, ADVGoods>());
-    const statusMap = ref(new Map<string, ADVStatus>());
+    const objectMap = ref(new Map<ItemIds, ADVItem>());
+    const goodsMap = ref(new Map<GoodsIds, ADVGoods>());
+    const statusMap = ref(new Map<StatusIds, ADVStatus>());
     const sceneMap = ref(new Map<string, ADVScene>());
     const dialogMap = ref(new Map<string, ADVDialog>());
-    const characterMap = ref(new Map<string, ADVCharacter>());
     const gameName = ref('');
 
     const usedSceneAndDialogId = ref(new Set<string>());
@@ -26,7 +26,7 @@ export const useStoryStore = defineStore('story', () => {
     };
 
     function tryGet(id: string, allow: number): ADVDialog | ADVItem | ADVScene | undefined {
-        let nx: any = objectMap.value.get(id);
+        let nx: any = objectMap.value.get(id as any);
         if (nx !== undefined && allow & TP.ITEM) return nx as ADVItem;
         nx = sceneMap.value.get(id);
         if (nx !== undefined && allow & TP.SCENE) return nx as ADVScene;
@@ -41,7 +41,6 @@ export const useStoryStore = defineStore('story', () => {
         sceneMap,
         dialogMap,
         goodsMap,
-        characterMap,
         gameName,
         TP,
         tryGet,

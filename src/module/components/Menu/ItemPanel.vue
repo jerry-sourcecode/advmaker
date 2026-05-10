@@ -1,24 +1,26 @@
 <template>
     <div class="parent responsive-dialog-scrollBar">
-        <n-thing
-            v-for="it in backpack"
-            class="clickable-box"
-            @click="emit('onDetailOpen', it[0], it[1])"
-        >
-            <template #header-extra>
-                <n-statistic :value="it[1]">
-                    <template #prefix>×</template>
-                </n-statistic>
-            </template>
-            <template #header>{{ getItemDetail(it[0])?.name }}</template>
-            <template #description>
-                <i>{{ getItemDetail(it[0])?.summary }}</i>
-            </template>
-            <div v-html="getItemDetail(it[0])?.desc" />
-            <template #footer>
-                <slot name="footer" :id="it[0]"></slot>
-            </template>
-        </n-thing>
+        <div v-for="it in backpack">
+            <n-thing
+                class="clickable-box"
+                @click="emit('onDetailOpen', it[0], it[1])"
+                v-if="it[1] !== 0"
+            >
+                <template #header-extra>
+                    <n-statistic :value="it[1]">
+                        <template #prefix>×</template>
+                    </n-statistic>
+                </template>
+                <template #header>{{ getItemDetail(it[0])?.name }}</template>
+                <template #description>
+                    <i>{{ getItemDetail(it[0])?.summary }}</i>
+                </template>
+                <div v-html="getItemDetail(it[0])?.desc" />
+                <template #footer>
+                    <slot name="footer" :id="it[0]"></slot>
+                </template>
+            </n-thing>
+        </div>
     </div>
     <n-modal v-model:show="showDetailModal">
         <n-card class="responsive-dialog-small">
@@ -66,7 +68,7 @@ const emit = defineEmits<{
 }>();
 
 function getItemDetail(id: string) {
-    return storyStore.objectMap.get(id);
+    return storyStore.objectMap.get(id as any);
 }
 </script>
 

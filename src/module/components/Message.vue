@@ -2,7 +2,7 @@
     <div class="outer-div">
         <div>
             <n-divider class="room-title-text">
-                <p>{{ stateStore.location }}</p>
+                <b>{{ stateStore.location }}</b>
             </n-divider>
         </div>
 

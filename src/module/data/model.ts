@@ -7,6 +7,7 @@
 import type { DiceExpression } from '../utils/dice.ts';
 import { markRaw, type VNode } from 'vue';
 import { Game, RuntimeError } from '../game.ts';
+import type { CharsIds, GoodsIds, ItemIds, StatusIds } from '../type/user';
 
 type ADVNextLiteral = string | ADVChoice[] | ADVCheck | null;
 export type ADVNext = VlAndFn<ADVNextLiteral>;
@@ -150,11 +151,11 @@ export class ADVItem extends ADVUserItem {
     summary: string;
     lore: string;
     default: number;
-    id: string;
+    id: ItemIds;
     onUse: ((num: number) => void) | null;
     onDiscard: ((num: number) => void) | null;
     type: 'Item' = 'Item';
-    constructor(obj: ADVUserItem, id: string) {
+    constructor(obj: ADVUserItem, id: ItemIds) {
         super(obj);
         this.name = obj.name ?? id;
         this.desc = obj.desc ?? '';
@@ -189,7 +190,7 @@ export class ADVUserStatus {
 
 export class ADVStatus extends ADVUserStatus {
     name: string;
-    id: string;
+    id: StatusIds;
     max: number;
     min: number;
     default: number;
@@ -197,7 +198,7 @@ export class ADVStatus extends ADVUserStatus {
     group: string;
     isDisplay: VlAndFn<displayType>;
 
-    constructor(obj: ADVUserStatus, id: string, group: string) {
+    constructor(obj: ADVUserStatus, id: StatusIds, group: string) {
         super(obj);
         this.name = obj.name ?? id;
         this.id = id;
@@ -227,10 +228,10 @@ export class ADVUserGoods {
 }
 
 export class ADVGoods extends ADVUserGoods {
-    id: string;
+    id: GoodsIds;
     inventory: number;
     need: IdKVType<number>[];
-    constructor(obj: ADVUserGoods, id: string) {
+    constructor(obj: ADVUserGoods, id: GoodsIds) {
         super(obj);
         this.id = id;
         if (obj.need.length === 0) {
@@ -298,13 +299,15 @@ export class ADVUserCharacter {
 }
 
 export class ADVCharacter extends ADVUserCharacter {
-    id: string;
+    id: CharsIds;
     impression: string[];
     desc: string;
-    constructor(obj: ADVUserCharacter, id: string) {
+    know: boolean;
+    constructor(obj: ADVUserCharacter, id: CharsIds) {
         super(obj);
         this.impression = obj.impression ?? [];
         this.id = id;
         this.desc = obj.desc ?? '';
+        this.know = false;
     }
 }

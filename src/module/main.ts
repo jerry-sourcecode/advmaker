@@ -4,6 +4,7 @@ import App from './App.vue';
 import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import { Game } from './game.ts';
+import config from '../script/game.config.ts';
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);
 
@@ -15,6 +16,7 @@ app.mount('#app');
 import('./utils/import.ts')
     .then(() => {
         console.log('游戏配置已加载');
+        Game.defineConfig(config);
         Game.start();
     })
     .catch((error) => {

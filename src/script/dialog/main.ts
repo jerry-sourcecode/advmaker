@@ -1,37 +1,53 @@
-import Main from './main.vue';
-import { h } from 'vue';
-
-export default window.ADVMaker.appendDialog('main-dialog', {
-    script: ['你好！', '我是你的向导。', '接下来，让我们一同<b>冒险</b>吧', "Let's go!", h(Main)],
+// 发现日记的对话
+window.ADVMaker.appendDialog('diary-dialog', {
+    script: [
+        '你揉了揉眼睛，发现自己正置身于一间布满灰尘的阁楼。',
+        '阳光从屋顶的裂缝中挤进来，照亮了地板上的一本旧日记。',
+        '你犹豫了一下，还是拾起日记，轻轻翻开。',
+        '日记的笔迹已经泛黄，但依然清晰可辨：<br><i>"房子建于1873年，原本属于一位古怪的发明家。传言他在此进行了许多危险的实验，最终不知所踪。这栋房子也因此被废弃。"</i>',
+        '你又往后翻了几页，上面写道：<br><i>"若想离开，阁楼的窗户通向屋外的巨大树冠，相对安全；但若想解开秘密，不妨走进那扇通往走廊的大门。"</i>',
+        '合上日记，你陷入了沉思……',
+    ],
     next: [
         {
-            content: '选择1',
-            next: {
-                target: 10,
-                modifier: [{ name: '智慧', value: () => 4 }],
-                success: null,
-                onSuccess: () => {
-                    window.ADVMaker.know('boy');
-                    window.ADVMaker.goto('succ');
-                },
-                fail: 'fail',
-                dice: '2d6',
-            },
-            maxTimes: 3,
+            content: '爬出窗户，沿着树干滑下',
+            next: 'garden-end',
+            maxTimes: 1,
         },
         {
-            content: '选择2',
-            next: 'co',
+            content: '推开阁楼的门，走进走廊',
+            next: 'corridor-dialog',
+            maxTimes: 1,
         },
     ],
+    onStart: () => {
+        // 对话开始前，可以在控制台显示一点提示
+        console.log('玩家发现了日记');
+        window.ADVMaker.bag.Water += 0;
+    },
 });
 
-window.ADVMaker.appendDialog('succ', {
-    script: '恭喜你，成功了！',
-    next: 'main-dialog',
+// 选择“走进走廊”后的对话
+window.ADVMaker.appendDialog('corridor-dialog', {
+    script: [
+        '木门发出咯吱的声响，你走进了一条幽暗的走廊。',
+        '墙壁上挂着早已褪色的油画，画中人物的目光仿佛在跟随你移动。',
+        '走廊尽头有一扇铁门，上面刻着一行字："踏入者，勿忘初心。"',
+        '你伸手推开门，一道刺眼的白光瞬间将你吞没……',
+        '当你再次睁开眼时，发现自己已经站在了街角，身后是那栋破败的老宅。',
+        '你摸了摸口袋，发现里面多了一把样式古老的钥匙。',
+        '也许有一天，你还会再回来探寻这栋房子的全部秘密。',
+    ],
+    next: window.ADVMaker.end('你带着钥匙与谜团离开了老宅，但你知道，一切才刚开始...'),
 });
 
-window.ADVMaker.appendDialog('fail', {
-    script: '很遗憾，失败了！',
-    next: window.ADVMaker.end('游戏结束，你失败了'),
+// 选择“爬出窗户”的结局
+window.ADVMaker.appendDialog('garden-end', {
+    script: [
+        '你小心翼翼地翻出窗户，抓住了窗外那棵大树的粗壮枝干。',
+        '粗糙的树皮蹭破了你的手掌，但你还是成功滑到了地面。',
+        '你回头望了一眼那栋房子，它静静地矗立在暮色里，仿佛什么都没发生过。',
+        '你转身走入花园小径，不久便来到了大街上。',
+    ],
+    next: window.ADVMaker.end('你安全地离开了房子，但关于阁楼的谜团，或许将永远埋藏在时光里。'),
 });

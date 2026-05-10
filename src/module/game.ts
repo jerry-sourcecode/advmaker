@@ -6,11 +6,12 @@ import { useStoryStore } from './store/story.ts';
 import { useStateStore } from './store/state.ts';
 import { useMessageStore } from './store/message.ts';
 import { useEmitter } from './store/emitter.ts';
-import { type ADVNext } from './data/model.ts';
+import { ADVCharacter, ADVGoods, ADVItem, type ADVNext, ADVStatus } from './data/model.ts';
 import { ADVMaker } from './api.ts';
 import { dice } from './utils/dice.ts';
 import { RV } from './utils/util.ts';
 import { useSaveManager } from './store/saveManager.ts';
+import type { CharsIds, GameConfig, GoodsIds, ItemIds, StatusIds } from './type/user';
 
 /**
  * 运行时错误类，错误码以 1 开头，可以调用 Game.error 抛出错误
@@ -50,8 +51,8 @@ export const Game = {
         // 初始化
         messageStore.messageList = [];
         // 获取默认物品
-        storyStore.objectMap.forEach((item) => {
-            stateStore.obtainItem(item.id, item.default);
+        storyStore.objectMap.forEach((value, key) => {
+            stateStore.obtainItem(key, value.default);
         });
         if (saveManager.shouldRun !== null) {
             const run = saveManager.shouldRun;
@@ -188,5 +189,50 @@ export const Game = {
                 Game.toNext(nextAct.fail);
             }
         }
+    },
+    defineConfig(config: GameConfig) {
+        const storyStore = useStoryStore();
+        const stateStore = useStateStore();
+        for (const key in config.items) {
+            const itemsKey = key as ItemIds;
+            const obj = config.items[itemsKey];
+            storyStore.objectMap.set(itemsKey, new ADVItem(obj, itemsKey));
+        }
+
+        for (const key in config.goods) {
+            const itemsKey = key as GoodsIds;
+            const obj = new ADVGoods(config.goods[itemsKey], itemsKey);
+            storyStore.goodsMap.set(itemsKey, obj);
+            stateStore.shop.set(itemsKey, obj.inventory);
+        }
+
+        for (let key in config.character) {
+            const itemsKey = key as CharsIds;
+            const obj = new ADVCharacter(config.character[itemsKey], itemsKey);
+            stateStore.character.set(itemsKey, obj);
+        }
+
+        for (const groupKey in config.status) {
+            const itemsKey = groupKey as StatusIds;
+            const obj = config.status[itemsKey];
+            const name = obj.name ?? itemsKey;
+            for (const statusKey in obj.content) {
+                const statusId = statusKey as StatusIds;
+                const status = obj.content[statusId];
+                const newStatus = new ADVStatus(status, statusId, name);
+                if (stateStore.status.has(statusId)) {
+                    Game.error(
+                        new RuntimeError(4, `There is already a status with the ID '${statusId}'.`),
+                    );
+                }
+                stateStore.status.set(statusId, newStatus.default);
+                storyStore.statusMap.set(statusId, newStatus);
+            }
+        }
+
+        storyStore.mainScene = config.mainScene;
+        storyStore.gameName = config.gameName ?? '新游戏';
+
+        return config;
     },
 };

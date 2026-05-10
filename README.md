@@ -111,9 +111,9 @@ window.ADVMaker.appendDialog(id: string, config: ADVUserDialog): ADVDialog;
 | maxTimes | `number`             | `Infinity`   | 这个选项在被选中多少次之后就会消失               |     |
 | visible  | `() => boolean`      | `() => true` | 控制选项是否可以被渲染                     |     |
 
-### 判定
+### 检定
 
-判定（或称检定），一般使用 `ADVUserCheck` 类型，用于在对话中根据玩家的属性进行条件判断，判定的结果会影响对话的走向。
+检定，一般使用 `ADVUserCheck` 类型，用于在对话中根据玩家的属性进行条件判断，判定的结果会影响对话的走向。
 
 `ADVUserCheck` 类的参数：
 

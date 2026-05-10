@@ -63,10 +63,11 @@ const themeOverrides = computed<GlobalThemeOverrides>(() => ({
 
 <style>
 .page-header {
-    padding: 10px 30px;
+    padding: 5px 30px;
     display: flex;
     align-items: center;
-    height: 50px;
+    height: 70px;
     background-color: black;
+    box-shadow: 0 10px 10px -5px rgba(0, 0, 0, 0.5);
 }
 </style>

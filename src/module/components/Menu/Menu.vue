@@ -61,7 +61,7 @@ const showStoryModal = ref(false);
 }
 .menu-button {
     justify-content: flex-start;
-    height: 50px;
+    height: 60px;
 }
 .menu-p {
     font-size: 20px;
