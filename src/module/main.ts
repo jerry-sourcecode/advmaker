@@ -4,7 +4,7 @@ import App from './App.vue';
 import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import { Game } from './game.ts';
-import config from '../script/game.config.ts';
+import config from '../game.config.ts';
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);
 

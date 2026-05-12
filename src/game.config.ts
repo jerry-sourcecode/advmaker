@@ -1,11 +1,14 @@
-import type { GameConfig } from '../module/type/user';
+import type { GameConfig } from './module/type/user';
 
 const config = {
     mainScene: 'attic',
     gameName: '阁楼迷踪',
     items: {
+        Water: {},
+    },
+    goods: {
         Water: {
-            name: '水',
+            need: {},
         },
     },
 } satisfies GameConfig;

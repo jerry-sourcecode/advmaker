@@ -1,5 +1,5 @@
 import { ADVUserCharacter, ADVUserGoods, ADVUserItem, ADVUserStatusGroup } from '../data/model.ts';
-import gameConfig from '../../script/game.config.ts';
+import gameConfig from '../../game.config.ts';
 
 export type GameConfig = {
     // 物品
@@ -32,7 +32,18 @@ export type GameConfig = {
 export type IdsOf<T extends GameConfig, K extends string> =
     T[K] extends Record<string, any> ? keyof T[K] : string;
 
+type StatusAttrIds<T extends GameConfig> =
+    T['status'] extends Record<string, any>
+        ? {
+              [K in keyof NonNullable<T['status']>]: NonNullable<T['status']>[K] extends {
+                  content: infer C;
+              }
+                  ? keyof C
+                  : string;
+          }[keyof NonNullable<T['status']>]
+        : string;
+
 type ItemIds = IdsOf<typeof gameConfig, 'items'>;
-type StatusIds = IdsOf<typeof gameConfig, 'status'>;
+type StatusIds = StatusAttrIds<typeof gameConfig>;
 type GoodsIds = IdsOf<typeof gameConfig, 'goods'>;
 type CharsIds = IdsOf<typeof gameConfig, 'character'>;

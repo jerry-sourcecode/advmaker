@@ -80,6 +80,7 @@ export type MapProxy<T extends Record<string, any>> = {
  */
 export function createRestrictedMapProxy<T extends Record<string, any>>(
     map: Map<keyof T, T[keyof T]>,
+    beforeSet: (key: string, value: any) => any = (_, v) => v,
 ): MapProxy<T> {
     // 保存允许的键集合，用于运行时检查
     const allowedKeys = new Set(map.keys());
@@ -106,7 +107,8 @@ export function createRestrictedMapProxy<T extends Record<string, any>>(
             if (!allowedKeys.has(key)) {
                 throw new Error(`Cannot set non-existent key "${key}".`);
             }
-            target.set(key, value);
+            value = beforeSet(key, value);
+            value = target.set(key, value);
             return true;
         },
 

@@ -38,7 +38,14 @@ export const ADVMaker = {
     get status() {
         if (!statusCache) {
             const stateStore = useStateStore();
-            statusCache = createRestrictedMapProxy<Record<StatusIds, number>>(stateStore.status);
+            const storyStore = useStoryStore();
+            statusCache = createRestrictedMapProxy<Record<StatusIds, number>>(
+                stateStore.status,
+                (k, v) => {
+                    const obj = storyStore.statusMap.get(k as StatusIds)!;
+                    return Math.max(Math.min(v, obj.max), obj.min);
+                },
+            );
         }
         return statusCache;
     },
@@ -84,33 +91,7 @@ export const ADVMaker = {
         const message = useMessageStore();
         message.appendMessage(new ADVMessage(content, type));
     },
-    know(characterId: CharsIds) {
-        const stateStore = useStateStore();
-        const c = stateStore.character.get(characterId);
-        c!.know = true;
-        stateStore.character.set(characterId, c!);
-    },
 };
-
-Object.defineProperty(ADVMaker, 'backpack', {
-    configurable: true,
-    enumerable: true,
-    get() {
-        const stateStore = useStateStore();
-        // 创建代理
-        const backpack = createRestrictedMapProxy<Record<ItemIds, number>>(stateStore.backpack);
-
-        // 将属性值替换为代理（覆盖 getter，后续直接返回值）
-        Object.defineProperty(ADVMaker, 'backpack', {
-            value: backpack,
-            writable: false,
-            enumerable: true,
-            configurable: false,
-        });
-
-        return backpack;
-    },
-});
 
 window.ADVMaker = ADVMaker;
 

@@ -24,6 +24,7 @@ window.ADVMaker.appendDialog('diary-dialog', {
         // 对话开始前，可以在控制台显示一点提示
         console.log('玩家发现了日记');
         window.ADVMaker.bag.Water += 0;
+        window.ADVMaker.status.hp -= 10;
     },
 });
 
