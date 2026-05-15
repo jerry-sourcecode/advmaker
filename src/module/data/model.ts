@@ -10,13 +10,14 @@ import { Game, RuntimeError } from '../game.ts';
 import type { CharsIds, GoodsIds, ItemIds, StatusIds } from '../type/user';
 
 type ADVNextLiteral = string | ADVChoice[] | ADVCheck | null;
-export type ADVNext = VlAndFn<ADVNextLiteral>;
+export type ADVNext = VlAndFn<ADVNextLiteral> | (() => void);
 type ADVUserNextLiteral = string | ADVUserChoice[] | ADVUserCheck | null;
-export type ADVUserNext = VlAndFn<ADVUserNextLiteral>;
+export type ADVUserNext = VlAndFn<ADVUserNextLiteral> | (() => void);
 export type MessageType = 'story' | 'system' | 'user';
 export type IdKVType<T> = { [id: string]: T };
 export type VlAndFn<T> = T | (() => T);
 export type VlAndLs<T> = T | T[];
+export type VlAndAsync<T> = T | Promise<T>;
 
 /**
  * 将用户下一步操作转换为系统可以识别的下一步操作
@@ -26,11 +27,11 @@ export type VlAndLs<T> = T | T[];
 function fromUserNectToNext(obj: ADVUserNextLiteral): ADVNextLiteral;
 function fromUserNectToNext(obj: ADVUserNext): ADVNext;
 function fromUserNectToNext(obj: ADVUserNext): ADVNext {
-    if (obj === null) return null;
+    if (obj === null || obj === undefined) return null;
     if (typeof obj === 'string') return obj;
     if (typeof obj === 'function')
         return () => {
-            return fromUserNectToNext(obj());
+            return fromUserNectToNext(obj() ?? null);
         };
     if (Array.isArray(obj)) {
         const returns: ADVChoice[] = [];
@@ -81,7 +82,7 @@ export class ADVChoice extends ADVUserChoice {
 export class ADVUserScene {
     name: string = '';
     next?: ADVUserNext;
-    onEnter?: () => void;
+    onEnter?: () => VlAndAsync<void>;
     constructor(obj: ADVUserScene) {
         Object.assign(this, obj);
     }
@@ -91,7 +92,7 @@ export class ADVScene extends ADVUserScene {
     id: string;
     type: 'Scene' = 'Scene';
     next: ADVNext;
-    onEnter: () => void;
+    onEnter: () => VlAndAsync<void>;
     constructor(id: string, obj: ADVUserScene) {
         super(obj);
         this.id = id;
@@ -103,7 +104,7 @@ export class ADVScene extends ADVUserScene {
 export class ADVUserDialog {
     script: VlAndLs<string | VNode>;
     next?: ADVUserNext;
-    onStart?: () => void;
+    onStart?: () => VlAndAsync<void>;
     constructor(obj: ADVUserDialog) {
         this.script = obj.script;
         // 为 Component 增加 markRow
@@ -123,7 +124,7 @@ export class ADVDialog extends ADVUserDialog {
     id: string;
     type: 'Dialog' = 'Dialog';
     next: ADVNext;
-    onStart: () => void;
+    onStart: () => VlAndAsync<void>;
     constructor(id: string, obj: ADVUserDialog) {
         super(obj);
         this.id = id;
@@ -168,7 +169,7 @@ export class ADVItem extends ADVUserItem {
         if (obj.onDiscard === null) {
             this.onDiscard = null;
         } else {
-            this.onDiscard = obj.onDiscard ?? (() => true);
+            this.onDiscard = obj.onDiscard ?? (() => {});
         }
     }
 }
@@ -261,8 +262,8 @@ export class ADVUserCheck {
     modifier?: { name: string; value: () => number }[];
     success: ADVUserNext = '';
     fail: ADVUserNext = '';
-    onSuccess?: () => void;
-    onFail?: () => void;
+    onSuccess?: () => VlAndAsync<void>;
+    onFail?: () => VlAndAsync<void>;
 
     constructor(obj: ADVUserCheck) {
         Object.assign(this, obj);
@@ -275,8 +276,8 @@ export class ADVCheck extends ADVUserCheck {
     type: 'Check';
     success: ADVNext;
     fail: ADVNext;
-    onSuccess: () => void;
-    onFail: () => void;
+    onSuccess: () => VlAndAsync<void>;
+    onFail: () => VlAndAsync<void>;
     constructor(obj: ADVUserCheck) {
         super(obj);
         this.type = 'Check';

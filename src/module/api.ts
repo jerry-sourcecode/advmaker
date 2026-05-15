@@ -22,6 +22,7 @@ import type { VNode } from 'vue';
 import { Game, RuntimeError } from './game.ts';
 import type { CharsIds, ItemIds, StatusIds } from './type/user';
 import { createRestrictedMapProxy, type MapProxy } from './utils/util.ts';
+import { useEmitter } from './store/emitter.ts';
 
 let backpackCache: MapProxy<Record<ItemIds, number>> | null = null;
 let statusCache: MapProxy<Record<StatusIds, number>> | null = null;
@@ -71,7 +72,7 @@ export const ADVMaker = {
     goto(next: ADVUserNext) {
         let newNext: ADVNext;
         if (typeof next === 'function') {
-            next = next();
+            next = next() ?? null;
         }
         if (Array.isArray(next)) {
             newNext = [];
@@ -87,9 +88,23 @@ export const ADVMaker = {
     end(desc: string): string {
         return `_END&${desc}`;
     },
-    appendMessage(content: string | VNode, type: MessageType = 'story') {
+    print(content: string | VNode, type: MessageType = 'story') {
         const message = useMessageStore();
         message.appendMessage(new ADVMessage(content, type));
+    },
+    async printAsync(content: string | VNode, type: MessageType = 'story') {
+        const message = useMessageStore();
+        message.appendMessage(new ADVMessage(content, type));
+        const emitter = useEmitter();
+        await emitter.emit('wait-for-click-screen');
+    },
+    showShopPanel() {
+        const emitter = useEmitter();
+        emitter.emit('open-shop');
+    },
+    showSavePanel() {
+        const emitter = useEmitter();
+        emitter.emit('open-save');
     },
 };
 

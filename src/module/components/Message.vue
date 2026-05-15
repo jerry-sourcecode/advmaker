@@ -10,6 +10,7 @@
             :style="`${messageStore.isMkChoice ? `margin` : `padding`}-bottom: 251px`"
             id="main-content"
             @click="onScreenClick"
+            ref="mainDivRef"
         >
             <TransitionGroup name="message" tag="div" class="message-box">
                 <div
@@ -34,13 +35,15 @@
 import { useMessageStore } from '../store/message.ts';
 import { useStateStore } from '../store/state.ts';
 import { useEmitter } from '../store/emitter.ts';
-import { type Component, ref } from 'vue';
+import { type Component, type Ref, ref } from 'vue';
 import type { MessageType } from '../data/model.ts';
 import VNodeRenderer from './VNodeRenderer.vue';
 
 const messageStore = useMessageStore();
 const stateStore = useStateStore();
 const emitter = useEmitter();
+
+const mainDivRef: Ref<null | HTMLDivElement> = ref(null);
 
 const isWaitClick = ref(false);
 
@@ -50,6 +53,10 @@ emitter.on('wait-for-click-screen', () => {
     return new Promise((res) => {
         resList.push(res);
     });
+});
+
+emitter.on('scroll-to-end', () => {
+    mainDivRef.value!.scrollTop = mainDivRef.value!.scrollHeight;
 });
 
 function onScreenClick() {

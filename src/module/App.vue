@@ -10,6 +10,9 @@ import { computed, ref } from 'vue';
 import Menu from './components/Menu/Menu.vue';
 import { Icon } from '@iconify/vue';
 import type { GlobalThemeOverrides } from 'naive-ui';
+import { useEmitter } from './store/emitter.ts';
+import Shop from './components/Menu/Shop.vue';
+import Memory from './components/Menu/Memory.vue';
 
 const storyStore = useStoryStore();
 const stateStore = useStateStore();
@@ -24,6 +27,12 @@ const themeOverrides = computed<GlobalThemeOverrides>(() => ({
         fontSize: isMobile.value ? '14px' : '18px', // 默认14px，PC/平板用17px
     },
 }));
+
+const emitter = useEmitter();
+const showShopModal = ref(false);
+const showMemoryModal = ref(false);
+emitter.on('open-shop', () => (showShopModal.value = true));
+emitter.on('open-save', () => (showMemoryModal.value = true));
 </script>
 
 <template>
@@ -52,9 +61,11 @@ const themeOverrides = computed<GlobalThemeOverrides>(() => ({
 
                 <n-drawer v-model:show="active" :width="300" placement="left">
                     <n-drawer-content title="菜单" closable>
-                        <Menu />
+                        <Menu :shop="showShopModal" :memory="showMemoryModal" />
                     </n-drawer-content>
                 </n-drawer>
+                <Shop v-model="showShopModal" />
+                <Memory v-model="showMemoryModal" />
             </div>
             <GameOver v-else />
         </n-dialog-provider>

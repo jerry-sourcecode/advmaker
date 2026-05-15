@@ -66,12 +66,12 @@ export const Game = {
      * 进入一个场景
      * @param sceneId 场景 id
      */
-    enter(sceneId: string) {
+    async enter(sceneId: string) {
         const stateStore = useStateStore();
         const storyStore = useStoryStore();
         const messageStore = useMessageStore();
         const scene = storyStore.sceneMap.get(sceneId);
-        scene?.onEnter();
+        await scene?.onEnter();
         if (scene === undefined) {
             this.error(new RuntimeError(2, `Can't Find Scene, Id: '${sceneId}'.`));
             return;
@@ -90,7 +90,7 @@ export const Game = {
         const messageStore = useMessageStore();
         const emitter = useEmitter();
         const dialog = storyStore.dialogMap.get(dialogId);
-        dialog?.onStart();
+        await dialog?.onStart();
         if (dialog === undefined) {
             this.error(new RuntimeError(2, `Can't Find Dialog, Id: '${dialogId}'.`));
             return;
@@ -119,14 +119,14 @@ export const Game = {
     },
     /**
      * 执行下一个动作
-     * @param nextAct 下面要进行的动作
+     * @param act 下面要进行的动作
      */
-    toNext(nextAct: ADVNext) {
-        if (nextAct === null) return;
+    async toNext(act: ADVNext) {
+        if (act === null) return;
         const stateStore = useStateStore();
         const emitter = useEmitter();
-        stateStore.last = nextAct;
-        nextAct = RV(nextAct);
+        stateStore.last = act;
+        const nextAct = RV(act);
         if (typeof nextAct === 'string') {
             if (nextAct.startsWith('_END&')) {
                 stateStore.isDead = true;
@@ -152,7 +152,7 @@ export const Game = {
                 nextAct[res].times++;
                 Game.toNext(nextAct[res].next);
             });
-        } else if (nextAct !== null) {
+        } else if (nextAct !== null && typeof nextAct !== 'function') {
             const dc = nextAct.dice;
             let pt = 0;
             if (typeof dc === 'object') {
@@ -174,18 +174,18 @@ export const Game = {
 
             const res = RV(nextAct.target);
             if (pt >= res) {
-                ADVMaker.appendMessage(
+                ADVMaker.print(
                     `检定成功！掷出 ${ori}${diff_str}=${pt} 点，目标 ${res} 点。`,
                     'system',
                 );
-                nextAct.onSuccess();
+                await nextAct.onSuccess();
                 Game.toNext(nextAct.success);
             } else {
-                ADVMaker.appendMessage(
+                ADVMaker.print(
                     `检定失败！掷出 ${ori}${diff_str}=${pt} 点，目标 ${res} 点。`,
                     'system',
                 );
-                nextAct.onFail();
+                await nextAct.onFail();
                 Game.toNext(nextAct.fail);
             }
         }

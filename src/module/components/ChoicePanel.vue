@@ -76,6 +76,7 @@ emitter.on('make-choice', (chs: ADVChoice[], title: string = '你的选择') => 
     choiceName.value = title;
     isShow.value = true;
     messageStore.isMkChoice = true;
+    emitter.emit('scroll-to-end');
     return new Promise((res) => {
         resolve = res;
     });

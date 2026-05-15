@@ -10,6 +10,9 @@ export const useEmitter = defineStore('signals', () => {
     interface signalType {
         'make-choice': (choices: ADVChoice[], title?: string) => Promise<number>;
         'wait-for-click-screen': () => Promise<void>;
+        'open-shop': () => void;
+        'open-save': () => void;
+        'scroll-to-end': () => void;
     }
 
     // 存储信号与回调函数的映射

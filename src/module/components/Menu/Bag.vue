@@ -77,7 +77,7 @@ const showDetailAction = computed(() => {
 });
 
 function actionUse() {
-    ADVMaker.appendMessage(`玩家使用 ${detailValue.value} 个${detailObj.value?.name}。`, 'user');
+    ADVMaker.print(`玩家使用 ${detailValue.value} 个${detailObj.value?.name}。`, 'user');
     detailObj.value!.onUse!(detailValue.value);
     showDetailModal.value = false;
     stateStore.obtainItem(detailObj.value!.id, -detailValue.value);
@@ -90,13 +90,10 @@ function actionDiscard() {
         positiveText: '确定',
         negativeText: '取消',
         onPositiveClick: () => {
-            ADVMaker.appendMessage(
-                `玩家丢弃 ${detailValue.value} 个${detailObj.value?.name}。`,
-                'user',
-            );
-            detailObj.value!.onDiscard!(detailValue.value);
+            ADVMaker.print(`玩家丢弃 ${detailValue.value} 个${detailObj.value?.name}。`, 'user');
             showDetailModal.value = false;
             stateStore.obtainItem(detailObj.value!.id, -detailValue.value);
+            detailObj.value!.onDiscard!(detailValue.value);
         },
     });
 }
