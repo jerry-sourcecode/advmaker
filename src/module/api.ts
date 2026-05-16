@@ -12,6 +12,7 @@ import {
     type ADVNext,
     ADVScene,
     ADVUserDialog,
+    ADVUserGoods,
     type ADVUserNext,
     ADVUserScene,
     type MessageType,
@@ -20,7 +21,7 @@ import { useStateStore } from './store/state.ts';
 import { useMessageStore } from './store/message.ts';
 import type { VNode } from 'vue';
 import { Game, RuntimeError } from './game.ts';
-import type { CharsIds, ItemIds, StatusIds } from './type/user';
+import type { CharsIds, GameConfig, ItemIds, StatusIds } from './type/user';
 import { createRestrictedMapProxy, type MapProxy } from './utils/util.ts';
 import { useEmitter } from './store/emitter.ts';
 
@@ -58,6 +59,14 @@ export const ADVMaker = {
             );
         }
         return charsCache;
+    },
+    defineConfig<TItems extends Record<string, any>>(
+        config: Omit<GameConfig, 'items' | 'goods'> & {
+            items: TItems;
+            goods?: { [K in keyof TItems]?: ADVUserGoods<Extract<keyof TItems, string>> }; // 关键约束
+        },
+    ): typeof config {
+        return config;
     },
     appendScene(id: string, config: ADVUserScene): ADVScene {
         const storyStore = useStoryStore();
