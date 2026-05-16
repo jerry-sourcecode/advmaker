@@ -6,7 +6,7 @@ import { useStateStore } from './store/state.ts';
 import './api.ts';
 import StatusPanel from './components/StatusPanel.vue';
 import GameOver from './components/GameOver.vue';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import Menu from './components/Menu/Menu.vue';
 import { Icon } from '@iconify/vue';
 import type { GlobalThemeOverrides } from 'naive-ui';
@@ -29,10 +29,34 @@ const themeOverrides = computed<GlobalThemeOverrides>(() => ({
 }));
 
 const emitter = useEmitter();
-const showShopModal = ref(false);
-const showMemoryModal = ref(false);
-emitter.on('open-shop', () => (showShopModal.value = true));
-emitter.on('open-save', () => (showMemoryModal.value = true));
+const showShopModel = ref(false);
+const showMemoryModel = ref(false);
+emitter.on('open-shop', () => (showShopModel.value = true));
+emitter.on('open-save', () => (showMemoryModel.value = true));
+
+let savePromiseRes: Array<() => void> = [];
+emitter.on('wait-close-save', () => {
+    return new Promise<void>((res) => {
+        savePromiseRes.push(res);
+    });
+});
+let shopPromiseRes: Array<() => void> = [];
+emitter.on('wait-close-shop', () => {
+    return new Promise<void>((res) => {
+        shopPromiseRes.push(res);
+    });
+});
+
+watch(showShopModel, (nv: boolean, ov: boolean) => {
+    if (!nv && ov) {
+        shopPromiseRes.forEach((v) => v());
+    }
+});
+watch(showMemoryModel, (nv: boolean, ov: boolean) => {
+    if (!nv && ov) {
+        savePromiseRes.forEach((v) => v());
+    }
+});
 </script>
 
 <template>
@@ -61,11 +85,11 @@ emitter.on('open-save', () => (showMemoryModal.value = true));
 
                 <n-drawer v-model:show="active" :width="300" placement="left">
                     <n-drawer-content title="菜单" closable>
-                        <Menu :shop="showShopModal" :memory="showMemoryModal" />
+                        <Menu />
                     </n-drawer-content>
                 </n-drawer>
-                <Shop v-model="showShopModal" />
-                <Memory v-model="showMemoryModal" />
+                <Shop v-model="showShopModel" />
+                <Memory v-model="showMemoryModel" />
             </div>
             <GameOver v-else />
         </n-dialog-provider>

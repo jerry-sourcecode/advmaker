@@ -11,7 +11,9 @@ export const useEmitter = defineStore('signals', () => {
         'make-choice': (choices: ADVChoice[], title?: string) => Promise<number>;
         'wait-for-click-screen': () => Promise<void>;
         'open-shop': () => void;
+        'wait-close-shop': () => Promise<void>;
         'open-save': () => void;
+        'wait-close-save': () => Promise<void>;
         'scroll-to-end': () => void;
     }
 

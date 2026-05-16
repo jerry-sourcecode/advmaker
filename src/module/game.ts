@@ -60,7 +60,7 @@ export const Game = {
             saveManager.run(run);
         }
         // 进入初始场景
-        else this.enter(storyStore.mainScene!);
+        else await this.enter(storyStore.mainScene!);
     },
     /**
      * 进入一个场景
@@ -79,7 +79,8 @@ export const Game = {
 
         stateStore.location = scene.name;
         messageStore.messageList = [];
-        Game.toNext(scene.next);
+
+        await Game.toNext(scene.next);
     },
     /**
      * 进行一次对话
@@ -108,7 +109,7 @@ export const Game = {
             // 不可能到达
             throw Error('Never Reach');
         }
-        Game.toNext(dialog.next);
+        await Game.toNext(dialog.next);
     },
     /**
      * 抛出错误
@@ -135,16 +136,16 @@ export const Game = {
             }
             const storyStore = useStoryStore();
             if (nextAct === '_START') {
-                this.toNext(storyStore.mainScene);
+                await this.toNext(storyStore.mainScene);
             }
             const next = storyStore.tryGet(nextAct, storyStore.TP.SCENE | storyStore.TP.DIALOG);
             if (next === undefined)
                 Game.error(new RuntimeError(2, `Can't Find Scene or Dialog, Id: '${nextAct}'.`));
             if (next?.type === 'Scene') {
-                Game.enter(next.id);
+                await Game.enter(next.id);
             }
             if (next?.type === 'Dialog') {
-                Game.speak(next.id);
+                await Game.speak(next.id);
             }
             return;
         } else if (Array.isArray(nextAct)) {
@@ -174,19 +175,19 @@ export const Game = {
 
             const res = RV(nextAct.target);
             if (pt >= res) {
-                ADVMaker.print(
+                await ADVMaker.print(
                     `检定成功！掷出 ${ori}${diff_str}=${pt} 点，目标 ${res} 点。`,
                     'system',
                 );
                 await nextAct.onSuccess();
-                Game.toNext(nextAct.success);
+                await Game.toNext(nextAct.success);
             } else {
-                ADVMaker.print(
+                await ADVMaker.print(
                     `检定失败！掷出 ${ori}${diff_str}=${pt} 点，目标 ${res} 点。`,
                     'system',
                 );
                 await nextAct.onFail();
-                Game.toNext(nextAct.fail);
+                await Game.toNext(nextAct.fail);
             }
         }
     },

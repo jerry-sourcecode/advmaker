@@ -83,28 +83,26 @@ export const ADVMaker = {
         else {
             newNext = new ADVCheck(next);
         }
-        Game.toNext(newNext);
+        void Game.toNext(newNext);
     },
     end(desc: string): string {
         return `_END&${desc}`;
     },
-    print(content: string | VNode, type: MessageType = 'story') {
-        const message = useMessageStore();
-        message.appendMessage(new ADVMessage(content, type));
-    },
-    async printAsync(content: string | VNode, type: MessageType = 'story') {
+    async print(content: string | VNode, type: MessageType = 'story') {
         const message = useMessageStore();
         message.appendMessage(new ADVMessage(content, type));
         const emitter = useEmitter();
         await emitter.emit('wait-for-click-screen');
     },
-    showShopPanel() {
+    async showShopPanel() {
         const emitter = useEmitter();
         emitter.emit('open-shop');
+        await emitter.emit('wait-close-shop');
     },
-    showSavePanel() {
+    async showSavePanel() {
         const emitter = useEmitter();
         emitter.emit('open-save');
+        await emitter.emit('wait-close-save');
     },
 };
 

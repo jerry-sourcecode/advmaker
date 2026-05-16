@@ -1,37 +1,37 @@
 <template>
     <div class="outer-div">
-        <n-button quaternary class="menu-button" @click="showBagModal = true">
+        <n-button quaternary class="menu-button" @click="showBagModel = true">
             <n-icon size="25" class="icon">
                 <Icon icon="mdi:backpack" />
             </n-icon>
             <p class="menu-p">背包</p>
-            <Bag v-model="showBagModal" />
+            <Bag v-model="showBagModel" />
         </n-button>
-        <n-button quaternary class="menu-button" @click="showAttuModal = true">
+        <n-button quaternary class="menu-button" @click="showAttuModel = true">
             <n-icon size="25" class="icon">
                 <Icon icon="stash:user-avatar" />
             </n-icon>
             <p class="menu-p">属性</p>
-            <Attu v-model="showAttuModal" />
+            <Attu v-model="showAttuModel" />
         </n-button>
-        <n-button quaternary class="menu-button" @click="showShopModal = true">
+        <n-button quaternary class="menu-button" @click="emitter.emit('open-shop')">
             <n-icon size="25" class="icon">
                 <Icon icon="mdi:store" />
             </n-icon>
             <p class="menu-p">商城</p>
         </n-button>
-        <n-button quaternary class="menu-button" @click="showMemoryModal = true">
+        <n-button quaternary class="menu-button" @click="emitter.emit('open-save')">
             <n-icon size="25" class="icon">
                 <Icon icon="lucide:save" />
             </n-icon>
             <p class="menu-p">记忆</p>
         </n-button>
-        <n-button quaternary class="menu-button" @click="showStoryModal = true">
+        <n-button quaternary class="menu-button" @click="showStoryModel = true">
             <n-icon size="25" class="icon">
                 <Icon icon="tabler:book" />
             </n-icon>
             <p class="menu-p">故事</p>
-            <Story v-model="showStoryModal" />
+            <Story v-model="showStoryModel" />
         </n-button>
     </div>
 </template>
@@ -42,12 +42,13 @@ import Attu from './Attu.vue';
 import { ref } from 'vue';
 import Bag from './Bag.vue';
 import Story from './Story.vue';
+import { useEmitter } from '../../store/emitter.ts';
 
-const showAttuModal = ref(false);
-const showShopModal = defineModel('shop', { default: false });
-const showMemoryModal = defineModel('memory', { default: false });
-const showBagModal = ref(false);
-const showStoryModal = ref(false);
+const emitter = useEmitter();
+
+const showAttuModel = ref(false);
+const showBagModel = ref(false);
+const showStoryModel = ref(false);
 </script>
 
 <style scoped>
