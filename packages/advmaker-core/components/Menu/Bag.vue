@@ -56,7 +56,7 @@ import { useStateStore } from '../../store/state.ts';
 import { useStoryStore } from '../../store/story.ts';
 import { computed, type Ref, ref } from 'vue';
 import { useDialog } from 'naive-ui';
-import { ADVMaker } from '../../api.ts';
+import { Adv } from '../../api.ts';
 import ItemPanel from './ItemPanel.vue';
 import { ADVItem } from '../../data/model.ts';
 import Empty from '../Empty.vue';
@@ -77,7 +77,7 @@ const showDetailAction = computed(() => {
 });
 
 function actionUse() {
-    ADVMaker.print(`玩家使用 ${detailValue.value} 个${detailObj.value?.name}。`, 'user');
+    Adv.print(`玩家使用 ${detailValue.value} 个${detailObj.value?.name}。`, 'user');
     detailObj.value!.onUse!(detailValue.value);
     showDetailModal.value = false;
     stateStore.obtainItem(detailObj.value!.id, -detailValue.value);
@@ -90,7 +90,7 @@ function actionDiscard() {
         positiveText: '确定',
         negativeText: '取消',
         onPositiveClick: () => {
-            ADVMaker.print(`玩家丢弃 ${detailValue.value} 个${detailObj.value?.name}。`, 'user');
+            Adv.print(`玩家丢弃 ${detailValue.value} 个${detailObj.value?.name}。`, 'user');
             showDetailModal.value = false;
             stateStore.obtainItem(detailObj.value!.id, -detailValue.value);
             detailObj.value!.onDiscard!(detailValue.value);

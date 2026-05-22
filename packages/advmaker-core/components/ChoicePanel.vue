@@ -4,7 +4,7 @@
         placement="bottom"
         :mask-closable="false"
         :show-mask="false"
-        :height="251"
+        :height="281"
     >
         <n-drawer-content title="你的选择">
             <div class="choice-div" v-for="(it, idx) in choices">
@@ -36,11 +36,11 @@
 </template>
 
 <script setup lang="ts">
-import { ADVCheck, ADVChoice, ADVDice } from '../data/model.ts';
+import { ADVCheck, ADVChoice, ADVDice } from '../data/model';
 import { type Component, ref } from 'vue';
-import { useEmitter } from '../store/emitter.ts';
-import { useMessageStore } from '../store/message.ts';
-import { instanceType, RV } from '../utils/util.ts';
+import { useEmitter } from '../store/emitter';
+import { useMessageStore } from '../store/message';
+import { instanceType, RV } from '../utils/util';
 import type { DiceExpression } from '../utils/dice.ts';
 import VNodeRenderer from './VNodeRenderer.vue';
 

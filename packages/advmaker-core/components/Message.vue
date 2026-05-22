@@ -7,7 +7,7 @@
         </div>
 
         <div
-            :style="`${messageStore.isMkChoice ? `margin` : `padding`}-bottom: 251px`"
+            :style="`${messageStore.isMkChoice ? `margin` : `padding`}-bottom: 281px`"
             id="main-content"
             @click="onScreenClick"
             ref="mainDivRef"

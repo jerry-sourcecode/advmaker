@@ -12,10 +12,10 @@
                     <n-list bordered style="margin: 10px">
                         <n-list-item
                             v-for="(item, id) in goodsMap"
-                            :style="`color: ${stateStore.qryItem(id as string) >= item * detailValue ? 'black' : '#F56C6C'};`"
+                            :style="`color: ${stateStore.qryItem(id as string) >= item! * detailValue ? 'black' : '#F56C6C'};`"
                         >
                             {{ storyStore.objectMap.get(id as string)?.name }} ×
-                            {{ item * detailValue }}
+                            {{ item! * detailValue }}
                         </n-list-item>
                     </n-list>
                     <n-pagination
@@ -71,7 +71,7 @@ import type { ADVItem } from '../../data/model.ts';
 import { useStateStore } from '../../store/state.ts';
 import ItemPanel from './ItemPanel.vue';
 import { useStoryStore } from '../../store/story.ts';
-import { ADVMaker } from '../../api.ts';
+import { Adv } from '../../api';
 
 const showModal = defineModel({ type: Boolean });
 const detailObj: Ref<ADVItem | null> = ref(null);
@@ -96,17 +96,17 @@ const maxiBuyNumber = computed(() => {
     let maxi = detailObjValue.value;
     for (let itemsKey in goodsMap.value) {
         const val = goodsMap.value[itemsKey];
-        maxi = Math.min(Math.floor(stateStore.qryItem(itemsKey) / val), maxi);
+        maxi = Math.min(Math.floor(stateStore.qryItem(itemsKey) / val!), maxi);
     }
     return maxi;
 });
 
 function actionBuy() {
     for (let itemsKey in goodsMap.value) {
-        const value = goodsMap.value[itemsKey];
-        ADVMaker.obtainItem(itemsKey, -value * detailValue.value);
+        const value = goodsMap.value[itemsKey]!;
+        Adv.bag[itemsKey] -= value * detailValue.value;
     }
-    ADVMaker.obtainItem(detailObj.value?.id!, detailValue.value);
+    Adv.bag[detailObj.value?.id!] += detailValue.value;
     stateStore.shop.set(detailObj.value?.id!, detailObjValue.value - detailValue.value);
     showDetailModal.value = false;
 }

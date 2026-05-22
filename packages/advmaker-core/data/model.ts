@@ -15,6 +15,9 @@ type ADVUserNextLiteral = string | ADVUserChoice[] | ADVUserCheck | null;
 export type ADVUserNext = VlAndFn<ADVUserNextLiteral> | (() => void);
 export type MessageType = 'story' | 'system' | 'user';
 export type IdKVType<T, K extends string = string> = {
+    [id in K]: T;
+};
+export type IdKVTypeAllowMiss<T, K extends string = string> = {
     [id in K]?: T;
 };
 export type VlAndFn<T> = T | (() => T);
@@ -224,7 +227,7 @@ export class ADVUserStatusGroup {
 
 export class ADVUserGoods<T extends string = string> {
     inventory?: number;
-    need: VlAndLs<IdKVType<number, T>> = [];
+    need: VlAndLs<IdKVTypeAllowMiss<number, T>> = [];
     constructor(obj: ADVUserGoods) {
         Object.assign(this, obj);
     }
@@ -233,7 +236,7 @@ export class ADVUserGoods<T extends string = string> {
 export class ADVGoods extends ADVUserGoods {
     id: GoodsIds;
     inventory: number;
-    need: IdKVType<number>[];
+    need: IdKVTypeAllowMiss<number>[];
     constructor(obj: ADVUserGoods, id: GoodsIds) {
         super(obj);
         this.id = id;

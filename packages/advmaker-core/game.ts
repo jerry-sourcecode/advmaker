@@ -7,7 +7,7 @@ import { useStateStore } from './store/state.ts';
 import { useMessageStore } from './store/message.ts';
 import { useEmitter } from './store/emitter.ts';
 import { ADVCharacter, ADVGoods, ADVItem, type ADVNext, ADVStatus } from './data/model.ts';
-import { ADVMaker } from './api.ts';
+import { Adv } from './api.ts';
 import { dice } from './utils/dice.ts';
 import { RV } from './utils/util.ts';
 import { useSaveManager } from './store/saveManager.ts';
@@ -175,14 +175,14 @@ export const Game = {
 
             const res = RV(nextAct.target);
             if (pt >= res) {
-                await ADVMaker.print(
+                await Adv.print(
                     `检定成功！掷出 ${ori}${diff_str}=${pt} 点，目标 ${res} 点。`,
                     'system',
                 );
                 await nextAct.onSuccess();
                 await Game.toNext(nextAct.success);
             } else {
-                await ADVMaker.print(
+                await Adv.print(
                     `检定失败！掷出 ${ori}${diff_str}=${pt} 点，目标 ${res} 点。`,
                     'system',
                 );

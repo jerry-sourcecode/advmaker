@@ -29,7 +29,7 @@ let backpackCache: MapProxy<Record<ItemIds, number>> | null = null;
 let statusCache: MapProxy<Record<StatusIds, number>> | null = null;
 let charsCache: MapProxy<Record<CharsIds, ADVCharacter>> | null = null;
 
-export const ADVMaker = {
+export const Adv = {
     get bag() {
         if (!backpackCache) {
             const stateStore = useStateStore();
@@ -63,9 +63,11 @@ export const ADVMaker = {
     defineConfig<TItems extends Record<string, any>>(
         config: Omit<GameConfig, 'items' | 'goods'> & {
             items: TItems;
-            goods?: { [K in keyof TItems]?: ADVUserGoods<Extract<keyof TItems, string>> }; // 关键约束
+            goods?: { [K in keyof TItems]?: ADVUserGoods<Extract<keyof TItems, string>> };
         },
     ): typeof config {
+        const storyStore = useStoryStore();
+        storyStore.storyConfigObj = config;
         return config;
     },
     appendScene(id: string, config: ADVUserScene): ADVScene {
@@ -114,8 +116,6 @@ export const ADVMaker = {
         await emitter.emit('wait-close-save');
     },
 };
-
-window.ADVMaker = ADVMaker;
 
 function checkHasSameId(id: string) {
     const storyStore = useStoryStore();

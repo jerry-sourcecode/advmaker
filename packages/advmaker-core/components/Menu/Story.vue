@@ -8,7 +8,7 @@
                             <p style="font-size: 19px">{{ qry_char(item[0]).name }}</p>
                         </template>
                         <template #description>{{ qry_char(item[0]).desc }}</template>
-                        印象：
+                        <div v-if="qry_char(item[0]).impression.length !== 0">印象：</div>
                         <p v-for="txt in qry_char(item[0]).impression" class="para">{{ txt }}</p>
                     </n-thing>
                 </n-list-item>
@@ -19,17 +19,15 @@
 </template>
 
 <script setup lang="ts">
-import { useStateStore } from '../../store/state.ts';
-import { useStoryStore } from '../../store/story.ts';
+import { useStateStore } from '../../store/state';
 import { computed } from 'vue';
 import Empty from '../Empty.vue';
 
 const showModal = defineModel({ type: Boolean });
 const stateStore = useStateStore();
-const storyStore = useStoryStore();
 
 function qry_char(charId: string) {
-    return storyStore.characterMap.get(charId)!;
+    return stateStore.character.get(charId)!;
 }
 
 const hasKnow = computed(() => {
