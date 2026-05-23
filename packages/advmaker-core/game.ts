@@ -13,6 +13,9 @@ import { RV } from './utils/util.ts';
 import { useSaveManager } from './store/saveManager.ts';
 import type { CharsIds, GameConfig, GoodsIds, ItemIds, StatusIds } from './type/user';
 
+let lastDialogId: string | null = null;
+let lastSceneId: string | null = null;
+
 /**
  * 运行时错误类，错误码以 1 开头，可以调用 Game.error 抛出错误
  * - code：错误码（< 100），会自动在前面加上 1 前缀
@@ -138,10 +141,15 @@ export const Game = {
             if (nextAct === '_START') {
                 await this.toNext(storyStore.mainScene);
             }
-            const next = storyStore.tryGet(nextAct, storyStore.TP.SCENE | storyStore.TP.DIALOG);
+            const next = storyStore.tryGet(nextAct);
             if (next === undefined)
                 Game.error(new RuntimeError(2, `Can't Find Scene or Dialog, Id: '${nextAct}'.`));
+            if (lastDialogId !== null) storyStore.dialogMap.get(lastDialogId)!.onLeave();
+            lastDialogId = next?.id!;
             if (next?.type === 'Scene') {
+                if (lastSceneId !== null) storyStore.sceneMap.get(lastSceneId)?.onLeave();
+                lastSceneId = next.id;
+                lastDialogId = null;
                 await Game.enter(next.id);
             }
             if (next?.type === 'Dialog') {

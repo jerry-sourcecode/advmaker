@@ -88,6 +88,7 @@ export class ADVUserScene {
     name: string = '';
     next?: ADVUserNext;
     onEnter?: () => VlAndAsync<void>;
+    onLeave?: () => VlAndAsync<void>;
     constructor(obj: ADVUserScene) {
         Object.assign(this, obj);
     }
@@ -98,11 +99,13 @@ export class ADVScene extends ADVUserScene {
     type: 'Scene' = 'Scene';
     next: ADVNext;
     onEnter: () => VlAndAsync<void>;
+    onLeave: () => VlAndAsync<void>;
     constructor(id: string, obj: ADVUserScene) {
         super(obj);
         this.id = id;
         this.next = fromUserNectToNext(obj.next ?? null);
         this.onEnter = obj.onEnter ?? (() => {});
+        this.onLeave = obj.onLeave ?? (() => {});
     }
 }
 
@@ -110,6 +113,7 @@ export class ADVUserDialog {
     script?: VlAndLs<string | VNode>;
     next?: ADVUserNext;
     onStart?: () => VlAndAsync<void>;
+    onLeave?: () => VlAndAsync<void>;
     constructor(obj: ADVUserDialog) {
         this.script = obj.script;
         // 为 Component 增加 markRow
@@ -132,11 +136,13 @@ export class ADVDialog extends ADVUserDialog {
     next: ADVNext;
     script: Array<string | VNode>;
     onStart: () => VlAndAsync<void>;
+    onLeave: () => VlAndAsync<void>;
     constructor(id: string, obj: ADVUserDialog) {
         super(obj);
         this.id = id;
         this.next = fromUserNectToNext(obj.next ?? null);
         this.onStart = obj.onStart ?? (() => {});
+        this.onLeave = obj.onLeave ?? (() => {});
         if (Array.isArray(obj.script)) this.script = obj.script;
         else if (obj.script === undefined) this.script = [];
         else this.script = [obj.script];
@@ -241,7 +247,7 @@ export class ADVUserGoods<T extends string = string> {
 export class ADVGoods extends ADVUserGoods {
     id: GoodsIds;
     inventory: number;
-    need: IdKVTypeAllowMiss<number>[];
+    need: IdKVTypeAllowMiss<number, ItemIds>[];
     constructor(obj: ADVUserGoods, id: GoodsIds) {
         super(obj);
         this.id = id;

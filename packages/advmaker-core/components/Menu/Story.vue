@@ -22,11 +22,12 @@
 import { useStateStore } from '../../store/state';
 import { computed } from 'vue';
 import Empty from '../Empty.vue';
+import type { CharsIds } from '../../type/user';
 
 const showModal = defineModel({ type: Boolean });
 const stateStore = useStateStore();
 
-function qry_char(charId: string) {
+function qry_char(charId: CharsIds) {
     return stateStore.character.get(charId)!;
 }
 

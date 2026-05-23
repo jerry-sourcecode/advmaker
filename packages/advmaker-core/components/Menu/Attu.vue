@@ -28,13 +28,14 @@ import { useStateStore } from '../../store/state.ts';
 import { RV } from '../../utils/util.ts';
 import { computed } from 'vue';
 import { useStoryStore } from '../../store/story.ts';
+import type { StatusIds } from '../../type/user';
 
 const showModal = defineModel({ type: Boolean });
 const stateStore = useStateStore();
 const storyStore = useStoryStore();
 
 const groups = computed(() => {
-    const obj = new Map<string, string[]>();
+    const obj = new Map<string, StatusIds[]>();
     stateStore.status.forEach((_, id) => {
         const st_obj = storyStore.statusMap.get(id)!;
         if (obj.has(st_obj.group)) {
@@ -48,7 +49,7 @@ const groups = computed(() => {
     return obj;
 });
 
-function qry_status(id: string) {
+function qry_status(id: StatusIds) {
     return storyStore.statusMap.get(id)!;
 }
 </script>

@@ -12,9 +12,9 @@
                     <n-list bordered style="margin: 10px">
                         <n-list-item
                             v-for="(item, id) in goodsMap"
-                            :style="`color: ${stateStore.qryItem(id as string) >= item! * detailValue ? 'black' : '#F56C6C'};`"
+                            :style="`color: ${stateStore.qryItem(id) >= item! * detailValue ? 'black' : '#F56C6C'};`"
                         >
-                            {{ storyStore.objectMap.get(id as string)?.name }} ×
+                            {{ storyStore.objectMap.get(id)?.name }} ×
                             {{ item! * detailValue }}
                         </n-list-item>
                     </n-list>
@@ -67,11 +67,12 @@
 
 <script setup lang="ts">
 import { computed, type Ref, ref } from 'vue';
-import type { ADVItem } from '../../data/model.ts';
 import { useStateStore } from '../../store/state.ts';
 import ItemPanel from './ItemPanel.vue';
 import { useStoryStore } from '../../store/story.ts';
 import { Adv } from '../../api';
+import type { GoodsIds, ItemIds } from '../../type/user';
+import type { ADVItem } from '../../data/model.ts';
 
 const showModal = defineModel({ type: Boolean });
 const detailObj: Ref<ADVItem | null> = ref(null);
@@ -83,11 +84,11 @@ const storyStore = useStoryStore();
 const usage = ref(0);
 
 const usageLength = computed(() => {
-    return storyStore.goodsMap.get(detailObj.value?.id!)?.need.length;
+    return storyStore.goodsMap.get(detailObj.value?.id! as GoodsIds)?.need.length;
 });
 
 const goodsMap = computed(() => {
-    const res = storyStore.goodsMap.get(detailObj.value?.id!);
+    const res = storyStore.goodsMap.get(detailObj.value?.id! as GoodsIds);
     if (res === undefined) throw "Can't find Object.";
     return res.need[usage.value - 1];
 });
@@ -95,19 +96,19 @@ const goodsMap = computed(() => {
 const maxiBuyNumber = computed(() => {
     let maxi = detailObjValue.value;
     for (let itemsKey in goodsMap.value) {
-        const val = goodsMap.value[itemsKey];
-        maxi = Math.min(Math.floor(stateStore.qryItem(itemsKey) / val!), maxi);
+        const val = goodsMap.value[itemsKey as ItemIds];
+        maxi = Math.min(Math.floor(stateStore.qryItem(itemsKey as ItemIds) / val!), maxi);
     }
     return maxi;
 });
 
 function actionBuy() {
     for (let itemsKey in goodsMap.value) {
-        const value = goodsMap.value[itemsKey]!;
-        Adv.bag[itemsKey] -= value * detailValue.value;
+        const value = goodsMap.value[itemsKey as ItemIds]!;
+        Adv.bag[itemsKey as ItemIds] -= value * detailValue.value;
     }
     Adv.bag[detailObj.value?.id!] += detailValue.value;
-    stateStore.shop.set(detailObj.value?.id!, detailObjValue.value - detailValue.value);
+    stateStore.shop.set(detailObj.value?.id! as GoodsIds, detailObjValue.value - detailValue.value);
     showDetailModal.value = false;
 }
 
@@ -115,7 +116,7 @@ function onDetailOpen(id: string, num: number) {
     usage.value = 1;
     detailValue.value = 1;
     detailObjValue.value = num;
-    detailObj.value = storyStore.objectMap.get(id)!;
+    detailObj.value = storyStore.objectMap.get(id as ItemIds)!;
     showDetailModal.value = true;
 }
 </script>
