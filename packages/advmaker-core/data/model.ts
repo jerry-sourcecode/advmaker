@@ -29,9 +29,9 @@ export type VlAndAsync<T> = T | Promise<T>;
  * @param obj 用户定义的下一步操作对象
  * @returns 系统可识别的下一步操作对象
  */
-function fromUserNectToNext(obj: ADVUserNextLiteral): ADVNextLiteral;
-function fromUserNectToNext(obj: ADVUserNext): ADVNext;
-function fromUserNectToNext(obj: ADVUserNext): ADVNext {
+export function fromUserNectToNext(obj: ADVUserNextLiteral): ADVNextLiteral;
+export function fromUserNectToNext(obj: ADVUserNext): ADVNext;
+export function fromUserNectToNext(obj: ADVUserNext): ADVNext {
     if (obj === null || obj === undefined) return null;
     if (typeof obj === 'string') return obj;
     if (typeof obj === 'function')
@@ -107,7 +107,7 @@ export class ADVScene extends ADVUserScene {
 }
 
 export class ADVUserDialog {
-    script: VlAndLs<string | VNode>;
+    script?: VlAndLs<string | VNode>;
     next?: ADVUserNext;
     onStart?: () => VlAndAsync<void>;
     constructor(obj: ADVUserDialog) {
@@ -118,7 +118,8 @@ export class ADVUserDialog {
                 if (typeof ls[id] !== 'string') ls[id] = markRaw(ls[id]);
             });
         } else {
-            if (typeof this.script !== 'string') this.script = markRaw(this.script);
+            if (typeof this.script !== 'string' && this.script !== undefined)
+                this.script = markRaw(this.script);
         }
         this.next = obj.next;
         this.onStart = obj.onStart;
@@ -129,12 +130,16 @@ export class ADVDialog extends ADVUserDialog {
     id: string;
     type: 'Dialog' = 'Dialog';
     next: ADVNext;
+    script: Array<string | VNode>;
     onStart: () => VlAndAsync<void>;
     constructor(id: string, obj: ADVUserDialog) {
         super(obj);
         this.id = id;
         this.next = fromUserNectToNext(obj.next ?? null);
         this.onStart = obj.onStart ?? (() => {});
+        if (Array.isArray(obj.script)) this.script = obj.script;
+        else if (obj.script === undefined) this.script = [];
+        else this.script = [obj.script];
     }
 }
 

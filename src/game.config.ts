@@ -1,6 +1,6 @@
 import { Adv } from '@advmaker/core';
 
-Adv.defineConfig({
+export default Adv.defineConfig({
     mainScene: 'forest-entrance', // 游戏入口场景
     gameName: '月泉秘语',
 
@@ -29,7 +29,7 @@ Adv.defineConfig({
                     min: 0,
                     default: 60,
                     color: '#7b1fa2',
-                    isDisplay: 'process',
+                    isDisplay: 'number',
                 },
             },
         },
@@ -55,7 +55,7 @@ Adv.defineConfig({
             summary: '散发着清香的野生草药，可以恢复少量生命。',
             desc: '直接使用恢复 <b>15</b> 点生命值。<br>也可用于合成药水。',
             onUse: (num: number) => {
-                Adv.status.hp = Math.min(Adv.status.hp + 15 * num, Adv.status.hpMax);
+                Adv.status.hp = Math.min(Adv.status.hp + 15 * num);
                 Adv.print(`你使用了 ${num} 份草药，恢复了 ${15 * num} 生命。`);
             },
         },
@@ -76,7 +76,7 @@ Adv.defineConfig({
             summary: '一瓶红色的药水，能瞬间恢复大量生命。',
             desc: '饮用后恢复 <b>50</b> 点生命值。',
             onUse: () => {
-                Adv.status.hp = Math.min(Adv.status.hp + 50, Adv.status.hpMax);
+                Adv.status.hp = Math.min(Adv.status.hp + 50);
                 Adv.print('你喝下生命药水，伤口快速愈合！');
             },
         },

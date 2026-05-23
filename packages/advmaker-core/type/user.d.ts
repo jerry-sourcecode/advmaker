@@ -1,5 +1,5 @@
 import { ADVUserCharacter, ADVUserGoods, ADVUserItem, ADVUserStatusGroup } from '../data/model.ts';
-import gameConfig from '../../game.config.ts';
+import gameConfig from '../../../src/game.config.ts';
 // ========== 基础类型（唯一定义处） ==========
 export interface GameConfig {
     items?: Record<string, ADVUserItem>;

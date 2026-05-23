@@ -156,34 +156,37 @@ export const Game = {
         } else if (nextAct !== null && typeof nextAct !== 'function') {
             const dc = nextAct.dice;
             let pt = 0;
+            let dc_name;
             if (typeof dc === 'object') {
                 pt = dc.roll();
+                dc_name = dc.name;
             } else {
                 pt = dice(dc);
+                dc_name = dc;
             }
 
             const ori = pt;
 
+            let tip = '';
             nextAct.modifier.forEach((v) => {
-                pt += v.value();
+                const offset = v.value();
+                pt += offset;
+                tip += ` | ${v.name}`;
+                if (offset >= 0) tip += ` <b>+${offset}</b>`;
+                else tip += ` <b>${offset}</b>`;
             });
-
-            const diff = pt - ori;
-            let diff_str = '';
-            if (diff > 0) diff_str = `+${diff}`;
-            else if (diff < 0) diff_str = `${diff}`;
 
             const res = RV(nextAct.target);
             if (pt >= res) {
                 await Adv.print(
-                    `检定成功！掷出 ${ori}${diff_str}=${pt} 点，目标 ${res} 点。`,
+                    `检定成功！【投掷 ${dc_name}】<b>${ori}</b>${tip} =<b>${pt}</b> 点，目标 ${res} 点。`,
                     'system',
                 );
                 await nextAct.onSuccess();
                 await Game.toNext(nextAct.success);
             } else {
                 await Adv.print(
-                    `检定失败！掷出 ${ori}${diff_str}=${pt} 点，目标 ${res} 点。`,
+                    `检定失败！【投掷 ${dc_name}】<b>${ori}</b>${tip} =<b>${pt}</b> 点，目标 ${res} 点。`,
                     'system',
                 );
                 await nextAct.onFail();

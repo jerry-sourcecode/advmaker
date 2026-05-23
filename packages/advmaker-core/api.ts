@@ -11,10 +11,12 @@ import {
     ADVMessage,
     type ADVNext,
     ADVScene,
+    ADVUserChoice,
     ADVUserDialog,
     ADVUserGoods,
     type ADVUserNext,
     ADVUserScene,
+    fromUserNectToNext,
     type MessageType,
 } from './data/model.ts';
 import { useStateStore } from './store/state.ts';
@@ -60,25 +62,28 @@ export const Adv = {
         }
         return charsCache;
     },
-    defineConfig<TItems extends Record<string, any>>(
-        config: Omit<GameConfig, 'items' | 'goods'> & {
+    defineConfig<
+        TItems extends Record<string, any>,
+        TConfig extends Omit<GameConfig, 'items' | 'goods'> & {
             items: TItems;
             goods?: { [K in keyof TItems]?: ADVUserGoods<Extract<keyof TItems, string>> };
         },
-    ): typeof config {
+    >(config: TConfig): TConfig {
         const storyStore = useStoryStore();
         storyStore.storyConfigObj = config;
         return config;
     },
-    appendScene(id: string, config: ADVUserScene): ADVScene {
+    appendScene(id: string, config: ADVUserScene): ADVSceneBuilder {
         const storyStore = useStoryStore();
         checkHasSameId(id);
-        return storyStore.sceneMap.set(id, new ADVScene(id, config)).get(id)!;
+        storyStore.sceneMap.set(id, new ADVScene(id, config));
+        return new ADVSceneBuilder(id);
     },
-    appendDialog(id: string, config: ADVUserDialog): ADVDialog {
+    appendDialog(id: string, config: ADVUserDialog = {}): ADVDialogBuilder {
         const storyStore = useStoryStore();
         checkHasSameId(id);
-        return storyStore.dialogMap.set(id, new ADVDialog(id, config)).get(id)!;
+        storyStore.dialogMap.set(id, new ADVDialog(id, config)).get(id);
+        return new ADVDialogBuilder(id);
     },
     goto(next: ADVUserNext) {
         let newNext: ADVNext;
@@ -123,4 +128,61 @@ function checkHasSameId(id: string) {
         Game.error(new RuntimeError(4, `There is already a dialog or scene with the ID '${id}'.`));
     }
     storyStore.usedSceneAndDialogId.add(id);
+}
+
+class ADVSceneBuilder {
+    private readonly id: string;
+    next(act: ADVUserNext = null): ADVChoiceBuilder {
+        const storyStore = useStoryStore();
+        storyStore.sceneMap.get(this.id)!.next = fromUserNectToNext(act);
+        return new ADVChoiceBuilder(this.id);
+    }
+    build(): ADVScene {
+        const storyStore = useStoryStore();
+        return storyStore.sceneMap.get(this.id)!;
+    }
+    constructor(id: string) {
+        this.id = id;
+    }
+}
+
+class ADVDialogBuilder {
+    private readonly id: string;
+    next(act: ADVUserNext = null): ADVChoiceBuilder {
+        const storyStore = useStoryStore();
+        storyStore.dialogMap.get(this.id)!.next = fromUserNectToNext(act);
+        return new ADVChoiceBuilder(this.id);
+    }
+    say(word: string | VNode): ADVDialogBuilder {
+        const storyStore = useStoryStore();
+        storyStore.dialogMap.get(this.id)!.script.push(word);
+        return this;
+    }
+    build(): ADVDialog {
+        const storyStore = useStoryStore();
+        return storyStore.dialogMap.get(this.id)!;
+    }
+    constructor(id: string) {
+        this.id = id;
+    }
+}
+
+class ADVChoiceBuilder {
+    private readonly id: string;
+    choice(choice: ADVUserChoice): ADVChoiceBuilder {
+        const storyStore = useStoryStore();
+        let obj = storyStore.dialogMap.get(this.id)!;
+        if (!Array.isArray(obj.next)) obj.next = [];
+        obj.next.push(new ADVChoice(choice));
+        return this;
+    }
+
+    build(): ADVDialog {
+        const storyStore = useStoryStore();
+        return storyStore.dialogMap.get(this.id)!;
+    }
+
+    constructor(id: string) {
+        this.id = id;
+    }
 }

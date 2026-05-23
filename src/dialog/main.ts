@@ -1,32 +1,28 @@
 import { Adv } from '@advmaker/core';
 
 // ==================== 入口对话 ====================
-Adv.appendDialog('entrance-dialog', {
-    script: [
-        '你站在月泉森林的入口，据说这里藏着一颗能实现愿望的“月光宝石”。',
-        '一位白发老者坐在树桩上，似乎早已知晓你的到来。',
-        '老者抬起头，缓缓说道：“年轻人，你想寻找月光宝石？那可不是那么容易的事。”',
-        '“你需要向我证明你的勇气、智慧或者毅力。去吧，完成三个试炼之一，然后回到这里。”',
-    ],
-    next: [
-        {
-            content: '前往河畔，试试钓鱼的耐心',
-            next: 'river-bank',
-        },
-        {
-            content: '攀上悬崖，采一株珍贵的月光草',
-            next: 'cliff-path',
-        },
-        {
-            content: '进入洞穴，解开古老的符文谜题',
-            next: 'ancient-cave',
-        },
-        {
-            content: '直接离开森林（结局）',
-            next: Adv.end('你退缩了，月光宝石永远留在了传说中。'),
-        },
-    ],
-});
+Adv.appendDialog('entrance-dialog')
+    .say('你站在月泉森林的入口，据说这里藏着一颗能实现愿望的“月光宝石”。')
+    .say('一位白发老者坐在树桩上，似乎早已知晓你的到来。')
+    .say('老者抬起头，缓缓说道：“年轻人，你想寻找月光宝石？那可不是那么容易的事。”')
+    .say('“你需要向我证明你的勇气、智慧或者毅力。去吧，完成三个试炼之一，然后回到这里。”')
+    .next()
+    .choice({
+        content: '前往河畔，试试钓鱼的耐心',
+        next: 'river-bank',
+    })
+    .choice({
+        content: '攀上悬崖，采一株珍贵的月光草',
+        next: 'cliff-path',
+    })
+    .choice({
+        content: '进入洞穴，解开古老的符文谜题',
+        next: 'ancient-cave',
+    })
+    .choice({
+        content: '直接离开森林（结局）',
+        next: Adv.end('你退缩了，月光宝石永远留在了传说中。'),
+    });
 
 // ==================== 河畔试炼 ====================
 Adv.appendDialog('river-dialog', {
