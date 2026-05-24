@@ -1,25 +1,23 @@
 <template>
     <div class="parent responsive-dialog-scrollBar">
-        <div v-for="it in backpack">
-            <n-thing
-                class="clickable-box"
-                @click="emit('onDetailOpen', it[0], it[1])"
-                v-if="it[1] !== 0"
-            >
-                <template #header-extra>
-                    <n-statistic :value="it[1]">
-                        <template #prefix>×</template>
-                    </n-statistic>
-                </template>
-                <template #header>{{ getItemDetail(it[0])?.name }}</template>
-                <template #description>
-                    <i>{{ getItemDetail(it[0])?.summary }}</i>
-                </template>
-                <div v-html="getItemDetail(it[0])?.desc" />
-                <template #footer>
-                    <slot name="footer" :id="it[0]"></slot>
-                </template>
-            </n-thing>
+        <div v-for="it in effectiveBag">
+            <div v-if="it[1] !== 0">
+                <n-thing class="clickable-box" @click="emit('onDetailOpen', it[0], it[1])">
+                    <template #header-extra>
+                        <n-statistic :value="it[1]">
+                            <template #prefix>×</template>
+                        </n-statistic>
+                    </template>
+                    <template #header>{{ getItemDetail(it[0])?.name }}</template>
+                    <template #description>
+                        <i>{{ getItemDetail(it[0])?.summary }}</i>
+                    </template>
+                    <div v-html="getItemDetail(it[0])?.desc" />
+                    <template #footer>
+                        <slot name="footer" :id="it[0]"></slot>
+                    </template>
+                </n-thing>
+            </div>
         </div>
     </div>
     <n-modal v-model:show="showDetailModal">
@@ -47,7 +45,7 @@
 <script setup lang="ts">
 import { ADVItem } from '../../data/model.ts';
 import { useStoryStore } from '../../store/story.ts';
-import type { PropType } from 'vue';
+import { computed, type PropType } from 'vue';
 
 const showDetailModal = defineModel('showDetailModel', {
     type: Boolean,
@@ -70,6 +68,14 @@ const emit = defineEmits<{
 function getItemDetail(id: string) {
     return storyStore.objectMap.get(id as any);
 }
+
+const effectiveBag = computed(() => {
+    const ret = new Map();
+    backpack.value.forEach((vl, key) => {
+        if (vl !== 0) ret.set(key, vl);
+    });
+    return ret;
+});
 </script>
 
 <style scoped>

@@ -23,7 +23,7 @@
                 v-if="RV(qryStatus(item[0]).isDisplay) === 'process'"
             />
         </div>
-        <div style="margin-left: auto; margin-right: 10px">
+        <div style="margin-left: auto; display: flex">
             <div v-for="item in number" class="status-div" style="margin-top: 13px">
                 <n-statistic tabular-nums>
                     <template #label>
@@ -88,7 +88,6 @@ const number = computed(() => {
     padding-bottom: 10px;
     width: 100%;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    gap: 10px;
     height: 80px;
 }
 .status-div {
@@ -98,6 +97,8 @@ const number = computed(() => {
     justify-content: center;
     max-width: 180px;
     height: 60px;
+    white-space: nowrap;
+    margin-right: 20px;
 }
 </style>
 
