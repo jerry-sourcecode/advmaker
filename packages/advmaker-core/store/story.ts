@@ -4,9 +4,10 @@
 
 import { defineStore } from 'pinia';
 import { type Ref, ref } from 'vue';
-import { ADVDialog, ADVGoods, ADVItem, ADVScene, ADVStatus } from '../data/model.ts';
+import { ADVDialog, ADVDice, ADVGoods, ADVItem, ADVScene, ADVStatus } from '../data/model.ts';
 import type { GoodsIds, ItemIds, StatusIds } from '../type/user';
 import type { Adv } from '../api.ts';
+import type { DiceExpression } from '../utils/dice.ts';
 
 export const useStoryStore = defineStore('story', () => {
     const mainScene = ref<string | null>(null);
@@ -19,6 +20,7 @@ export const useStoryStore = defineStore('story', () => {
     const gameName = ref('');
 
     const storyConfigObj: Ref<ReturnType<typeof Adv.defineConfig> | null> = ref(null);
+    const judgmentMode: Ref<'d20' | 'percent'> = ref('d20');
 
     const usedSceneAndDialogId = ref(new Set<string>());
 
@@ -38,6 +40,12 @@ export const useStoryStore = defineStore('story', () => {
         return undefined;
     }
 
+    function diceInit(dice: ADVDice | DiceExpression | undefined) {
+        if (dice !== undefined) return dice;
+        if (judgmentMode.value === 'percent') return 'd100';
+        else return 'd20';
+    }
+
     return {
         mainScene,
         objectMap,
@@ -50,5 +58,7 @@ export const useStoryStore = defineStore('story', () => {
         usedSceneAndDialogId,
         statusMap,
         storyConfigObj,
+        judgmentMode,
+        diceInit,
     };
 });

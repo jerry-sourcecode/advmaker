@@ -8,7 +8,6 @@ import { useMessageStore } from './store/message.ts';
 import { useEmitter } from './store/emitter.ts';
 import { ADVCharacter, ADVGoods, ADVItem, type ADVNext, ADVStatus } from './data/model.ts';
 import { Adv } from './api.ts';
-import { dice } from './utils/dice.ts';
 import { RV } from './utils/util.ts';
 import { useSaveManager } from './store/saveManager.ts';
 import type { CharsIds, GameConfig, GoodsIds, ItemIds, StatusIds } from './type/user';
@@ -144,7 +143,7 @@ export const Game = {
             const next = storyStore.tryGet(nextAct);
             if (next === undefined)
                 Game.error(new RuntimeError(2, `Can't Find Scene or Dialog, Id: '${nextAct}'.`));
-            if (lastDialogId !== null) storyStore.dialogMap.get(lastDialogId)!.onLeave();
+            if (lastDialogId !== null) storyStore.dialogMap.get(lastDialogId)!.onFinish();
             lastDialogId = next?.id!;
             if (next?.type === 'Scene') {
                 if (lastSceneId !== null) storyStore.sceneMap.get(lastSceneId)?.onLeave();
@@ -162,44 +161,7 @@ export const Game = {
                 Game.toNext(nextAct[res].next);
             });
         } else if (nextAct !== null && typeof nextAct !== 'function') {
-            const dc = nextAct.dice;
-            let pt = 0;
-            let dc_name;
-            if (typeof dc === 'object') {
-                pt = dc.roll();
-                dc_name = dc.name;
-            } else {
-                pt = dice(dc);
-                dc_name = dc;
-            }
-
-            const ori = pt;
-
-            let tip = '';
-            nextAct.modifier.forEach((v) => {
-                const offset = v.value();
-                pt += offset;
-                tip += ` | ${v.name}`;
-                if (offset >= 0) tip += ` <b>+${offset}</b>`;
-                else tip += ` <b>${offset}</b>`;
-            });
-
-            const res = RV(nextAct.target);
-            if (pt >= res) {
-                await Adv.print(
-                    `检定成功！【投掷 ${dc_name}】<b>${ori}</b>${tip} =<b>${pt}</b> 点，目标 ${res} 点。`,
-                    'system',
-                );
-                await nextAct.onSuccess();
-                await Game.toNext(nextAct.success);
-            } else {
-                await Adv.print(
-                    `检定失败！【投掷 ${dc_name}】<b>${ori}</b>${tip} =<b>${pt}</b> 点，目标 ${res} 点。`,
-                    'system',
-                );
-                await nextAct.onFail();
-                await Game.toNext(nextAct.fail);
-            }
+            await Adv.check(nextAct);
         }
     },
     defineConfig(config: GameConfig) {
@@ -244,6 +206,7 @@ export const Game = {
 
         storyStore.mainScene = config.mainScene;
         storyStore.gameName = config.gameName ?? '新游戏';
+        storyStore.judgmentMode = config.judgmentMode ?? 'd20';
 
         return config;
     },

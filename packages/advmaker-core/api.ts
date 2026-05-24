@@ -11,6 +11,7 @@ import {
     ADVMessage,
     type ADVNext,
     ADVScene,
+    ADVUserCheck,
     ADVUserChoice,
     ADVUserDialog,
     ADVUserGoods,
@@ -24,8 +25,9 @@ import { useMessageStore } from './store/message.ts';
 import type { VNode } from 'vue';
 import { Game, RuntimeError } from './game.ts';
 import type { CharsIds, GameConfig, ItemIds, StatusIds } from './type/user';
-import { createRestrictedMapProxy, type MapProxy } from './utils/util.ts';
+import { createRestrictedMapProxy, type MapProxy, RV } from './utils/util.ts';
 import { useEmitter } from './store/emitter.ts';
+import { dice } from './utils/dice.ts';
 
 let backpackCache: MapProxy<Record<ItemIds, number>> | null = null;
 let statusCache: MapProxy<Record<StatusIds, number>> | null = null;
@@ -119,6 +121,58 @@ export const Adv = {
         const emitter = useEmitter();
         emitter.emit('open-save');
         await emitter.emit('wait-close-save');
+    },
+    async check(check: ADVUserCheck) {
+        const checker = new ADVCheck(check);
+        const storyStore = useStoryStore();
+
+        function isSucc(pt: number, dc: number) {
+            if (storyStore.judgmentMode === 'd20') return pt >= dc;
+            else return pt <= dc;
+        }
+
+        let dc = storyStore.diceInit(checker.dice);
+        let pt = 0;
+        let dc_name;
+        if (typeof dc === 'object') {
+            pt = dc.roll();
+            dc_name = dc.name;
+        } else {
+            pt = dice(dc);
+            dc_name = dc;
+        }
+
+        const ori = pt;
+
+        const desc = checker.targetDesc === '' ? checker.targetDesc + '，' : '';
+
+        let tip = '';
+        checker.modifier.forEach((v) => {
+            const offset = v.value();
+            pt += offset;
+            tip += ` | ${v.name}`;
+            if (offset >= 0) tip += ` <b>+${offset}</b>`;
+            else tip += ` <b>${offset}</b>`;
+        });
+
+        const res = RV(checker.target);
+        if (isSucc(pt, res)) {
+            await Adv.print(
+                `检定成功！${desc}目标 ${res} 点，【投掷 ${dc_name}】<b>${ori}</b>${tip}${tip === '' ? '' : ` =<b>${pt}</b>`} 点。`,
+                'system',
+            );
+            await checker.onSuccess();
+            await Game.toNext(checker.success);
+            return true;
+        } else {
+            await Adv.print(
+                `检定失败！${desc}目标 ${res} 点，【投掷 ${dc_name}】<b>${ori}</b>${tip}${tip === '' ? '' : ` =<b>${pt}</b>`} 点。`,
+                'system',
+            );
+            await checker.onFail();
+            await Game.toNext(checker.success);
+            return false;
+        }
     },
 };
 

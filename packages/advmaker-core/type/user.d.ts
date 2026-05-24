@@ -8,6 +8,7 @@ export interface GameConfig {
     character?: Record<string, ADVUserCharacter>;
     mainScene: string;
     gameName?: string;
+    judgmentMode?: 'd20' | 'percent';
 }
 
 // ========== 工具类型 ==========

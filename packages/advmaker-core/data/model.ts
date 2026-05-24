@@ -113,7 +113,7 @@ export class ADVUserDialog {
     script?: VlAndLs<string | VNode>;
     next?: ADVUserNext;
     onStart?: () => VlAndAsync<void>;
-    onLeave?: () => VlAndAsync<void>;
+    onFinish?: () => VlAndAsync<void>;
     constructor(obj: ADVUserDialog) {
         this.script = obj.script;
         // 为 Component 增加 markRow
@@ -127,6 +127,7 @@ export class ADVUserDialog {
         }
         this.next = obj.next;
         this.onStart = obj.onStart;
+        this.onFinish = obj.onFinish;
     }
 }
 
@@ -136,13 +137,13 @@ export class ADVDialog extends ADVUserDialog {
     next: ADVNext;
     script: Array<string | VNode>;
     onStart: () => VlAndAsync<void>;
-    onLeave: () => VlAndAsync<void>;
+    onFinish: () => VlAndAsync<void>;
     constructor(id: string, obj: ADVUserDialog) {
         super(obj);
         this.id = id;
         this.next = fromUserNectToNext(obj.next ?? null);
         this.onStart = obj.onStart ?? (() => {});
-        this.onLeave = obj.onLeave ?? (() => {});
+        this.onFinish = obj.onFinish ?? (() => {});
         if (Array.isArray(obj.script)) this.script = obj.script;
         else if (obj.script === undefined) this.script = [];
         else this.script = [obj.script];
@@ -275,6 +276,7 @@ export class ADVDice {
 export class ADVUserCheck {
     dice?: ADVDice | DiceExpression;
     target: VlAndFn<number> = () => 0;
+    targetDesc?: string;
     modifier?: { name: string; value: () => number }[];
     success: ADVUserNext = '';
     fail: ADVUserNext = '';
@@ -287,7 +289,7 @@ export class ADVUserCheck {
 }
 
 export class ADVCheck extends ADVUserCheck {
-    dice: ADVDice | DiceExpression = 'd6';
+    targetDesc: string;
     modifier: { name: string; value: () => number }[] = [];
     type: 'Check';
     success: ADVNext;
@@ -297,7 +299,7 @@ export class ADVCheck extends ADVUserCheck {
     constructor(obj: ADVUserCheck) {
         super(obj);
         this.type = 'Check';
-        this.dice = obj.dice ?? 'd6';
+        this.targetDesc = obj.targetDesc ?? '';
         this.modifier = obj.modifier ?? [];
         this.success = fromUserNectToNext(obj.success);
         this.fail = fromUserNectToNext(obj.fail);

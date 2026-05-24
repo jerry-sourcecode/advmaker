@@ -43,6 +43,7 @@ import { useMessageStore } from '../store/message';
 import { instanceType, RV } from '../utils/util';
 import type { DiceExpression } from '../utils/dice.ts';
 import VNodeRenderer from './VNodeRenderer.vue';
+import { useStoryStore } from '../store/story.ts';
 
 const emitter = useEmitter();
 const messageStore = useMessageStore();
@@ -63,7 +64,9 @@ function isContentString(obj: Component | string) {
     return typeof obj === 'string';
 }
 
-function getDiceName(dice: ADVDice | DiceExpression) {
+function getDiceName(dice: ADVDice | DiceExpression | undefined) {
+    const storyStore = useStoryStore();
+    dice = storyStore.diceInit(dice);
     if (typeof dice === 'object') {
         return dice.name;
     } else {
