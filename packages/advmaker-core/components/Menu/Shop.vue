@@ -71,7 +71,7 @@ import { useStateStore } from '../../store/state.ts';
 import ItemPanel from './ItemPanel.vue';
 import { useStoryStore } from '../../store/story.ts';
 import { Adv } from '../../api';
-import type { GoodsIds, ItemIds } from '../../type/user';
+import type { ItemIds } from '../../type/user';
 import type { ADVItem } from '../../data/model.ts';
 
 const showModal = defineModel({ type: Boolean });
@@ -84,13 +84,17 @@ const storyStore = useStoryStore();
 const usage = ref(0);
 
 const usageLength = computed(() => {
-    return storyStore.goodsMap.get(detailObj.value?.id! as GoodsIds)?.need.length;
+    return storyStore.goodsMap.get(detailObj.value?.id!)?.need.length;
 });
 
 const goodsMap = computed(() => {
-    const res = storyStore.goodsMap.get(detailObj.value?.id! as GoodsIds);
+    const res = storyStore.goodsMap.get(detailObj.value?.id!);
     if (res === undefined) throw "Can't find Object.";
-    return res.need[usage.value - 1];
+    const ret = res.need[usage.value - 1];
+    if (ret.id) delete ret.id;
+    return ret as {
+        [p in ItemIds]?: number;
+    };
 });
 
 const maxiBuyNumber = computed(() => {
@@ -108,7 +112,7 @@ function actionBuy() {
         Adv.bag[itemsKey as ItemIds] -= value * detailValue.value;
     }
     Adv.bag[detailObj.value?.id!] += detailValue.value;
-    stateStore.shop.set(detailObj.value?.id! as GoodsIds, detailObjValue.value - detailValue.value);
+    stateStore.shop.set(detailObj.value?.id!, detailObjValue.value - detailValue.value);
     showDetailModal.value = false;
 }
 

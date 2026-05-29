@@ -1,5 +1,6 @@
 <template>
-    <div class="parent responsive-dialog-scrollBar">
+    <Empty v-if="effectiveBag.size === 0" />
+    <div class="parent responsive-dialog-scrollBar" v-else>
         <div v-for="it in effectiveBag">
             <div v-if="it[1] !== 0">
                 <n-thing class="clickable-box" @click="emit('onDetailOpen', it[0], it[1])">
@@ -46,6 +47,7 @@
 import { ADVItem } from '../../data/model.ts';
 import { useStoryStore } from '../../store/story.ts';
 import { computed, type PropType } from 'vue';
+import Empty from '../Empty.vue';
 
 const showDetailModal = defineModel('showDetailModel', {
     type: Boolean,
@@ -72,7 +74,7 @@ function getItemDetail(id: string) {
 const effectiveBag = computed(() => {
     const ret = new Map();
     backpack.value.forEach((vl, key) => {
-        if (vl !== 0) ret.set(key, vl);
+        if (vl > 0) ret.set(key, vl);
     });
     return ret;
 });

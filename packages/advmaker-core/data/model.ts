@@ -6,8 +6,7 @@
 
 import type { DiceExpression } from '../utils/dice.ts';
 import { markRaw, type VNode } from 'vue';
-import { Game, RuntimeError } from '../game.ts';
-import type { CharsIds, GoodsIds, ItemIds, StatusIds } from '../type/user';
+import type { CharsIds, ItemIds, StatusIds } from '../type/user';
 
 type ADVNextLiteral = string | ADVChoice[] | ADVCheck | null;
 export type ADVNext = VlAndFn<ADVNextLiteral> | (() => void);
@@ -16,9 +15,6 @@ export type ADVUserNext = VlAndFn<ADVUserNextLiteral> | (() => void);
 export type MessageType = 'story' | 'system' | 'user';
 export type IdKVType<T, K extends string = string> = {
     [id in K]: T;
-};
-export type IdKVTypeAllowMiss<T, K extends string = string> = {
-    [id in K]?: T;
 };
 export type VlAndFn<T> = T | (() => T);
 export type VlAndLs<T> = T | T[];
@@ -237,29 +233,30 @@ export class ADVUserStatusGroup {
     }
 }
 
-export class ADVUserGoods<T extends string = string> {
-    inventory?: number;
-    need: VlAndLs<IdKVTypeAllowMiss<number, T>> = [];
+export type ADVRecipe = Partial<{
+    [K in ItemIds | 'id']: K extends ItemIds ? number : string;
+}>;
+
+export class ADVUserGoods {
+    default?: number;
+    need: VlAndLs<ADVRecipe> = [];
     constructor(obj: ADVUserGoods) {
         Object.assign(this, obj);
     }
 }
 
 export class ADVGoods extends ADVUserGoods {
-    id: GoodsIds;
-    inventory: number;
-    need: IdKVTypeAllowMiss<number, ItemIds>[];
-    constructor(obj: ADVUserGoods, id: GoodsIds) {
+    id: string;
+    default: number;
+    need: ADVRecipe[];
+    constructor(obj: ADVUserGoods, id: string) {
         super(obj);
         this.id = id;
-        if (obj.need.length === 0) {
-            Game.error(new RuntimeError(5, `The goods ${id} do not need any ingredients.`));
-        }
         if (!Array.isArray(obj.need)) {
             obj.need = [obj.need];
         }
         this.need = obj.need;
-        this.inventory = obj.inventory ?? Infinity;
+        this.default = obj.default ?? Infinity;
     }
 }
 

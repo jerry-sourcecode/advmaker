@@ -6,11 +6,11 @@ import { useStoryStore } from './store/story.ts';
 import { useStateStore } from './store/state.ts';
 import { useMessageStore } from './store/message.ts';
 import { useEmitter } from './store/emitter.ts';
-import { ADVCharacter, ADVGoods, ADVItem, type ADVNext, ADVStatus } from './data/model.ts';
+import { ADVCharacter, ADVItem, type ADVNext, ADVStatus } from './data/model.ts';
 import { Adv } from './api.ts';
 import { RV } from './utils/util.ts';
 import { useSaveManager } from './store/saveManager.ts';
-import type { CharsIds, GameConfig, GoodsIds, ItemIds, StatusIds } from './type/user';
+import type { CharsIds, GameConfig, ItemIds, StatusIds } from './type/user';
 
 let lastDialogId: string | null = null;
 let lastSceneId: string | null = null;
@@ -171,13 +171,6 @@ export const Game = {
             const itemsKey = key as ItemIds;
             const obj = config.items[itemsKey];
             storyStore.objectMap.set(itemsKey, new ADVItem(obj, itemsKey));
-        }
-
-        for (const key in config.goods) {
-            const itemsKey = key as GoodsIds;
-            const obj = new ADVGoods(config.goods[itemsKey], itemsKey);
-            storyStore.goodsMap.set(itemsKey, obj);
-            stateStore.shop.set(itemsKey, obj.inventory);
         }
 
         for (let key in config.character) {

@@ -8,8 +8,10 @@ import {
     ADVCheck,
     ADVChoice,
     ADVDialog,
+    ADVGoods,
     ADVMessage,
     type ADVNext,
+    type ADVRecipe,
     ADVScene,
     ADVUserCheck,
     ADVUserChoice,
@@ -24,7 +26,7 @@ import { useStateStore } from './store/state.ts';
 import { useMessageStore } from './store/message.ts';
 import type { VNode } from 'vue';
 import { Game, RuntimeError } from './game.ts';
-import type { CharsIds, GameConfig, ItemIds, StatusIds } from './type/user';
+import type { CharsIds, GameConfig, IAdv, ItemIds, StatusIds } from './type/user';
 import { createRestrictedMapProxy, type MapProxy, RV } from './utils/util.ts';
 import { useEmitter } from './store/emitter.ts';
 import { dice } from './utils/dice.ts';
@@ -32,8 +34,9 @@ import { dice } from './utils/dice.ts';
 let backpackCache: MapProxy<Record<ItemIds, number>> | null = null;
 let statusCache: MapProxy<Record<StatusIds, number>> | null = null;
 let charsCache: MapProxy<Record<CharsIds, ADVCharacter>> | null = null;
+let goodsCache: MapProxy<Record<ItemIds, number>> | null = null;
 
-export const Adv = {
+export const Adv: IAdv = {
     get bag() {
         if (!backpackCache) {
             const stateStore = useStateStore();
@@ -64,16 +67,32 @@ export const Adv = {
         }
         return charsCache;
     },
-    defineConfig<
-        TItems extends Record<string, any>,
-        TConfig extends Omit<GameConfig, 'items' | 'goods'> & {
-            items: TItems;
-            goods?: { [K in keyof TItems]?: ADVUserGoods<Extract<keyof TItems, string>> };
-        },
-    >(config: TConfig): TConfig {
+    get goods() {
+        if (!goodsCache) {
+            const stateStore = useStateStore();
+            goodsCache = createRestrictedMapProxy<Record<ItemIds, number>>(stateStore.shop);
+        }
+        return goodsCache;
+    },
+    recipeControl(id: ItemIds) {
+        return new ADVRecipeController(id);
+    },
+    defineConfig<TConfig extends GameConfig>(config: TConfig): TConfig {
         const storyStore = useStoryStore();
         storyStore.storyConfigObj = config;
         return config;
+    },
+    defineRecipe(id: ItemIds, gd: ADVUserGoods) {
+        const obj = new ADVGoods(gd, id);
+        if (obj.need.length === 0) {
+            Game.error(new RuntimeError(5, `No recipe for goods id ${id}.`));
+        }
+        const storyStore = useStoryStore();
+        const stateStore = useStateStore();
+        if (storyStore.goodsMap.has(id)) {
+            this.recipeControl(id).defineRecipe(...obj.need);
+        } else storyStore.goodsMap.set(id, obj);
+        stateStore.shop.set(id, obj.default);
     },
     appendScene(id: string, config: ADVUserScene): ADVSceneBuilder {
         const storyStore = useStoryStore();
@@ -184,7 +203,7 @@ function checkHasSameId(id: string) {
     storyStore.usedSceneAndDialogId.add(id);
 }
 
-class ADVSceneBuilder {
+export class ADVSceneBuilder {
     private readonly id: string;
     next(act: ADVUserNext = null): ADVChoiceBuilder {
         const storyStore = useStoryStore();
@@ -200,7 +219,7 @@ class ADVSceneBuilder {
     }
 }
 
-class ADVDialogBuilder {
+export class ADVDialogBuilder {
     private readonly id: string;
     next(act: ADVUserNext = null): ADVChoiceBuilder {
         const storyStore = useStoryStore();
@@ -221,7 +240,7 @@ class ADVDialogBuilder {
     }
 }
 
-class ADVChoiceBuilder {
+export class ADVChoiceBuilder {
     private readonly id: string;
     choice(choice: ADVUserChoice): ADVChoiceBuilder {
         const storyStore = useStoryStore();
@@ -237,6 +256,27 @@ class ADVChoiceBuilder {
     }
 
     constructor(id: string) {
+        this.id = id;
+    }
+}
+
+export class ADVRecipeController {
+    private readonly id: string;
+    removeRecipe(recId: string) {
+        const storyStore = useStoryStore();
+        const x = storyStore.goodsMap.get(this.id)!;
+        x.need = x.need.filter((v) => {
+            return v.id !== recId;
+        });
+        if (x.need.length === 0) {
+            Game.error(new RuntimeError(5, `No recipe for goods id ${this.id}.`));
+        }
+    }
+    defineRecipe(...rec: ADVRecipe[]) {
+        const storyStore = useStoryStore();
+        storyStore.goodsMap.get(this.id)?.need.push(...rec);
+    }
+    constructor(id: ItemIds) {
         this.id = id;
     }
 }

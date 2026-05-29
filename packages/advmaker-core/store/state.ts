@@ -7,7 +7,7 @@ import { type Ref, ref } from 'vue';
 import { Game, RuntimeError } from '../game.ts';
 import { useStoryStore } from './story.ts';
 import { ADVCharacter, type ADVNext } from '../data/model.ts';
-import type { CharsIds, GoodsIds, ItemIds, StatusIds } from '../type/user';
+import type { CharsIds, ItemIds, StatusIds } from '../type/user';
 
 export const useStateStore = defineStore('state', () => {
     const location = ref('');
@@ -17,7 +17,7 @@ export const useStateStore = defineStore('state', () => {
     const deadDesc = ref('');
 
     const backpack = ref(new Map<ItemIds, number>());
-    const shop = ref(new Map<GoodsIds, number>());
+    const shop = ref(new Map<ItemIds, number>());
     const status = ref(new Map<StatusIds, number>());
     // 记录你认不认识这个角色
     const character = ref(new Map<CharsIds, ADVCharacter>());

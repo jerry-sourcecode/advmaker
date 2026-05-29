@@ -5,7 +5,7 @@
 import { defineStore } from 'pinia';
 import { type Ref, ref } from 'vue';
 import { ADVDialog, ADVDice, ADVGoods, ADVItem, ADVScene, ADVStatus } from '../data/model.ts';
-import type { GoodsIds, ItemIds, StatusIds } from '../type/user';
+import type { ItemIds, StatusIds } from '../type/user';
 import type { Adv } from '../api.ts';
 import type { DiceExpression } from '../utils/dice.ts';
 
@@ -13,7 +13,7 @@ export const useStoryStore = defineStore('story', () => {
     const mainScene = ref<string | null>(null);
 
     const objectMap = ref(new Map<ItemIds, ADVItem>());
-    const goodsMap = ref(new Map<GoodsIds, ADVGoods>());
+    const goodsMap = ref(new Map<string, ADVGoods>());
     const statusMap = ref(new Map<StatusIds, ADVStatus>());
     const sceneMap = ref(new Map<string, ADVScene>());
     const dialogMap = ref(new Map<string, ADVDialog>());

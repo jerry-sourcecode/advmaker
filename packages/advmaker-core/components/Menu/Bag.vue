@@ -1,7 +1,6 @@
 <template>
     <n-modal v-model:show="showModal">
         <n-card class="responsive-dialog responsive-non-fit" title="背包">
-            <Empty v-if="isEmpty" />
             <item-panel
                 @on-detail-open="showDetail"
                 v-model:detail-obj="detailObj"
@@ -59,7 +58,6 @@ import { useDialog } from 'naive-ui';
 import { Adv } from '../../api.ts';
 import ItemPanel from './ItemPanel.vue';
 import { ADVItem } from '../../data/model.ts';
-import Empty from '../Empty.vue';
 import type { ItemIds } from '../../type/user';
 
 const dialog = useDialog();
@@ -104,14 +102,6 @@ function showDetail(id: string, num: number) {
     detailValue.value = 0;
     showDetailModal.value = true;
 }
-
-const isEmpty = computed(() => {
-    let res = true;
-    stateStore.backpack.forEach((v) => {
-        if (v !== 0) res = false;
-    });
-    return res;
-});
 </script>
 
 <style scoped></style>
