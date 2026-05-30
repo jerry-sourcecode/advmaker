@@ -50,7 +50,7 @@ export const useSaveManager = defineStore(
             const slot = slots.value.get(slotId);
             const gameStore = useStateStore();
             gameStore.$patch(superJson.parse(slot!.data!));
-            Game.toNext(gameStore.last);
+            void Game.toNext(gameStore.last);
         }
         function deleteSlot(slotId: string) {
             return slots.value.delete(slotId);

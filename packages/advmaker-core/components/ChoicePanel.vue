@@ -18,15 +18,14 @@
                         <div v-html="it.content" v-if="isContentString(it.content)" />
                         <VNodeRenderer :VNode="it.content" v-else />
                     </div>
-                    <div v-if="instanceType(it.next) === 'Check'" class="choice-btn-desc">
-                        检定 {{ getDiceName((it.next as ADVCheck).dice) }}: 目标
-                        {{ RV((it.next as ADVCheck).target) }}
+                    <div v-if="it.check" class="choice-btn-desc">
+                        <span v-if="it.check.targetDesc !== ''">{{ it.check.targetDesc }}，</span
+                        >检定 {{ getDiceName(it.check.dice) }}: 目标
+                        {{ RV(it.check.target) }}
                         |
-                        <span v-for="(obj, idx) in (it.next as ADVCheck).modifier">
+                        <span v-for="(obj, idx) in it.check.modifier">
                             {{ obj.name }} <span v-if="obj.value() >= 0">+</span>{{ obj.value()
-                            }}<span v-if="idx !== (it.next as ADVCheck).modifier!.length - 1">
-                                ,
-                            </span>
+                            }}<span v-if="idx !== it.check.modifier!.length - 1"> , </span>
                         </span>
                     </div>
                 </n-button>
@@ -36,11 +35,11 @@
 </template>
 
 <script setup lang="ts">
-import { ADVCheck, ADVChoice, ADVDice } from '../data/model';
+import { ADVChoice, ADVDice } from '../data/model';
 import { type Component, ref } from 'vue';
 import { useEmitter } from '../store/emitter';
 import { useMessageStore } from '../store/message';
-import { instanceType, RV } from '../utils/util';
+import { RV } from '../utils/util';
 import type { DiceExpression } from '../utils/dice.ts';
 import VNodeRenderer from './VNodeRenderer.vue';
 import { useStoryStore } from '../store/story.ts';

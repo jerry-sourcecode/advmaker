@@ -19,7 +19,7 @@ import {
     ADVUserGoods,
     type ADVUserNext,
     ADVUserScene,
-    fromUserNectToNext,
+    fromUserNextToNext,
     type MessageType,
 } from './data/model.ts';
 import { useStateStore } from './store/state.ts';
@@ -116,10 +116,7 @@ export const Adv: IAdv = {
             next.forEach((v) => {
                 (newNext as Array<ADVChoice>).push(new ADVChoice(v));
             });
-        } else if (typeof next === 'string' || next === null) newNext = next;
-        else {
-            newNext = new ADVCheck(next);
-        }
+        } else newNext = next;
         void Game.toNext(newNext);
     },
     end(desc: string): string {
@@ -163,7 +160,7 @@ export const Adv: IAdv = {
 
         const ori = pt;
 
-        const desc = checker.targetDesc === '' ? checker.targetDesc + '，' : '';
+        const desc = checker.targetDesc !== '' ? checker.targetDesc + '，' : '';
 
         let tip = '';
         checker.modifier.forEach((v) => {
@@ -207,7 +204,7 @@ export class ADVSceneBuilder {
     private readonly id: string;
     next(act: ADVUserNext = null): ADVChoiceBuilder {
         const storyStore = useStoryStore();
-        storyStore.sceneMap.get(this.id)!.next = fromUserNectToNext(act);
+        storyStore.sceneMap.get(this.id)!.next = fromUserNextToNext(act);
         return new ADVChoiceBuilder(this.id);
     }
     build(): ADVScene {
@@ -223,7 +220,7 @@ export class ADVDialogBuilder {
     private readonly id: string;
     next(act: ADVUserNext = null): ADVChoiceBuilder {
         const storyStore = useStoryStore();
-        storyStore.dialogMap.get(this.id)!.next = fromUserNectToNext(act);
+        storyStore.dialogMap.get(this.id)!.next = fromUserNextToNext(act);
         return new ADVChoiceBuilder(this.id);
     }
     say(word: string | VNode): ADVDialogBuilder {

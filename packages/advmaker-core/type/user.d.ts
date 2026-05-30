@@ -1,24 +1,18 @@
 import {
     ADVCharacter,
-    ADVChoice,
-    ADVDialog,
-    ADVScene,
     ADVUserCharacter,
     ADVUserCheck,
-    ADVUserChoice,
     ADVUserDialog,
     ADVUserGoods,
     ADVUserItem,
     type ADVUserNext,
     ADVUserScene,
     ADVUserStatusGroup,
-    fromUserNectToNext,
     type MessageType,
 } from '../data/model.ts';
 import gameConfig from '../../../src/game.config.ts';
 import type { MapProxy } from '../utils/util.ts';
 import type { VNode } from 'vue';
-import { useStoryStore } from '../store/story.ts';
 import { ADVDialogBuilder, ADVRecipeController, type ADVSceneBuilder } from '../api.ts';
 
 type RecordWithoutId<V> = {

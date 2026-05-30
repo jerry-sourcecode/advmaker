@@ -8,9 +8,9 @@ import type { DiceExpression } from '../utils/dice.ts';
 import { markRaw, type VNode } from 'vue';
 import type { CharsIds, ItemIds, StatusIds } from '../type/user';
 
-type ADVNextLiteral = string | ADVChoice[] | ADVCheck | null;
+type ADVNextLiteral = string | ADVChoice[] | null;
 export type ADVNext = VlAndFn<ADVNextLiteral> | (() => void);
-type ADVUserNextLiteral = string | ADVUserChoice[] | ADVUserCheck | null;
+type ADVUserNextLiteral = string | ADVUserChoice[] | null;
 export type ADVUserNext = VlAndFn<ADVUserNextLiteral> | (() => void);
 export type MessageType = 'story' | 'system' | 'user';
 export type IdKVType<T, K extends string = string> = {
@@ -25,14 +25,13 @@ export type VlAndAsync<T> = T | Promise<T>;
  * @param obj 用户定义的下一步操作对象
  * @returns 系统可识别的下一步操作对象
  */
-export function fromUserNectToNext(obj: ADVUserNextLiteral): ADVNextLiteral;
-export function fromUserNectToNext(obj: ADVUserNext): ADVNext;
-export function fromUserNectToNext(obj: ADVUserNext): ADVNext {
+export function fromUserNextToNext(obj: ADVUserNextLiteral): ADVNextLiteral;
+export function fromUserNextToNext(obj: ADVUserNext): ADVNext;
+export function fromUserNextToNext(obj: ADVUserNext): ADVNext {
     if (obj === null || obj === undefined) return null;
-    if (typeof obj === 'string') return obj;
     if (typeof obj === 'function')
         return () => {
-            return fromUserNectToNext(obj() ?? null);
+            return fromUserNextToNext(obj() ?? null);
         };
     if (Array.isArray(obj)) {
         const returns: ADVChoice[] = [];
@@ -41,7 +40,7 @@ export function fromUserNectToNext(obj: ADVUserNext): ADVNext {
         });
         return returns;
     }
-    return new ADVCheck(obj);
+    return obj;
 }
 export class ADVMessage {
     type: MessageType;
@@ -55,7 +54,8 @@ export class ADVMessage {
 export class ADVUserChoice {
     content: string | VNode;
     visible?: () => boolean;
-    next: ADVUserNext;
+    next?: ADVUserNext;
+    check?: ADVUserCheck;
     maxTimes?: number;
     constructor(obj: ADVUserChoice) {
         if (typeof obj.content === 'string') this.content = obj.content;
@@ -63,17 +63,20 @@ export class ADVUserChoice {
         this.next = obj.next;
         this.visible = obj.visible;
         this.maxTimes = obj.maxTimes;
+        this.check = obj.check;
     }
 }
 
 export class ADVChoice extends ADVUserChoice {
     next: ADVNext;
+    check?: ADVCheck;
     times: number;
     maxTimes: number;
     visible: () => boolean;
     constructor(obj: ADVUserChoice) {
         super(obj);
-        this.next = fromUserNectToNext(obj.next);
+        this.next = fromUserNextToNext(obj.next ?? null);
+        this.check = obj.check ? new ADVCheck(obj.check) : undefined;
         this.times = 0;
         this.maxTimes = obj.maxTimes ?? Infinity;
         this.visible = obj.visible ?? (() => true);
@@ -99,7 +102,7 @@ export class ADVScene extends ADVUserScene {
     constructor(id: string, obj: ADVUserScene) {
         super(obj);
         this.id = id;
-        this.next = fromUserNectToNext(obj.next ?? null);
+        this.next = fromUserNextToNext(obj.next ?? null);
         this.onEnter = obj.onEnter ?? (() => {});
         this.onLeave = obj.onLeave ?? (() => {});
     }
@@ -108,6 +111,7 @@ export class ADVScene extends ADVUserScene {
 export class ADVUserDialog {
     script?: VlAndLs<string | VNode>;
     next?: ADVUserNext;
+    check?: ADVUserCheck;
     onStart?: () => VlAndAsync<void>;
     onFinish?: () => VlAndAsync<void>;
     constructor(obj: ADVUserDialog) {
@@ -131,13 +135,15 @@ export class ADVDialog extends ADVUserDialog {
     id: string;
     type: 'Dialog' = 'Dialog';
     next: ADVNext;
+    check?: ADVCheck;
     script: Array<string | VNode>;
     onStart: () => VlAndAsync<void>;
     onFinish: () => VlAndAsync<void>;
     constructor(id: string, obj: ADVUserDialog) {
         super(obj);
         this.id = id;
-        this.next = fromUserNectToNext(obj.next ?? null);
+        this.next = fromUserNextToNext(obj.next ?? null);
+        this.check = obj.check ? new ADVCheck(obj.check) : undefined;
         this.onStart = obj.onStart ?? (() => {});
         this.onFinish = obj.onFinish ?? (() => {});
         if (Array.isArray(obj.script)) this.script = obj.script;
@@ -298,8 +304,8 @@ export class ADVCheck extends ADVUserCheck {
         this.type = 'Check';
         this.targetDesc = obj.targetDesc ?? '';
         this.modifier = obj.modifier ?? [];
-        this.success = fromUserNectToNext(obj.success);
-        this.fail = fromUserNectToNext(obj.fail);
+        this.success = fromUserNextToNext(obj.success);
+        this.fail = fromUserNextToNext(obj.fail);
         this.onFail = obj.onFail ?? (() => {});
         this.onSuccess = obj.onSuccess ?? (() => {});
     }

@@ -12,7 +12,6 @@ import { RV } from './utils/util.ts';
 import { useSaveManager } from './store/saveManager.ts';
 import type { CharsIds, GameConfig, ItemIds, StatusIds } from './type/user';
 
-let lastDialogId: string | null = null;
 let lastSceneId: string | null = null;
 
 /**
@@ -111,7 +110,9 @@ export const Game = {
             // 不可能到达
             throw Error('Never Reach');
         }
+        if (dialog.check) await Adv.check(dialog.check);
         await Game.toNext(dialog.next);
+        dialog.onFinish();
     },
     /**
      * 抛出错误
@@ -143,12 +144,9 @@ export const Game = {
             const next = storyStore.tryGet(nextAct);
             if (next === undefined)
                 Game.error(new RuntimeError(2, `Can't Find Scene or Dialog, Id: '${nextAct}'.`));
-            if (lastDialogId !== null) storyStore.dialogMap.get(lastDialogId)!.onFinish();
-            lastDialogId = next?.id!;
             if (next?.type === 'Scene') {
                 if (lastSceneId !== null) storyStore.sceneMap.get(lastSceneId)?.onLeave();
                 lastSceneId = next.id;
-                lastDialogId = null;
                 await Game.enter(next.id);
             }
             if (next?.type === 'Dialog') {
@@ -158,6 +156,7 @@ export const Game = {
         } else if (Array.isArray(nextAct)) {
             emitter.emit('make-choice', nextAct).then((res) => {
                 nextAct[res].times++;
+                if (nextAct[res].check) Adv.check(nextAct[res].check);
                 Game.toNext(nextAct[res].next);
             });
         } else if (nextAct !== null && typeof nextAct !== 'function') {
