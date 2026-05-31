@@ -6,7 +6,7 @@ import { defineStore } from 'pinia';
 import { type Ref, ref } from 'vue';
 import { Game, RuntimeError } from '../game.ts';
 import { useStoryStore } from './story.ts';
-import { ADVCharacter, type ADVNext } from '../data/model.ts';
+import { ADVCharacter, ADVGoods, type ADVNext } from '../data/model.ts';
 import type { CharsIds, ItemIds, StatusIds } from '../type/user';
 
 export const useStateStore = defineStore('state', () => {
@@ -21,6 +21,7 @@ export const useStateStore = defineStore('state', () => {
     const status = ref(new Map<StatusIds, number>());
     // 记录你认不认识这个角色
     const character = ref(new Map<CharsIds, ADVCharacter>());
+    const goodsMap = ref(new Map<string, ADVGoods>());
 
     function obtainItem(item: ItemIds, number: number = 1) {
         const currentCount = backpack.value.get(item) || 0;
@@ -70,5 +71,6 @@ export const useStateStore = defineStore('state', () => {
         backpack,
         last,
         character,
+        goodsMap,
     };
 });

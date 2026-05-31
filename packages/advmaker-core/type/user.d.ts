@@ -29,6 +29,13 @@ export interface GameConfig {
     mainScene: string;
     gameName?: string;
     judgmentMode?: 'd20' | 'percent';
+    menu?: {
+        bag?: boolean;
+        attu?: boolean;
+        shop?: boolean;
+        save?: boolean;
+        story?: boolean;
+    };
 }
 
 // ========== 工具类型 ==========

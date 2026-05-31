@@ -89,16 +89,18 @@ const number = computed(() => {
     width: 100%;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     height: 80px;
+    overflow-x: auto;
 }
 .status-div {
     display: flex;
     flex: 1;
     flex-direction: column;
     justify-content: center;
-    max-width: 180px;
+    max-width: 150px;
     height: 60px;
     white-space: nowrap;
     margin-right: 20px;
+    margin-top: 8px;
 }
 </style>
 

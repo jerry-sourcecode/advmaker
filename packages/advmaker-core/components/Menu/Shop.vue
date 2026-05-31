@@ -84,11 +84,11 @@ const storyStore = useStoryStore();
 const usage = ref(0);
 
 const usageLength = computed(() => {
-    return storyStore.goodsMap.get(detailObj.value?.id!)?.need.length;
+    return stateStore.goodsMap.get(detailObj.value?.id!)?.need.length;
 });
 
 const goodsMap = computed(() => {
-    const res = storyStore.goodsMap.get(detailObj.value?.id!);
+    const res = stateStore.goodsMap.get(detailObj.value?.id!);
     if (res === undefined) throw "Can't find Object.";
     const ret = res.need[usage.value - 1];
     if (ret.id) delete ret.id;

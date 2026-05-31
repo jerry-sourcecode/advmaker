@@ -87,11 +87,10 @@ export const Adv: IAdv = {
         if (obj.need.length === 0) {
             Game.error(new RuntimeError(5, `No recipe for goods id ${id}.`));
         }
-        const storyStore = useStoryStore();
         const stateStore = useStateStore();
-        if (storyStore.goodsMap.has(id)) {
+        if (stateStore.goodsMap.has(id)) {
             this.recipeControl(id).defineRecipe(...obj.need);
-        } else storyStore.goodsMap.set(id, obj);
+        } else stateStore.goodsMap.set(id, obj);
         stateStore.shop.set(id, obj.default);
     },
     appendScene(id: string, config: ADVUserScene): ADVSceneBuilder {
@@ -260,8 +259,8 @@ export class ADVChoiceBuilder {
 export class ADVRecipeController {
     private readonly id: string;
     removeRecipe(recId: string) {
-        const storyStore = useStoryStore();
-        const x = storyStore.goodsMap.get(this.id)!;
+        const stateStore = useStateStore();
+        const x = stateStore.goodsMap.get(this.id)!;
         x.need = x.need.filter((v) => {
             return v.id !== recId;
         });
@@ -270,8 +269,8 @@ export class ADVRecipeController {
         }
     }
     defineRecipe(...rec: ADVRecipe[]) {
-        const storyStore = useStoryStore();
-        storyStore.goodsMap.get(this.id)?.need.push(...rec);
+        const stateStore = useStateStore();
+        stateStore.goodsMap.get(this.id)?.need.push(...rec);
     }
     constructor(id: ItemIds) {
         this.id = id;

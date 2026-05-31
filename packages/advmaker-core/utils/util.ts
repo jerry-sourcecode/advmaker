@@ -25,6 +25,69 @@ export function instanceType(obj: ADVNext): 'Array' | 'string' | 'Check' {
     return 'Check';
 }
 
+export class BoundedQueue<T> {
+    private queue: T[];
+    readonly maxSize: number;
+
+    /**
+     * @param maxSize 队列允许的最大长度，必须为正整数
+     */
+    constructor(maxSize: number) {
+        if (!Number.isInteger(maxSize) || maxSize <= 0) {
+            throw new Error('maxSize must be a positive integer');
+        }
+        this.maxSize = maxSize;
+        this.queue = [];
+    }
+
+    /** 当前队列中的元素个数 */
+    get size(): number {
+        return this.queue.length;
+    }
+
+    /** 队列是否为空 */
+    isEmpty(): boolean {
+        return this.size === 0;
+    }
+
+    /** 队列是否已满 */
+    isFull(): boolean {
+        return this.size >= this.maxSize;
+    }
+
+    /** 查看队头元素（不删除） */
+    peek(): T | undefined {
+        return this.queue[0];
+    }
+
+    /** 入队：若已满则自动移除最早的元素，再添加新元素 */
+    push(item: T): void {
+        if (this.isFull()) {
+            this.pop(); // 移除最旧元素
+        }
+        this.queue.push(item);
+    }
+
+    /** 出队：移除并返回队头元素 */
+    pop(): T | undefined {
+        return this.queue.shift();
+    }
+
+    /** 清空队列 */
+    clear(): void {
+        this.queue = [];
+    }
+
+    /** 返回队列的浅拷贝数组 */
+    toArray(): T[] {
+        return [...this.queue];
+    }
+
+    peekLast(): T | undefined {
+        return this.queue[this.size - 1];
+    }
+}
+
 export function formatDate(date: Date = new Date()): string {
     const y = date.getFullYear();
     const m = (date.getMonth() + 1).toString().padStart(2, '0');

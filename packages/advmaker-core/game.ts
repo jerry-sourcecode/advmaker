@@ -111,8 +111,8 @@ export const Game = {
             throw Error('Never Reach');
         }
         if (dialog.check) await Adv.check(dialog.check);
-        await Game.toNext(dialog.next);
         dialog.onFinish();
+        await Game.toNext(dialog.next);
     },
     /**
      * 抛出错误
@@ -130,6 +130,8 @@ export const Game = {
         const stateStore = useStateStore();
         const emitter = useEmitter();
         stateStore.last = act;
+        const saveManager = useSaveManager();
+        saveManager.autoSave();
         const nextAct = RV(act);
         if (typeof nextAct === 'string') {
             if (nextAct.startsWith('_END&')) {
