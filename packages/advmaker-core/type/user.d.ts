@@ -14,6 +14,7 @@ import gameConfig from '../../../src/game.config.ts';
 import type { MapProxy } from '../utils/util.ts';
 import type { VNode } from 'vue';
 import { ADVDialogBuilder, ADVRecipeController, type ADVSceneBuilder } from '../api.ts';
+import type { useAudioStore } from '../store/audio.ts';
 
 type RecordWithoutId<V> = {
     [key: string]: V; // 允许任意字符串键
@@ -62,6 +63,7 @@ interface IAdv {
     get status(): MapProxy<Record<StatusIds, number>>;
     get char(): MapProxy<Record<CharsIds, ADVCharacter>>;
     get goods(): MapProxy<Record<ItemIds, number>>;
+    get audio(): ReturnType<typeof useAudioStore>;
     recipeControl(id: ItemIds): ADVRecipeController;
     defineConfig<TConfig extends GameConfig>(config: TConfig): TConfig;
     defineRecipe(id: ItemIds, gd: ADVUserGoods): void;

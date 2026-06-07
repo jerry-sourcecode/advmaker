@@ -30,6 +30,7 @@ import type { CharsIds, GameConfig, IAdv, ItemIds, StatusIds } from './type/user
 import { createRestrictedMapProxy, type MapProxy, RV } from './utils/util.ts';
 import { useEmitter } from './store/emitter.ts';
 import { dice } from './utils/dice.ts';
+import { useAudioStore } from './store/audio.ts';
 
 let backpackCache: MapProxy<Record<ItemIds, number>> | null = null;
 let statusCache: MapProxy<Record<StatusIds, number>> | null = null;
@@ -73,6 +74,9 @@ export const Adv: IAdv = {
             goodsCache = createRestrictedMapProxy<Record<ItemIds, number>>(stateStore.shop);
         }
         return goodsCache;
+    },
+    get audio() {
+        return useAudioStore();
     },
     recipeControl(id: ItemIds) {
         return new ADVRecipeController(id);

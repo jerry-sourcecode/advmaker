@@ -1,25 +1,38 @@
 import { Adv } from '@advmaker/core';
 
 export default Adv.defineConfig({
-    mainScene: 'forest-entrance', // 游戏入口场景
-    gameName: '月泉秘语',
+    mainScene: 'test-hub',
+    gameName: 'ADVMaker 规范测试',
+    judgmentMode: 'd20',
 
-    // ========== 状态系统（角色属性） ==========
+    // ========== 状态系统 ==========
     status: {
-        basic: {
-            name: '基础状态',
+        combat: {
+            name: '战斗属性',
             content: {
                 hp: {
                     name: '生命值',
                     max: 100,
-                    default: 80,
+                    default: 85,
                     color: '#d32f2f',
                     isDisplay: 'process',
                 },
+                mp: {
+                    name: '法力',
+                    max: 60,
+                    default: 40,
+                    color: '#1976d2',
+                    isDisplay: 'number',
+                },
+            },
+        },
+        survival: {
+            name: '生存状态',
+            content: {
                 stamina: {
                     name: '体力',
-                    max: 100,
-                    default: 70,
+                    max: 80,
+                    default: 60,
                     color: '#388e3c',
                     isDisplay: 'process',
                 },
@@ -27,22 +40,9 @@ export default Adv.defineConfig({
                     name: '理智',
                     max: 100,
                     min: 0,
-                    default: 60,
+                    default: 75,
                     color: '#7b1fa2',
-                    isDisplay: 'number',
-                },
-            },
-        },
-        hidden: {
-            name: '隐藏属性',
-            content: {
-                // 隐藏的“月泉亲和度”，影响结局
-                moonAffinity: {
-                    name: '月泉亲和',
-                    default: 0,
-                    min: -20,
-                    max: 20,
-                    isDisplay: 'none',
+                    isDisplay: 'process',
                 },
             },
         },
@@ -50,68 +50,43 @@ export default Adv.defineConfig({
 
     // ========== 背包物品 ==========
     items: {
-        Herb: {
-            name: '草药',
-            summary: '散发着清香的野生草药，可以恢复少量生命。',
-            desc: '直接使用恢复 <b>15</b> 点生命值。<br>也可用于合成药水。',
-            onUse: (num: number) => {
-                Adv.status.hp = Math.min(Adv.status.hp + 15 * num);
-                Adv.print(`你使用了 ${num} 份草药，恢复了 ${15 * num} 生命。`);
-            },
-        },
-        Wood: {
-            name: '木材',
-            summary: '结实的松木，可以用来生火或制作工具。',
-        },
-        Stone: {
-            name: '石块',
-            summary: '普通的河卵石，或许有别的用途。',
-        },
         Gold: {
             name: '金币',
-            summary: '闪闪发光的金币，可以在商人那里购买物品。',
+            summary: '通用货币',
+            default: 100,
+        },
+        Herb: {
+            name: '草药',
+            summary: '可用于合成药水',
+            default: 3,
         },
         HealthPotion: {
-            name: '生命药水',
-            summary: '一瓶红色的药水，能瞬间恢复大量生命。',
-            desc: '饮用后恢复 <b>50</b> 点生命值。',
-            onUse: () => {
-                Adv.status.hp = Math.min(Adv.status.hp + 50);
-                Adv.print('你喝下生命药水，伤口快速愈合！');
+            name: '治疗药水',
+            summary: '恢复30生命值',
+            desc: '饮用后立即恢复 <b>30</b> HP。',
+            onUse: (num) => {
+                const heal = 30 * num;
+                Adv.status.hp = Math.min(Adv.status.hp + heal, 100);
+                Adv.print(`你使用了 ${num} 瓶药水，恢复了 ${heal} 生命。`);
             },
         },
-        MoonGem: {
-            name: '月光宝石',
-            summary: '传说中的宝石，散发着柔和的月白色光芒。',
-            desc: '蕴藏着月泉的神秘力量，是开启神庙的钥匙。',
-        },
-        Tool: {},
-    },
-
-    // ========== 商店/合成配方 ==========
-    goods: {
-        HealthPotion: {
-            inventory: 3, // 限量3瓶
-            need: { Herb: 2, Gold: 5 },
-        },
-        // 可以用木材+石块合成一个“临时工具”（非物品，直接触发检定增益）
-        // 这里为了展示更复杂的need数组，再做一个“多功能工具”物品
-        Tool: {
-            inventory: Infinity,
-            need: [{ Wood: 3 }, { Stone: 4 }], // 两种配方任选其一
+        MagicGem: {
+            name: '魔法宝石',
+            summary: '闪耀着神秘光芒',
+            default: 0,
         },
     },
 
-    // ========== 角色故事 ==========
+    // ========== 故事角色 ==========
     character: {
-        oldMan: {
-            name: '神秘老者',
-            desc: '住在森林深处的一位白发老人，似乎知道月泉的秘密。',
-            impression: [],
+        alchemist: {
+            name: '炼金术士',
+            desc: '白发苍苍的老者，精通各种配方。',
+            impression: ['他手中总拿着一本泛黄的手记。'],
         },
-        forestSpirit: {
-            name: '森林妖精',
-            desc: '一只发着微光的小精灵，性格顽皮但心地善良。',
+        shadow: {
+            name: '暗影商人',
+            desc: '兜帽下看不清面容，声音低沉。',
             impression: [],
         },
     },
