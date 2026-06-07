@@ -4,31 +4,34 @@
         placement="bottom"
         :mask-closable="false"
         :show-mask="false"
-        :height="281"
+        :height="messageStore.choicePanelHeight"
     >
         <n-drawer-content title="你的选择">
-            <div class="choice-div" v-for="(it, idx) in choices">
-                <n-button
-                    v-if="it.visible() && it.times < it.maxTimes"
-                    block
-                    class="choice-div-btn"
-                    @click="onClick(idx)"
-                >
-                    <div class="choice-btn-main">
-                        <div v-html="it.content" v-if="isContentString(it.content)" />
-                        <VNodeRenderer :VNode="it.content" v-else />
-                    </div>
-                    <div v-if="it.check" class="choice-btn-desc">
-                        <span v-if="it.check.targetDesc !== ''">{{ it.check.targetDesc }}，</span
-                        >检定 {{ getDiceName(it.check.dice) }}: 目标
-                        {{ RV(it.check.target) }}
-                        |
-                        <span v-for="(obj, idx) in it.check.modifier">
-                            {{ obj.name }} <span v-if="obj.value() >= 0">+</span>{{ obj.value()
-                            }}<span v-if="idx !== it.check.modifier!.length - 1"> , </span>
-                        </span>
-                    </div>
-                </n-button>
+            <div ref="boxRef">
+                <div class="choice-div" v-for="(it, idx) in choices">
+                    <n-button
+                        v-if="it.visible() && it.times < it.maxTimes"
+                        block
+                        class="choice-div-btn"
+                        @click="onClick(idx)"
+                    >
+                        <div class="choice-btn-main">
+                            <div v-html="it.content" v-if="isContentString(it.content)" />
+                            <VNodeRenderer :VNode="it.content" v-else />
+                        </div>
+                        <div v-if="it.check" class="choice-btn-desc">
+                            <span v-if="it.check.targetDesc !== ''"
+                                >{{ it.check.targetDesc }}，</span
+                            >检定 {{ getDiceName(it.check.dice) }}: 目标
+                            {{ RV(it.check.target) }}
+                            |
+                            <span v-for="(obj, idx) in it.check.modifier">
+                                {{ obj.name }} <span v-if="obj.value() >= 0">+</span>{{ obj.value()
+                                }}<span v-if="idx !== it.check.modifier!.length - 1"> , </span>
+                            </span>
+                        </div>
+                    </n-button>
+                </div>
             </div>
         </n-drawer-content>
     </n-drawer>
@@ -36,7 +39,7 @@
 
 <script setup lang="ts">
 import { ADVChoice, ADVDice } from '../data/model';
-import { type Component, ref } from 'vue';
+import { type Component, nextTick, type Ref, ref } from 'vue';
 import { useEmitter } from '../store/emitter';
 import { useMessageStore } from '../store/message';
 import { RV } from '../utils/util';
@@ -73,11 +76,19 @@ function getDiceName(dice: ADVDice | DiceExpression | undefined) {
     }
 }
 
+const boxRef: Ref<null | HTMLDivElement> = ref(null);
+
 emitter.on('make-choice', (chs: ADVChoice[], title: string = '你的选择') => {
     choices.value = chs;
     choiceName.value = title;
     isShow.value = true;
     messageStore.isMkChoice = true;
+    nextTick(() => {
+        // 根据高度决定抽屉的高度
+        // 83px 为抽屉的标题所需高度
+        // 最高 350px
+        messageStore.choicePanelHeight = Math.min(boxRef.value!.offsetHeight + 83, 350);
+    });
     emitter.emit('scroll-to-end');
     return new Promise((res) => {
         resolve = res;

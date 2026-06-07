@@ -10,6 +10,7 @@ import { useEmitter } from './emitter.ts';
 export const useMessageStore = defineStore('message', () => {
     const messageList = ref<ADVMessage[]>([]);
     const isMkChoice = ref(false);
+    const choicePanelHeight = ref(0);
 
     function appendMessage(text: string | VNode): void;
     function appendMessage(text: ADVMessage): void;
@@ -25,5 +26,5 @@ export const useMessageStore = defineStore('message', () => {
         emitter.emit('scroll-to-end');
     }
 
-    return { appendMessage, messageList, isMkChoice };
+    return { appendMessage, messageList, isMkChoice, choicePanelHeight };
 });

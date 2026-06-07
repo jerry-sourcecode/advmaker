@@ -7,7 +7,7 @@
         </div>
 
         <div
-            :style="`${messageStore.isMkChoice ? `margin` : `padding`}-bottom: 281px`"
+            :style="`${messageStore.isMkChoice ? `margin` : `padding`}-bottom: ${messageStore.choicePanelHeight}px`"
             id="main-content"
             @click="onScreenClick"
             ref="mainDivRef"
@@ -35,7 +35,7 @@
 import { useMessageStore } from '../store/message.ts';
 import { useStateStore } from '../store/state.ts';
 import { useEmitter } from '../store/emitter.ts';
-import { type Component, type Ref, ref } from 'vue';
+import { type Component, onMounted, onUnmounted, type Ref, ref } from 'vue';
 import type { MessageType } from '../data/model.ts';
 import VNodeRenderer from './VNodeRenderer.vue';
 
@@ -79,6 +79,15 @@ function getFontStyle(type: MessageType) {
     if (type === 'system') return 'italic';
     return 'normal';
 }
+
+function onKeyPress(e: KeyboardEvent) {
+    if (['Enter', ' '].includes(e.key)) {
+        onScreenClick();
+    }
+}
+
+onMounted(() => document.addEventListener('keypress', onKeyPress));
+onUnmounted(() => document.removeEventListener('keypress', onKeyPress));
 </script>
 
 <style scoped>
