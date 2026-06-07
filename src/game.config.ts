@@ -1,7 +1,7 @@
 import { Adv } from '@advmaker/core';
 
 export default Adv.defineConfig({
-    mainScene: 'test-hub',
+    mainScene: 'outer',
     gameName: 'ADVMaker 规范测试',
     judgmentMode: 'd20',
 

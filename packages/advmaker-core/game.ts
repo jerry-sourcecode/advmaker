@@ -61,7 +61,7 @@ export const Game = {
             saveManager.run(run);
         }
         // 进入初始场景
-        else await this.enter(storyStore.mainScene!);
+        else await this.toNext(storyStore.mainScene!);
     },
     /**
      * 进入一个场景
@@ -72,6 +72,7 @@ export const Game = {
         const storyStore = useStoryStore();
         const messageStore = useMessageStore();
         const scene = storyStore.sceneMap.get(sceneId);
+        lastSceneId = sceneId;
         await scene?.onEnter();
         if (scene === undefined) {
             this.error(new RuntimeError(2, `Can't Find Scene, Id: '${sceneId}'.`));
@@ -148,10 +149,10 @@ export const Game = {
                 Game.error(new RuntimeError(2, `Can't Find Scene or Dialog, Id: '${nextAct}'.`));
             if (next?.type === 'Scene') {
                 if (lastSceneId !== null) storyStore.sceneMap.get(lastSceneId)?.onLeave();
-                lastSceneId = next.id;
                 await Game.enter(next.id);
             }
             if (next?.type === 'Dialog') {
+                if (next.in !== undefined && lastSceneId !== next.in) await Game.toNext(next.in);
                 await Game.speak(next.id);
             }
             return;

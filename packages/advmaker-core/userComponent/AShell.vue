@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import Message from './components/Message.vue';
-import ChoicePanel from './components/ChoicePanel.vue';
-import { useStoryStore } from './store/story.ts';
-import { useStateStore } from './store/state.ts';
-import './api.ts';
-import StatusPanel from './components/StatusPanel.vue';
-import GameOver from './components/GameOver.vue';
+import Message from '../components/Message.vue';
+import ChoicePanel from '../components/ChoicePanel.vue';
+import { useStoryStore } from '../store/story.ts';
+import { useStateStore } from '../store/state.ts';
+import '../api.ts';
+import StatusPanel from '../components/StatusPanel.vue';
+import GameOver from '../components/GameOver.vue';
 import { computed, ref, watch } from 'vue';
-import Menu from './components/Menu/Menu.vue';
+import Menu from '../components/Menu/Menu.vue';
 import { Icon } from '@iconify/vue';
 import type { GlobalThemeOverrides } from 'naive-ui';
-import { useEmitter } from './store/emitter.ts';
-import Shop from './components/Menu/Shop.vue';
-import Memory from './components/Menu/Memory.vue';
+import { useEmitter } from '../store/emitter.ts';
+import Shop from '../components/Menu/Shop.vue';
+import Memory from '../components/Menu/Memory.vue';
 
 const storyStore = useStoryStore();
 const stateStore = useStateStore();
@@ -60,6 +60,9 @@ watch(showMemoryModel, (nv: boolean, ov: boolean) => {
 </script>
 
 <template>
+    <div style="display: none">
+        <slot />
+    </div>
     <n-config-provider :theme-overrides="themeOverrides">
         <n-dialog-provider>
             <div

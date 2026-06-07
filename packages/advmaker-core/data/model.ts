@@ -112,10 +112,12 @@ export class ADVUserDialog {
     script?: VlAndLs<string | VNode>;
     next?: ADVUserNext;
     check?: ADVUserCheck;
+    in?: string;
     onStart?: () => VlAndAsync<void>;
     onFinish?: () => VlAndAsync<void>;
     constructor(obj: ADVUserDialog) {
         this.script = obj.script;
+        this.in = obj.in;
         // 为 Component 增加 markRow
         if (Array.isArray(this.script)) {
             this.script.forEach((_, id, ls) => {
@@ -133,6 +135,7 @@ export class ADVUserDialog {
 
 export class ADVDialog extends ADVUserDialog {
     id: string;
+    in?: string;
     type: 'Dialog' = 'Dialog';
     next: ADVNext;
     check?: ADVCheck;
@@ -142,6 +145,7 @@ export class ADVDialog extends ADVUserDialog {
     constructor(id: string, obj: ADVUserDialog) {
         super(obj);
         this.id = id;
+        this.in = obj.in;
         this.next = fromUserNextToNext(obj.next ?? null);
         this.check = obj.check ? new ADVCheck(obj.check) : undefined;
         this.onStart = obj.onStart ?? (() => {});
