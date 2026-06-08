@@ -19,7 +19,7 @@ export type IdKVType<T, K extends string = string> = {
 export type VlAndFn<T> = T | (() => T);
 export type VlAndLs<T> = T | T[];
 export type VlAndAsync<T> = T | Promise<T>;
-export type MessageContentType = string | VNode | (() => Promise<void>) | null;
+export type MessageContentType = string | VNode | (() => Promise<void>) | null | ADVChoice[];
 export type MessageContentTypeLiteral = string | VNode;
 /**
  * 将用户下一步操作转换为系统可以识别的下一步操作
@@ -108,7 +108,7 @@ export class ADVScene extends ADVUserScene {
 }
 
 export class ADVUserDialog {
-    script?: VlAndLs<MessageContentType>;
+    script?: MessageContentType[];
     next?: ADVUserNext;
     check?: ADVUserCheck;
     in?: string;
@@ -136,9 +136,7 @@ export class ADVDialog extends ADVUserDialog {
         this.check = obj.check ? new ADVCheck(obj.check) : undefined;
         this.onStart = obj.onStart ?? (() => {});
         this.onFinish = obj.onFinish ?? (() => {});
-        if (Array.isArray(obj.script)) this.script = obj.script;
-        else if (obj.script === undefined) this.script = [];
-        else this.script = [obj.script];
+        this.script = obj.script ?? [];
     }
 }
 

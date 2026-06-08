@@ -128,7 +128,9 @@ export const Adv: IAdv = {
     async print(content: MessageContentType, type: MessageType = 'story') {
         const message = useMessageStore();
         if (typeof content === 'function') await content();
-        else {
+        else if (Array.isArray(content)) {
+            await Game.choice(content);
+        } else {
             if (content !== null) message.appendMessage(new ADVMessage(content, type));
             const emitter = useEmitter();
             await emitter.emit('wait-for-click-screen');
