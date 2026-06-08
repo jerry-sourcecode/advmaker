@@ -10,6 +10,7 @@ import AOption from './userComponent/AOption.vue';
 import AEnding from './userComponent/AEnding.vue';
 import './main.ts';
 import type { DiceExpression } from './utils/dice.ts';
+import ARun from './userComponent/ARun.vue';
 export {
     AShell,
     type DiceExpression,
@@ -20,4 +21,5 @@ export {
     AOption,
     AEnding,
     ADVChoice,
+    ARun,
 };
