@@ -66,8 +66,9 @@ export const Game = {
     /**
      * 进入一个场景
      * @param sceneId 场景 id
+     * @param noNext 是否避免执行该场景的next
      */
-    async enter(sceneId: string) {
+    async enter(sceneId: string, noNext: boolean = false) {
         const stateStore = useStateStore();
         const storyStore = useStoryStore();
         const messageStore = useMessageStore();
@@ -82,7 +83,7 @@ export const Game = {
         stateStore.location = scene.name;
         messageStore.messageList = [];
 
-        await Game.toNext(scene.next);
+        if (!noNext) await Game.toNext(scene.next);
     },
     /**
      * 进行一次对话
@@ -130,9 +131,9 @@ export const Game = {
         saveManager.autoSave();
         const nextAct = RV(act);
         if (typeof nextAct === 'string') {
-            if (nextAct.startsWith('_END&')) {
+            if (nextAct.startsWith('__END&')) {
                 stateStore.isDead = true;
-                stateStore.deadDesc = nextAct.slice(5);
+                stateStore.deadDesc = nextAct.slice(6);
                 return;
             }
             const storyStore = useStoryStore();
@@ -147,7 +148,8 @@ export const Game = {
                 await Game.enter(next.id);
             }
             if (next?.type === 'Dialog') {
-                if (next.in !== undefined && lastSceneId !== next.in) await Game.toNext(next.in);
+                if (next.in !== undefined && lastSceneId !== next.in)
+                    await Game.enter(next.in, true);
                 await Game.speak(next.id);
             }
             return;

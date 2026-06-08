@@ -59,8 +59,8 @@
 import { type SaveSlot, useSaveManager } from '../../store/saveManager.ts';
 import { formatDate } from '../../utils/util.ts';
 import { Icon } from '@iconify/vue';
-import { computed, nextTick, type Ref, ref } from 'vue';
-import { type InputInst, useDialog } from 'naive-ui';
+import { nextTick, type Ref, ref } from 'vue';
+import { type InputInst } from 'naive-ui';
 const saveManager = useSaveManager();
 
 const editingId: Ref<string | null> = ref(null);

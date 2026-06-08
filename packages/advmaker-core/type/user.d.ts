@@ -12,7 +12,6 @@ import {
 } from '../data/model.ts';
 import gameConfig from '../../../src/game.config.ts';
 import type { MapProxy } from '../utils/util.ts';
-import type { VNode } from 'vue';
 import { ADVDialogBuilder, ADVRecipeController, type ADVSceneBuilder } from '../api.ts';
 import type { useAudioStore } from '../store/audio.ts';
 

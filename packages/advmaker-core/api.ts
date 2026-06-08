@@ -123,7 +123,7 @@ export const Adv: IAdv = {
         void Game.toNext(newNext);
     },
     end(desc: string): string {
-        return `_END&${desc}`;
+        return `__END&${desc}`;
     },
     async print(content: MessageContentType, type: MessageType = 'story') {
         const message = useMessageStore();

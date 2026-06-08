@@ -1,15 +1,11 @@
-<template>
-    <slot />
-    <slot name="content" />
-</template>
+<template><slot /><slot name="content" /></template>
 
 <script setup lang="ts">
 import { inject, provide, onMounted, ref, useSlots, h, Fragment, type VNode } from 'vue';
 import { Adv } from '../api';
-import type { ADVUserChoice, ADVUserNext, ADVUserCheck } from '../data/model';
+import type { ADVUserChoice, ADVUserNext, ADVUserCheck, MessageContentType } from '../data/model';
 
 const props = defineProps<{
-    // ADVUserChoice 中除 content 外的所有属性
     visible?: () => boolean;
     next?: ADVUserNext;
     check?: ADVUserCheck;
@@ -19,43 +15,49 @@ const props = defineProps<{
 
 const slots = useSlots();
 
-// 覆盖 registerLine，将内部的 ALine VNode 收集到这里
-const innerLines = ref<VNode[]>([]);
-function localRegisterLine(vnode: VNode) {
-    innerLines.value.push(vnode);
-}
-provide('registerLine', localRegisterLine);
+// 收集选项内部所有通过 registerLine / registerContent 注册的内容
+const innerContents = ref<MessageContentType[]>([]);
 
-// 从 AOptions 获取注册函数
+function localRegisterContent(content: MessageContentType) {
+    innerContents.value.push(content);
+}
+
+// registerLine 也统一到 localRegisterContent
+function localRegisterLine(vnode: VNode) {
+    localRegisterContent(vnode);
+}
+
+provide('registerLine', localRegisterLine);
+provide('registerContent', localRegisterContent);
+
 const registerOption = inject<(option: ADVUserChoice) => void>('registerOption', () => {
     console.warn('[AOption] 必须在 <AOptions> 内部使用');
 });
 
 onMounted(() => {
-    // 获取 content 插槽的 VNode（打包为一个 Fragment）
     const contentSlots = slots.content?.();
     const contentVNode = contentSlots ? h(Fragment, null, contentSlots) : h(Fragment);
 
-    // 构造 onChoose
     const customOnChoose = props.onChoose;
     const composedOnChoose = async () => {
+        // 1. 先执行用户自定义的 onChoose
         if (customOnChoose) {
             customOnChoose();
         }
-        for (const lineVNode of innerLines.value) {
-            await Adv.print(lineVNode);
+        // 2. 按顺序处理内部收集的内容：VNode 用 Adv.print 打印，回调函数直接调用
+        for (const item of innerContents.value) {
+            await Adv.print(item);
         }
     };
 
-    // 构建 ADVUserChoice 对象
-    const userChoice = {
+    const userChoice: ADVUserChoice = {
         content: contentVNode,
         visible: props.visible,
         next: props.next,
         check: props.check,
         maxTimes: props.maxTimes,
         onChoose: composedOnChoose,
-    } as ADVUserChoice;
+    };
 
     registerOption(userChoice);
 });

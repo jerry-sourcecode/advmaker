@@ -4,7 +4,6 @@
 
 <script setup lang="ts">
 import { provide, onMounted, ref } from 'vue';
-import type { VNode } from 'vue';
 import { Adv } from '../api';
 import type { ADVUserNext, MessageContentType } from '../data/model';
 
