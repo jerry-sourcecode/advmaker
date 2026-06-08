@@ -3,8 +3,8 @@
  */
 
 import { defineStore } from 'pinia';
-import { ref, type VNode } from 'vue';
-import { ADVMessage } from '../data/model.ts';
+import { ref } from 'vue';
+import { ADVMessage, type MessageContentTypeLiteral } from '../data/model.ts';
 import { useEmitter } from './emitter.ts';
 
 export const useMessageStore = defineStore('message', () => {
@@ -13,9 +13,9 @@ export const useMessageStore = defineStore('message', () => {
     const choicePanelHeight = ref(0);
     const dialogCount = ref(0);
 
-    function appendMessage(text: string | VNode): void;
+    function appendMessage(text: MessageContentTypeLiteral): void;
     function appendMessage(text: ADVMessage): void;
-    function appendMessage(text: string | VNode | ADVMessage): void {
+    function appendMessage(text: MessageContentTypeLiteral | ADVMessage): void {
         let new_message;
         if (text instanceof ADVMessage) {
             new_message = new ADVMessage((text as ADVMessage).content, (text as ADVMessage).type);

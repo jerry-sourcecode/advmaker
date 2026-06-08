@@ -5,7 +5,7 @@
  */
 
 import type { DiceExpression } from '../utils/dice.ts';
-import { markRaw, type VNode } from 'vue';
+import { type VNode } from 'vue';
 import type { CharsIds, ItemIds, StatusIds } from '../type/user';
 
 type ADVNextLiteral = string | ADVChoice[] | null;
@@ -19,7 +19,8 @@ export type IdKVType<T, K extends string = string> = {
 export type VlAndFn<T> = T | (() => T);
 export type VlAndLs<T> = T | T[];
 export type VlAndAsync<T> = T | Promise<T>;
-
+export type MessageContentType = string | VNode | (() => Promise<void>) | null;
+export type MessageContentTypeLiteral = string | VNode;
 /**
  * 将用户下一步操作转换为系统可以识别的下一步操作
  * @param obj 用户定义的下一步操作对象
@@ -44,26 +45,22 @@ export function fromUserNextToNext(obj: ADVUserNext): ADVNext {
 }
 export class ADVMessage {
     type: MessageType;
-    content: string | VNode;
-    constructor(content: string | VNode, type: MessageType) {
+    content: MessageContentTypeLiteral;
+    constructor(content: MessageContentTypeLiteral, type: MessageType) {
         this.content = content;
         this.type = type;
     }
 }
 
 export class ADVUserChoice {
-    content: string | VNode;
+    content: MessageContentTypeLiteral = '';
     visible?: () => boolean;
     next?: ADVUserNext;
     check?: ADVUserCheck;
     maxTimes?: number;
+    onChoose?: () => VlAndAsync<void>;
     constructor(obj: ADVUserChoice) {
-        if (typeof obj.content === 'string') this.content = obj.content;
-        else this.content = markRaw(obj.content);
-        this.next = obj.next;
-        this.visible = obj.visible;
-        this.maxTimes = obj.maxTimes;
-        this.check = obj.check;
+        Object.assign(this, obj);
     }
 }
 
@@ -73,6 +70,7 @@ export class ADVChoice extends ADVUserChoice {
     times: number;
     maxTimes: number;
     visible: () => boolean;
+    onChoose: () => VlAndAsync<void>;
     constructor(obj: ADVUserChoice) {
         super(obj);
         this.next = fromUserNextToNext(obj.next ?? null);
@@ -80,6 +78,7 @@ export class ADVChoice extends ADVUserChoice {
         this.times = 0;
         this.maxTimes = obj.maxTimes ?? Infinity;
         this.visible = obj.visible ?? (() => true);
+        this.onChoose = obj.onChoose ?? (() => {});
     }
 }
 
@@ -109,27 +108,14 @@ export class ADVScene extends ADVUserScene {
 }
 
 export class ADVUserDialog {
-    script?: VlAndLs<string | VNode>;
+    script?: VlAndLs<MessageContentType>;
     next?: ADVUserNext;
     check?: ADVUserCheck;
     in?: string;
     onStart?: () => VlAndAsync<void>;
     onFinish?: () => VlAndAsync<void>;
     constructor(obj: ADVUserDialog) {
-        this.script = obj.script;
-        this.in = obj.in;
-        // 为 Component 增加 markRow
-        if (Array.isArray(this.script)) {
-            this.script.forEach((_, id, ls) => {
-                if (typeof ls[id] !== 'string') ls[id] = markRaw(ls[id]);
-            });
-        } else {
-            if (typeof this.script !== 'string' && this.script !== undefined)
-                this.script = markRaw(this.script);
-        }
-        this.next = obj.next;
-        this.onStart = obj.onStart;
-        this.onFinish = obj.onFinish;
+        Object.assign(this, obj);
     }
 }
 
@@ -139,7 +125,7 @@ export class ADVDialog extends ADVUserDialog {
     type: 'Dialog' = 'Dialog';
     next: ADVNext;
     check?: ADVCheck;
-    script: Array<string | VNode>;
+    script: Array<MessageContentType>;
     onStart: () => VlAndAsync<void>;
     onFinish: () => VlAndAsync<void>;
     constructor(id: string, obj: ADVUserDialog) {

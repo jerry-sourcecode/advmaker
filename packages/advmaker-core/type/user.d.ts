@@ -71,7 +71,7 @@ interface IAdv {
     appendDialog(id: string, config: ADVUserDialog): ADVDialogBuilder;
     goto(next: ADVUserNext): void;
     end(desc: string): string;
-    print(content: string | VNode, type?: MessageType): Promise<void>;
+    print(content: MessageContentType, type?: MessageType): Promise<void>;
     showShopPanel(): Promise<void>;
     showSavePanel(): Promise<void>;
     check(check: ADVUserCheck): Promise<boolean>;

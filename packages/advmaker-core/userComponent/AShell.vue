@@ -13,6 +13,7 @@ import type { GlobalThemeOverrides } from 'naive-ui';
 import { useEmitter } from '../store/emitter.ts';
 import Shop from '../components/Menu/Shop.vue';
 import Memory from '../components/Menu/Memory.vue';
+import AStory from '../components/AStory.vue';
 
 const storyStore = useStoryStore();
 const stateStore = useStateStore();
@@ -61,7 +62,9 @@ watch(showMemoryModel, (nv: boolean, ov: boolean) => {
 
 <template>
     <div style="display: none">
-        <slot />
+        <AStory>
+            <slot />
+        </AStory>
     </div>
     <n-config-provider :theme-overrides="themeOverrides">
         <n-dialog-provider>

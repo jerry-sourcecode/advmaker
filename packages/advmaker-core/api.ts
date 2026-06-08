@@ -20,11 +20,11 @@ import {
     type ADVUserNext,
     ADVUserScene,
     fromUserNextToNext,
+    type MessageContentType,
     type MessageType,
 } from './data/model.ts';
 import { useStateStore } from './store/state.ts';
 import { useMessageStore } from './store/message.ts';
-import type { VNode } from 'vue';
 import { Game, RuntimeError } from './game.ts';
 import type { CharsIds, GameConfig, IAdv, ItemIds, StatusIds } from './type/user';
 import { createRestrictedMapProxy, type MapProxy, RV } from './utils/util.ts';
@@ -125,11 +125,14 @@ export const Adv: IAdv = {
     end(desc: string): string {
         return `_END&${desc}`;
     },
-    async print(content: string | VNode, type: MessageType = 'story') {
+    async print(content: MessageContentType, type: MessageType = 'story') {
         const message = useMessageStore();
-        message.appendMessage(new ADVMessage(content, type));
-        const emitter = useEmitter();
-        await emitter.emit('wait-for-click-screen');
+        if (typeof content === 'function') await content();
+        else {
+            if (content !== null) message.appendMessage(new ADVMessage(content, type));
+            const emitter = useEmitter();
+            await emitter.emit('wait-for-click-screen');
+        }
     },
     async showShopPanel() {
         const emitter = useEmitter();
@@ -226,7 +229,7 @@ export class ADVDialogBuilder {
         storyStore.dialogMap.get(this.id)!.next = fromUserNextToNext(act);
         return new ADVChoiceBuilder(this.id);
     }
-    say(word: string | VNode): ADVDialogBuilder {
+    say(word: MessageContentType = null): ADVDialogBuilder {
         const storyStore = useStoryStore();
         storyStore.dialogMap.get(this.id)!.script.push(word);
         return this;

@@ -6,7 +6,7 @@ import { useStoryStore } from './store/story.ts';
 import { useStateStore } from './store/state.ts';
 import { useMessageStore } from './store/message.ts';
 import { useEmitter } from './store/emitter.ts';
-import { ADVCharacter, ADVItem, type ADVNext, ADVStatus } from './data/model.ts';
+import { ADVCharacter, ADVChoice, ADVItem, type ADVNext, ADVStatus } from './data/model.ts';
 import { Adv } from './api.ts';
 import { RV } from './utils/util.ts';
 import { useSaveManager } from './store/saveManager.ts';
@@ -90,8 +90,6 @@ export const Game = {
      */
     async speak(dialogId: string) {
         const storyStore = useStoryStore();
-        const messageStore = useMessageStore();
-        const emitter = useEmitter();
         const dialog = storyStore.dialogMap.get(dialogId);
         await dialog?.onStart();
         if (dialog === undefined) {
@@ -103,9 +101,7 @@ export const Game = {
         }
         if (Array.isArray(dialog.script))
             for (let id = 0; id < dialog.script.length; id++) {
-                const v = dialog.script[id];
-                messageStore.appendMessage(v);
-                await emitter.emit('wait-for-click-screen');
+                await Adv.print(dialog.script[id]);
             }
         else {
             // 不可能到达
@@ -129,7 +125,6 @@ export const Game = {
     async toNext(act: ADVNext) {
         if (act === null) return;
         const stateStore = useStateStore();
-        const emitter = useEmitter();
         stateStore.last = act;
         const saveManager = useSaveManager();
         saveManager.autoSave();
@@ -157,14 +152,18 @@ export const Game = {
             }
             return;
         } else if (Array.isArray(nextAct)) {
-            emitter.emit('make-choice', nextAct).then((res) => {
-                nextAct[res].times++;
-                if (nextAct[res].check) Adv.check(nextAct[res].check);
-                Game.toNext(nextAct[res].next);
-            });
+            await this.choice(nextAct);
         } else if (nextAct !== null && typeof nextAct !== 'function') {
             await Adv.check(nextAct);
         }
+    },
+    async choice(ls: ADVChoice[]) {
+        const emitter = useEmitter();
+        const res = await emitter.emit('make-choice', ls);
+        ls[res].times++;
+        await ls[res].onChoose();
+        if (ls[res].check) await Adv.check(ls[res].check);
+        await Game.toNext(ls[res].next);
     },
     defineConfig(config: GameConfig) {
         const storyStore = useStoryStore();
