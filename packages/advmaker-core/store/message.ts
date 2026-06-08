@@ -12,6 +12,7 @@ export const useMessageStore = defineStore('message', () => {
     const isMkChoice = ref(false);
     const choicePanelHeight = ref(0);
     const dialogCount = ref(0);
+    const sceneCount = ref(0);
 
     function appendMessage(text: MessageContentTypeLiteral): void;
     function appendMessage(text: ADVMessage): void;
@@ -27,5 +28,5 @@ export const useMessageStore = defineStore('message', () => {
         emitter.emit('scroll-to-end');
     }
 
-    return { appendMessage, messageList, isMkChoice, choicePanelHeight, dialogCount };
+    return { appendMessage, messageList, isMkChoice, choicePanelHeight, dialogCount, sceneCount };
 });

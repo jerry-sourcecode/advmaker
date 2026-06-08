@@ -6,7 +6,7 @@
 import { provide, onMounted, ref } from 'vue';
 import type { VNode } from 'vue';
 import { Adv } from '../api';
-import type { ADVUserNext } from '../data/model';
+import type { ADVUserNext, MessageContentType } from '../data/model';
 
 interface SceneReg {
     id: string;
@@ -16,8 +16,8 @@ interface SceneReg {
 
 interface DialogReg {
     id: string;
-    in?: string;
-    script: VNode[];
+    in?: string; // 所在 Scene 的 id
+    script: MessageContentType[];
     userNext?: ADVUserNext;
 }
 
@@ -31,7 +31,7 @@ function registerScene(id: string, name: string, userNext?: ADVUserNext) {
 function registerDialog(
     id: string,
     inScene: string | undefined,
-    script: VNode[],
+    script: MessageContentType[],
     userNext?: ADVUserNext,
 ) {
     dialogs.value.push({ id, in: inScene, script, userNext });
@@ -41,7 +41,7 @@ provide('registerScene', registerScene);
 provide('registerDialog', registerDialog);
 
 onMounted(() => {
-    // 1. 找出每个 Scene 下的第一个 Dialog（按注册顺序）
+    // 1. 计算每个 Scene 下的第一个 Dialog（用于自动 next）
     const firstDialogOfScene = new Map<string, string>();
     for (const d of dialogs.value) {
         if (d.in && !firstDialogOfScene.has(d.in)) {
@@ -49,7 +49,7 @@ onMounted(() => {
         }
     }
 
-    // 2. 调用 Adv.appendScene
+    // 2. 调用 Adv.appendScene（优先使用 prop.next，否则自动推断）
     for (const s of scenes.value) {
         const next = s.userNext !== undefined ? s.userNext : (firstDialogOfScene.get(s.id) ?? null);
         Adv.appendScene(s.id, {
@@ -58,7 +58,7 @@ onMounted(() => {
         });
     }
 
-    // 3. 调用 Adv.appendDialog
+    // 3. 调用 Adv.appendDialog（优先使用 prop.next，否则自动推断全局下一个）
     for (let i = 0; i < dialogs.value.length; i++) {
         const cur = dialogs.value[i];
         const next =

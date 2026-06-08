@@ -9,7 +9,7 @@ import type { ADVUserNext } from '../data/model';
 const props = defineProps<{
     id: string;
     name: string;
-    next: ADVUserNext;
+    next?: ADVUserNext; // 改为可选
 }>();
 
 provide('sceneId', props.id);
