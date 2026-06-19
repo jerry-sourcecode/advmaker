@@ -4,9 +4,15 @@
 
 import { useStoryStore } from './store/story.ts';
 import {
+    ADVCElif,
+    ADVCElse,
+    ADVCEnd,
     ADVCharacter,
     ADVCheck,
     ADVChoice,
+    ADVCIf,
+    ADVCommand,
+    ADVCReturn,
     ADVDialog,
     ADVGoods,
     ADVMessage,
@@ -122,14 +128,28 @@ export const Adv: IAdv = {
         } else newNext = next;
         void Game.toNext(newNext);
     },
-    end(desc: string): string {
+    ending(desc: string): string {
         return `__END&${desc}`;
     },
     async print(content: MessageContentType, type: MessageType = 'story') {
         const message = useMessageStore();
+        if (content instanceof ADVCommand) {
+            if (content.type === 'else') {
+                message.ifState.enterElse();
+                return;
+            } else if (content.type === 'end') {
+                message.ifState.exitIf();
+                return;
+            } else if (content.type === 'elif') {
+                message.ifState.enterElseIf(content.call!());
+            }
+        }
+        if (!message.ifState.shouldExecute()) return;
         if (typeof content === 'function') await content();
         else if (Array.isArray(content)) {
             await Game.choice(content);
+        } else if (content instanceof ADVCommand) {
+            if (content.type === 'if') message.ifState.enterIf(await (content as ADVCIf).call());
         } else {
             if (content !== null) message.appendMessage(new ADVMessage(content, type));
             const emitter = useEmitter();
@@ -198,6 +218,21 @@ export const Adv: IAdv = {
             return false;
         }
     },
+    if(condition: () => boolean | Promise<boolean>) {
+        return new ADVCIf(condition);
+    },
+    else() {
+        return new ADVCElse();
+    },
+    end() {
+        return new ADVCEnd();
+    },
+    elif(condition: () => boolean | Promise<boolean>) {
+        return new ADVCElif(condition);
+    },
+    return() {
+        return new ADVCReturn();
+    }
 };
 
 function checkHasSameId(id: string) {

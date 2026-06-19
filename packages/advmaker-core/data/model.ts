@@ -19,7 +19,13 @@ export type IdKVType<T, K extends string = string> = {
 export type VlAndFn<T> = T | (() => T);
 export type VlAndLs<T> = T | T[];
 export type VlAndAsync<T> = T | Promise<T>;
-export type MessageContentType = string | VNode | (() => Promise<void>) | null | ADVChoice[];
+export type MessageContentType =
+    | string
+    | VNode
+    | (() => Promise<void>)
+    | null
+    | ADVChoice[]
+    | ADVCommand;
 export type MessageContentTypeLiteral = string | VNode;
 /**
  * 将用户下一步操作转换为系统可以识别的下一步操作
@@ -319,5 +325,53 @@ export class ADVCharacter extends ADVUserCharacter {
         this.id = id;
         this.desc = obj.desc ?? '';
         this.know = false;
+    }
+}
+
+type CommandType = 'if' | 'end' | 'else' | 'elif' | 'return';
+
+export class ADVCommand {
+    call: (() => any) | null;
+    type: CommandType;
+    constructor(type: CommandType, call: (() => any) | null) {
+        this.call = call;
+        this.type = type;
+    }
+}
+
+export class ADVCIf extends ADVCommand {
+    call: () => boolean | Promise<boolean> = () => true;
+    constructor(call: () => boolean | Promise<boolean>) {
+        super('if', call);
+        this.call = call;
+    }
+}
+
+export class ADVCElse extends ADVCommand {
+    call: null = null;
+    constructor() {
+        super('else', null);
+    }
+}
+
+export class ADVCElif extends ADVCommand {
+    call: () => boolean | Promise<boolean> = () => true;
+    constructor(call: () => boolean | Promise<boolean>) {
+        super('elif', call);
+        this.call = call;
+    }
+}
+
+export class ADVCEnd extends ADVCommand {
+    call: null = null;
+    constructor() {
+        super('end', null);
+    }
+}
+
+export class ADVCReturn extends ADVCommand {
+    call: null = null;
+    constructor() {
+        super('return', null);
     }
 }

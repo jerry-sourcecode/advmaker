@@ -6,6 +6,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { ADVMessage, type MessageContentTypeLiteral } from '../data/model.ts';
 import { useEmitter } from './emitter.ts';
+import { IfStateManager } from '../utils/util.ts';
 
 export const useMessageStore = defineStore('message', () => {
     const messageList = ref<ADVMessage[]>([]);
@@ -13,6 +14,8 @@ export const useMessageStore = defineStore('message', () => {
     const choicePanelHeight = ref(0);
     const dialogCount = ref(0);
     const sceneCount = ref(0);
+
+    const ifState = ref(new IfStateManager());
 
     function appendMessage(text: MessageContentTypeLiteral): void;
     function appendMessage(text: ADVMessage): void;
@@ -28,5 +31,13 @@ export const useMessageStore = defineStore('message', () => {
         emitter.emit('scroll-to-end');
     }
 
-    return { appendMessage, messageList, isMkChoice, choicePanelHeight, dialogCount, sceneCount };
+    return {
+        appendMessage,
+        messageList,
+        isMkChoice,
+        choicePanelHeight,
+        dialogCount,
+        sceneCount,
+        ifState,
+    };
 });

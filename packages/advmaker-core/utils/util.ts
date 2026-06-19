@@ -194,3 +194,123 @@ export function createRestrictedMapProxy<T extends Record<string, any>>(
     }) as unknown as MapProxy<T>;
 }
 // ==================================================================
+
+export class Stack<T> {
+    private items: T[] = [];
+
+    /** 入栈 */
+    push(element: T): void {
+        this.items.push(element);
+    }
+
+    /** 出栈，返回栈顶元素，栈为空时抛出异常 */
+    pop(): T {
+        if (this.isEmpty()) {
+            throw new Error('Stack is empty');
+        }
+        return this.items.pop()!;
+    }
+
+    /** 查看栈顶元素（不出栈） */
+    peek(): T | undefined {
+        return this.items[this.items.length - 1];
+    }
+
+    /** 栈大小 */
+    get size(): number {
+        return this.items.length;
+    }
+
+    /** 是否为空 */
+    isEmpty(): boolean {
+        return this.items.length === 0;
+    }
+
+    /** 清空栈 */
+    clear(): void {
+        this.items = [];
+    }
+
+    /** 转换为数组（从栈底到栈顶） */
+    toArray(): T[] {
+        return [...this.items];
+    }
+}
+
+const IfState = {
+    NORMAL: 'NORMAL',
+    EXECUTING: 'EXECUTING',
+    SKIPPING: 'SKIPPING',
+    BLOCK_CONSUMED: 'BLOCK_CONSUMED',
+} as const;
+
+type IfState = 'NORMAL' | 'EXECUTING' | 'SKIPPING' | 'BLOCK_CONSUMED';
+
+export class IfStateManager {
+    private stateStack = new Stack<IfState>();
+
+    constructor() {
+        // 默认最外层为 NORMAL
+        this.stateStack.push(IfState.NORMAL);
+    }
+
+    get currentState(): IfState {
+        return this.stateStack.peek()!;
+    }
+
+    private setCurrentState(state: IfState): void {
+        this.stateStack.pop();
+        this.stateStack.push(state);
+    }
+
+    /** 进入一个新的 if 块 */
+    enterIf(condition: boolean): void {
+        // 预留新层
+        if (condition) {
+            this.stateStack.push(IfState.EXECUTING);
+        } else {
+            this.stateStack.push(IfState.SKIPPING);
+        }
+    }
+
+    /** 遇到 else（无条件） */
+    enterElse(): void {
+        const state = this.currentState;
+        if (state === IfState.EXECUTING) {
+            this.setCurrentState(IfState.BLOCK_CONSUMED);
+        } else if (state === IfState.SKIPPING) {
+            this.setCurrentState(IfState.EXECUTING);
+        }
+        // BLOCK_CONSUMED 时不变
+    }
+
+    /** 遇到 else if */
+    enterElseIf(condition: boolean): void {
+        const state = this.currentState;
+        if (state === IfState.EXECUTING) {
+            this.setCurrentState(IfState.BLOCK_CONSUMED);
+        } else if (state === IfState.SKIPPING) {
+            if (condition) {
+                this.setCurrentState(IfState.EXECUTING);
+            }
+            // 否则保持 SKIPPING
+        }
+        // BLOCK_CONSUMED 时不变
+    }
+
+    /** 退出当前 if 块（endif） */
+    exitIf(): void {
+        if (this.stateStack.size <= 1) {
+            throw new Error('Unmatched endif');
+        }
+        this.stateStack.pop();
+    }
+
+    /** 当前指令是否应当执行 */
+    shouldExecute(): boolean {
+        const state = this.currentState;
+        return (
+            state === IfState.EXECUTING || (state === IfState.NORMAL && this.stateStack.size === 1)
+        );
+    }
+}

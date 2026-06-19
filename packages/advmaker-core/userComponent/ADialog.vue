@@ -5,13 +5,14 @@
 <script setup lang="ts">
 import { provide, inject, onMounted, ref, type VNode } from 'vue';
 import { useMessageStore } from '../store/message';
-import type { ADVUserNext, MessageContentType } from '../data/model';
+import { ADVCommand, type ADVUserNext, type MessageContentType } from '../data/model';
+import { Adv } from '../api'; // 用于 Adv.end()
 
 const message = useMessageStore();
 
 const props = defineProps<{
     id?: string;
-    next?: ADVUserNext; // 改为可选
+    next?: ADVUserNext;
 }>();
 
 const sceneId = inject<string | null>('sceneId', null);
@@ -43,6 +44,23 @@ onMounted(() => {
     }
     const dialogId = props.id ?? `__DIALOG&NUM${message.dialogCount}`;
 
+    // ── 补丁：自动闭合未配对的 if 块 ──
+    autoCloseIfs(script.value);
+
     registerDialog(dialogId, sceneId ?? undefined, script.value, props.next);
 });
+
+function autoCloseIfs(arr: MessageContentType[]) {
+    let depth = 0;
+    for (const item of arr) {
+        const type = (item as ADVCommand).type;
+        if (type === 'if') depth++;
+        else if (type === 'end') depth--;
+        // elif 和 else 不改变深度
+    }
+    if (depth > 0) {
+        const endToken = Adv.end();
+        arr.push(endToken);
+    }
+}
 </script>

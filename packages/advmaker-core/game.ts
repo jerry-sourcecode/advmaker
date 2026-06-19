@@ -6,7 +6,14 @@ import { useStoryStore } from './store/story.ts';
 import { useStateStore } from './store/state.ts';
 import { useMessageStore } from './store/message.ts';
 import { useEmitter } from './store/emitter.ts';
-import { ADVCharacter, ADVChoice, ADVItem, type ADVNext, ADVStatus } from './data/model.ts';
+import {
+    ADVCharacter,
+    ADVChoice,
+    ADVCommand,
+    ADVItem,
+    type ADVNext,
+    ADVStatus,
+} from './data/model.ts';
 import { Adv } from './api.ts';
 import { RV } from './utils/util.ts';
 import { useSaveManager } from './store/saveManager.ts';
@@ -102,6 +109,12 @@ export const Game = {
         }
         if (Array.isArray(dialog.script))
             for (let id = 0; id < dialog.script.length; id++) {
+                if (
+                    dialog.script[id] instanceof ADVCommand &&
+                    (dialog.script[id] as ADVCommand).type === 'return'
+                ) {
+                    break;
+                }
                 await Adv.print(dialog.script[id]);
             }
         else {

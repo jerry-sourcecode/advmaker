@@ -1,5 +1,11 @@
 import {
+    ADVCElif,
+    ADVCElse,
+    ADVCEnd,
     ADVCharacter,
+    ADVCIf,
+    type ADVCReturn,
+    ADVIf,
     ADVUserCharacter,
     ADVUserCheck,
     ADVUserDialog,
@@ -43,14 +49,14 @@ export type IdsOf<T, K extends string> = T[K] extends Record<string, any> ? keyo
 
 export type StatusAttrIds<T extends GameConfig> =
     T['status'] extends Record<string, any>
-        ? {
-              [K in keyof NonNullable<T['status']>]: NonNullable<T['status']>[K] extends {
-                  content: infer C;
-              }
-                  ? keyof C
-                  : string;
-          }[keyof NonNullable<T['status']>]
+    ? {
+        [K in keyof NonNullable<T['status']>]: NonNullable<T['status']>[K] extends {
+            content: infer C;
+        }
+        ? keyof C
         : string;
+    }[keyof NonNullable<T['status']>]
+    : string;
 
 // ========== 提取 ID 类型（依然可用） ==========
 type ItemIds = IdsOf<typeof gameConfig, 'items'>;
@@ -69,9 +75,14 @@ interface IAdv {
     appendScene(id: string, config: ADVUserScene): ADVSceneBuilder;
     appendDialog(id: string, config: ADVUserDialog): ADVDialogBuilder;
     goto(next: ADVUserNext): void;
-    end(desc: string): string;
+    ending(desc: string): string;
     print(content: MessageContentType, type?: MessageType): Promise<void>;
     showShopPanel(): Promise<void>;
     showSavePanel(): Promise<void>;
     check(check: ADVUserCheck): Promise<boolean>;
+    if(condition: () => boolean | Promise<boolean>): ADVCIf;
+    elif(condition: () => boolean | Promise<boolean>): ADVCElif;
+    else(): ADVCElse;
+    end(): ADVCEnd;
+    return(): ADVCReturn;
 }
