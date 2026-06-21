@@ -90,6 +90,7 @@ const number = computed(() => {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     height: 80px;
     overflow-x: auto;
+    overflow-y: hidden;
 }
 .status-div {
     display: flex;

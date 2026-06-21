@@ -1,4 +1,5 @@
 import {
+    type ADVBattle,
     ADVCElif,
     ADVCElse,
     ADVCEnd,
@@ -85,4 +86,5 @@ interface IAdv {
     else(): ADVCElse;
     end(): ADVCEnd;
     return(): ADVCReturn;
+    startBattle(setting: ADVBattle): Promise<boolean | 'flee'>;
 }

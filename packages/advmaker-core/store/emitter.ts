@@ -1,7 +1,7 @@
 // emitter.ts
 import { defineStore } from 'pinia';
 import { ref, type Ref } from 'vue';
-import type { ADVChoice } from '../data/model.ts';
+import { type ADVChoice, ADVEnemy } from '../data/model.ts';
 
 export const useEmitter = defineStore('signals', () => {
     /**
@@ -15,6 +15,8 @@ export const useEmitter = defineStore('signals', () => {
         'open-save': () => void;
         'wait-close-save': () => Promise<void>;
         'scroll-to-end': () => void;
+        'choose-object': (num: number) => Promise<ADVEnemy[]>;
+        'battle-over': (res: boolean | 'flee') => void;
     }
 
     // 存储信号与回调函数的映射
@@ -80,7 +82,7 @@ export const useEmitter = defineStore('signals', () => {
             if (returns !== undefined) ansList.push(returns);
         });
 
-        if (!hasRun) throw Error(`🚨 未找到信号处理器: ${signalName}`);
+        if (!hasRun) console.warn(`🚨 未找到信号处理器: ${signalName}`);
         return ansList;
     }
 

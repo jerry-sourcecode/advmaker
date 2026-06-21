@@ -14,9 +14,12 @@ import { useEmitter } from '../store/emitter.ts';
 import Shop from '../components/Menu/Shop.vue';
 import Memory from '../components/Menu/Memory.vue';
 import AStory from '../components/AStory.vue';
+import { useBattleStore } from '../store/battle.ts';
+import Battle from '../components/battle/Battle.vue';
 
 const storyStore = useStoryStore();
 const stateStore = useStateStore();
+const battleStore = useBattleStore();
 
 const active = ref(false);
 
@@ -86,7 +89,8 @@ watch(showMemoryModel, (nv: boolean, ov: boolean) => {
                     >
                 </div>
                 <StatusPanel />
-                <Message />
+                <Message v-if="!battleStore.isBattle" />
+                <Battle v-else />
                 <ChoicePanel />
 
                 <n-drawer v-model:show="active" :width="300" placement="left">

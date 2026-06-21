@@ -33,7 +33,7 @@ export class BoundedQueue<T> {
      * @param maxSize 队列允许的最大长度，必须为正整数
      */
     constructor(maxSize: number) {
-        if (!Number.isInteger(maxSize) || maxSize <= 0) {
+        if ((!Number.isInteger(maxSize) && Number.isFinite(maxSize)) || maxSize <= 0) {
             throw new Error('maxSize must be a positive integer');
         }
         this.maxSize = maxSize;

@@ -4,6 +4,7 @@
 
 import { useStoryStore } from './store/story.ts';
 import {
+    type ADVBattle,
     ADVCElif,
     ADVCElse,
     ADVCEnd,
@@ -37,6 +38,7 @@ import { createRestrictedMapProxy, type MapProxy, RV } from './utils/util.ts';
 import { useEmitter } from './store/emitter.ts';
 import { dice } from './utils/dice.ts';
 import { useAudioStore } from './store/audio.ts';
+import { useBattleStore } from './store/battle.ts';
 
 let backpackCache: MapProxy<Record<ItemIds, number>> | null = null;
 let statusCache: MapProxy<Record<StatusIds, number>> | null = null;
@@ -132,6 +134,14 @@ export const Adv: IAdv = {
         return `__END&${desc}`;
     },
     async print(content: MessageContentType, type: MessageType = 'story') {
+        const battleStore = useBattleStore();
+        const emitter = useEmitter();
+        if (battleStore.isBattle) {
+            if (typeof content === 'string') battleStore.appendLog(content);
+            else throw 'Wrong Type, expect string only.';
+            emitter.emit('scroll-to-end');
+            return;
+        }
         const message = useMessageStore();
         if (content instanceof ADVCommand) {
             if (content.type === 'else') {
@@ -152,7 +162,6 @@ export const Adv: IAdv = {
             if (content.type === 'if') message.ifState.enterIf(await (content as ADVCIf).call());
         } else {
             if (content !== null) message.appendMessage(new ADVMessage(content, type));
-            const emitter = useEmitter();
             await emitter.emit('wait-for-click-screen');
         }
     },
@@ -232,7 +241,24 @@ export const Adv: IAdv = {
     },
     return() {
         return new ADVCReturn();
-    }
+    },
+    async startBattle(setting: ADVBattle) {
+        const battleStore = useBattleStore();
+        battleStore.isBattle = true;
+        battleStore.setting = setting;
+        this.print('你遭遇了敌人。');
+        const order = setting.initiativeOrder(battleStore.setting.enemies);
+        order.forEach((v) => battleStore.queue.push(v));
+        await battleStore.next(true);
+        return new Promise<boolean | 'flee'>((res) => {
+            const emitter = useEmitter();
+            emitter.on('battle-over', (r) => {
+                battleStore.isBattle = false;
+                battleStore.result = r;
+                res(r);
+            });
+        });
+    },
 };
 
 function checkHasSameId(id: string) {

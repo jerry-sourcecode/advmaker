@@ -1,5 +1,5 @@
 import './main.ts';
-import { ADVChoice } from './data/model.ts';
+import { ADVUserBattle, ADVChoice, ADVUserSkill } from './data/model.ts';
 import type { DiceExpression } from './utils/dice.ts';
 import AShell from './userComponent/AShell.vue';
 import AScene from './userComponent/AScene.vue';
@@ -15,6 +15,7 @@ import AElif from './userComponent/AElif.vue';
 import ACheck from './userComponent/ACheck.vue';
 import AGoto from './userComponent/AGoto.vue';
 import AEndDialog from './userComponent/AEndDialog.vue';
+import ABattle from './userComponent/ABattle.vue';
 export { Adv } from './api';
 export {
     AShell,
@@ -33,4 +34,7 @@ export {
     AGoto,
     ACheck,
     AEndDialog,
+    ABattle,
+    ADVUserBattle,
+    ADVUserSkill,
 };

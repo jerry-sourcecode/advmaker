@@ -56,7 +56,7 @@ emitter.on('wait-for-click-screen', () => {
 });
 
 emitter.on('scroll-to-end', () => {
-    mainDivRef.value!.scrollTop = mainDivRef.value!.scrollHeight;
+    if (mainDivRef.value !== null) mainDivRef.value!.scrollTop = mainDivRef.value!.scrollHeight;
 });
 
 function onScreenClick() {
@@ -87,7 +87,12 @@ function onKeyPress(e: KeyboardEvent) {
 }
 
 onMounted(() => document.addEventListener('keypress', onKeyPress));
-onUnmounted(() => document.removeEventListener('keypress', onKeyPress));
+onUnmounted(() => {
+    document.removeEventListener('keypress', onKeyPress);
+    // 清除信号处理器，避免 v-if 卸载后旧闭包残留
+    emitter.off('wait-for-click-screen');
+    emitter.off('scroll-to-end');
+});
 </script>
 
 <style scoped>

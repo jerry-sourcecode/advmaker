@@ -188,6 +188,7 @@ export class ADVItem extends ADVUserItem {
 }
 
 type displayType = 'none' | 'hide' | 'number' | 'process';
+type displayStringType = 'none' | 'hide' | 'string';
 
 export class ADVUserStatus {
     name?: string;
@@ -199,6 +200,34 @@ export class ADVUserStatus {
 
     constructor(obj: ADVUserStatus) {
         Object.assign(this, obj);
+    }
+}
+
+export class ADVUserStringStatus {
+    name?: string;
+    default: string = '';
+    color?: VlAndFn<string>;
+    isDisplay?: VlAndFn<displayStringType>;
+    constructor(obj: ADVUserStringStatus) {
+        Object.assign(this, obj);
+    }
+}
+
+export class ADVStringStatus extends ADVUserStringStatus {
+    name: string;
+    id: StatusIds;
+    default: string;
+    color: VlAndFn<string>;
+    group: string;
+    isDisplay: VlAndFn<displayStringType>;
+    constructor(obj: ADVUserStringStatus, id: StatusIds, group: string) {
+        super(obj);
+        this.name = obj.name ?? id;
+        this.id = id;
+        this.default = obj.default;
+        this.color = obj.color ?? 'black';
+        this.isDisplay = obj.isDisplay ?? 'hide';
+        this.group = group;
     }
 }
 
@@ -373,5 +402,102 @@ export class ADVCReturn extends ADVCommand {
     call: null = null;
     constructor() {
         super('return', null);
+    }
+}
+
+export class ADVUserSkill<T = ADVEnemy[]> {
+    name: string = '';
+    desc: string = '';
+    summary?: string;
+    targetNum?: number;
+    /**
+     * 若动作触发者是玩家，则object是所有敌人目标
+     * 若动作触发者是敌人A，则目标是玩家，objett是敌人A
+     */
+    onUse?: (object: T) => void;
+    constructor(obj: ADVUserSkill<T>) {
+        Object.assign(this, obj);
+    }
+}
+
+export class ADVSkill<T = ADVEnemy[]> extends ADVUserSkill<T> {
+    summary: string;
+    targetNum: number;
+    onUse: (object: T) => void;
+    constructor(obj: ADVUserSkill<T>) {
+        super(obj);
+        this.summary = obj.summary ?? '';
+        this.targetNum = obj.targetNum ?? Infinity;
+        this.onUse = obj.onUse ?? (() => {});
+    }
+}
+
+export class ADVUserEnemy {
+    name: string = '';
+    desc?: string;
+    hp: number = 0;
+    maxhp?: number;
+    atk?: number;
+    def?: number;
+    dex?: number;
+    skill: ADVUserSkill<ADVEnemy>[] = [];
+    move: (object: ADVEnemy[]) => VlAndAsync<void> = () => {};
+    constructor(obj: ADVUserEnemy) {
+        Object.assign(this, obj);
+    }
+}
+
+export class ADVEnemy extends ADVUserEnemy {
+    desc: string;
+    maxhp: number;
+    atk: number;
+    def: number;
+    dex: number;
+    skill: ADVSkill<ADVEnemy>[];
+    constructor(obj: ADVUserEnemy) {
+        super(obj);
+        this.desc = obj.desc ?? '';
+        this.maxhp = obj.maxhp ?? Infinity;
+        this.atk = obj.atk ?? 0;
+        this.def = obj.def ?? 0;
+        this.dex = obj.dex ?? 0;
+        this.skill = [];
+        obj.skill.forEach((v) => this.skill.push(new ADVSkill(v)));
+    }
+}
+
+export class ADVUserBattle {
+    enemies: ADVUserEnemy[] = [];
+    ATKActions: ADVUserSkill[] = [];
+    /**
+     * 决定先攻序列，返回一个数组，值为对应敌人的下标，越靠前代表越先出手，特殊的，玩家为-1
+     */
+    initiativeOrder: (enemies: ADVEnemy[]) => number[] = () => [];
+    /**
+     * 判断是否应该结束：
+     * 若不该结束，返回bull
+     * 若该结束，返回true表示玩家胜利，false表示玩家失败
+     */
+    isFinish: (enemies: ADVEnemy[]) => boolean | null = () => null;
+    SPActions?: ADVUserSkill[];
+    otherActions?: ADVUserSkill[];
+    constructor(obj: ADVUserBattle) {
+        Object.assign(this, obj);
+    }
+}
+
+export class ADVBattle extends ADVUserBattle {
+    enemies: ADVEnemy[] = [];
+    ATKActions: ADVSkill[] = [];
+    SPActions: ADVSkill[] = [];
+    otherActions: ADVSkill[] = [];
+    constructor(obj: ADVUserBattle) {
+        super(obj);
+        obj.enemies.forEach((v) => this.enemies.push(new ADVEnemy(v)));
+        obj.ATKActions.forEach((v) => this.ATKActions.push(new ADVSkill(v)));
+        obj.SPActions = obj.SPActions ?? [];
+        obj.otherActions = obj.otherActions ?? [];
+        obj.SPActions.forEach((v) => this.SPActions.push(new ADVSkill(v)));
+        obj.otherActions.forEach((v) => this.otherActions.push(new ADVSkill(v)));
     }
 }
