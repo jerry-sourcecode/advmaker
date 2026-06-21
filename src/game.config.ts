@@ -7,6 +7,23 @@ export default Adv.defineConfig({
 
     // 角色状态（理智与生命）
     status: {
+        personal: {
+            name: '个人信息',
+            content: {
+                name: {
+                    name: '名称',
+                    default: '洛伊丝·卢索',
+                },
+                age: {
+                    name: '年龄',
+                    default: 19,
+                },
+                job: {
+                    name: '工作',
+                    default: '工程系教授',
+                },
+            },
+        },
         main: {
             name: '主要属性',
             content: {

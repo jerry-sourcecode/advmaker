@@ -84,7 +84,7 @@ export class ADVChoice extends ADVUserChoice {
         this.times = 0;
         this.maxTimes = obj.maxTimes ?? Infinity;
         this.visible = obj.visible ?? (() => true);
-        this.onChoose = obj.onChoose ?? (() => {});
+        this.onChoose = obj.onChoose ?? (() => { });
     }
 }
 
@@ -108,8 +108,8 @@ export class ADVScene extends ADVUserScene {
         super(obj);
         this.id = id;
         this.next = fromUserNextToNext(obj.next ?? null);
-        this.onEnter = obj.onEnter ?? (() => {});
-        this.onLeave = obj.onLeave ?? (() => {});
+        this.onEnter = obj.onEnter ?? (() => { });
+        this.onLeave = obj.onLeave ?? (() => { });
     }
 }
 
@@ -140,8 +140,8 @@ export class ADVDialog extends ADVUserDialog {
         this.in = obj.in;
         this.next = fromUserNextToNext(obj.next ?? null);
         this.check = obj.check ? new ADVCheck(obj.check) : undefined;
-        this.onStart = obj.onStart ?? (() => {});
-        this.onFinish = obj.onFinish ?? (() => {});
+        this.onStart = obj.onStart ?? (() => { });
+        this.onFinish = obj.onFinish ?? (() => { });
         this.script = obj.script ?? [];
     }
 }
@@ -182,19 +182,18 @@ export class ADVItem extends ADVUserItem {
         if (obj.onDiscard === null) {
             this.onDiscard = null;
         } else {
-            this.onDiscard = obj.onDiscard ?? (() => {});
+            this.onDiscard = obj.onDiscard ?? (() => { });
         }
     }
 }
 
-type displayType = 'none' | 'hide' | 'number' | 'process';
-type displayStringType = 'none' | 'hide' | 'string';
+type displayType = 'none' | 'hide' | 'text' | 'process';
 
 export class ADVUserStatus {
     name?: string;
     max?: number;
     min?: number;
-    default: number = 0;
+    default: number | string = 0;
     color?: VlAndFn<string>;
     isDisplay?: VlAndFn<displayType>;
 
@@ -203,40 +202,13 @@ export class ADVUserStatus {
     }
 }
 
-export class ADVUserStringStatus {
-    name?: string;
-    default: string = '';
-    color?: VlAndFn<string>;
-    isDisplay?: VlAndFn<displayStringType>;
-    constructor(obj: ADVUserStringStatus) {
-        Object.assign(this, obj);
-    }
-}
-
-export class ADVStringStatus extends ADVUserStringStatus {
-    name: string;
-    id: StatusIds;
-    default: string;
-    color: VlAndFn<string>;
-    group: string;
-    isDisplay: VlAndFn<displayStringType>;
-    constructor(obj: ADVUserStringStatus, id: StatusIds, group: string) {
-        super(obj);
-        this.name = obj.name ?? id;
-        this.id = id;
-        this.default = obj.default;
-        this.color = obj.color ?? 'black';
-        this.isDisplay = obj.isDisplay ?? 'hide';
-        this.group = group;
-    }
-}
 
 export class ADVStatus extends ADVUserStatus {
     name: string;
     id: StatusIds;
     max: number;
     min: number;
-    default: number;
+    default: number | string;
     color: VlAndFn<string>;
     group: string;
     isDisplay: VlAndFn<displayType>;
@@ -329,8 +301,8 @@ export class ADVCheck extends ADVUserCheck {
         this.modifier = obj.modifier ?? [];
         this.success = fromUserNextToNext(obj.success);
         this.fail = fromUserNextToNext(obj.fail);
-        this.onFail = obj.onFail ?? (() => {});
-        this.onSuccess = obj.onSuccess ?? (() => {});
+        this.onFail = obj.onFail ?? (() => { });
+        this.onSuccess = obj.onSuccess ?? (() => { });
     }
 }
 
@@ -428,7 +400,7 @@ export class ADVSkill<T = ADVEnemy[]> extends ADVUserSkill<T> {
         super(obj);
         this.summary = obj.summary ?? '';
         this.targetNum = obj.targetNum ?? Infinity;
-        this.onUse = obj.onUse ?? (() => {});
+        this.onUse = obj.onUse ?? (() => { });
     }
 }
 
@@ -441,7 +413,7 @@ export class ADVUserEnemy {
     def?: number;
     dex?: number;
     skill: ADVUserSkill<ADVEnemy>[] = [];
-    move: (object: ADVEnemy[]) => VlAndAsync<void> = () => {};
+    move: (object: ADVEnemy[]) => VlAndAsync<void> = () => { };
     constructor(obj: ADVUserEnemy) {
         Object.assign(this, obj);
     }

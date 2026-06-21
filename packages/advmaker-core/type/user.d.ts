@@ -48,6 +48,8 @@ export interface GameConfig {
 // ========== 工具类型 ==========
 export type IdsOf<T, K extends string> = T[K] extends Record<string, any> ? keyof T[K] : string;
 
+type ValueOf<T> = T[keyof T];
+
 export type StatusAttrIds<T extends GameConfig> =
     T['status'] extends Record<string, any>
     ? {
@@ -59,6 +61,29 @@ export type StatusAttrIds<T extends GameConfig> =
     }[keyof NonNullable<T['status']>]
     : string;
 
+/** 从配置中提取指定 status key 的值类型（number 或 string），由 default 字段推断 */
+export type ExtractStatusValueType<TConfig extends GameConfig, K extends string> =
+    TConfig['status'] extends Record<string, any>
+    ? ValueOf<{
+        [G in keyof NonNullable<TConfig['status']>]: NonNullable<TConfig['status']>[G] extends {
+            content: infer C;
+        }
+        ? C extends Record<string, any>
+        ? K extends keyof C
+        ? C[K] extends { default: infer D }
+        ? D extends number ? number : D extends string ? string : number
+        : number
+        : never
+        : never
+        : never;
+    }>
+    : number;
+
+/** 每个 status key 到其值类型的映射 */
+export type StatusValueMap = {
+    [K in StatusIds]: ExtractStatusValueType<typeof gameConfig, K>;
+};
+
 // ========== 提取 ID 类型（依然可用） ==========
 type ItemIds = IdsOf<typeof gameConfig, 'items'>;
 type StatusIds = StatusAttrIds<typeof gameConfig>;
@@ -66,7 +91,7 @@ type CharsIds = IdsOf<typeof gameConfig, 'character'>;
 
 interface IAdv {
     get bag(): MapProxy<Record<ItemIds, number>>;
-    get status(): MapProxy<Record<StatusIds, number>>;
+    get status(): MapProxy<StatusValueMap>;
     get char(): MapProxy<Record<CharsIds, ADVCharacter>>;
     get goods(): MapProxy<Record<ItemIds, number>>;
     get audio(): ReturnType<typeof useAudioStore>;

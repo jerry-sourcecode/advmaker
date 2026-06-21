@@ -32,6 +32,8 @@ let lastSceneId: string | null = null;
  * - 103：骰子错误
  * - 104：发现两个场景或对话、属性有相同的id
  * - 105：发现合成图谱的材料列表为空
+ * - 106：尝试给 string 类型状态赋值 number
+ * - 107：尝试给 number 类型状态赋值 string
  */
 export class RuntimeError extends Error {
     code: number;

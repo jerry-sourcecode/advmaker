@@ -33,7 +33,7 @@ import {
 import { useStateStore } from './store/state.ts';
 import { useMessageStore } from './store/message.ts';
 import { Game, RuntimeError } from './game.ts';
-import type { CharsIds, GameConfig, IAdv, ItemIds, StatusIds } from './type/user';
+import type { CharsIds, GameConfig, IAdv, ItemIds, StatusIds, StatusValueMap } from './type/user';
 import { createRestrictedMapProxy, type MapProxy, RV } from './utils/util.ts';
 import { useEmitter } from './store/emitter.ts';
 import { dice } from './utils/dice.ts';
@@ -41,7 +41,7 @@ import { useAudioStore } from './store/audio.ts';
 import { useBattleStore } from './store/battle.ts';
 
 let backpackCache: MapProxy<Record<ItemIds, number>> | null = null;
-let statusCache: MapProxy<Record<StatusIds, number>> | null = null;
+let statusCache: MapProxy<StatusValueMap> | null = null;
 let charsCache: MapProxy<Record<CharsIds, ADVCharacter>> | null = null;
 let goodsCache: MapProxy<Record<ItemIds, number>> | null = null;
 
@@ -57,13 +57,31 @@ export const Adv: IAdv = {
         if (!statusCache) {
             const stateStore = useStateStore();
             const storyStore = useStoryStore();
-            statusCache = createRestrictedMapProxy<Record<StatusIds, number>>(
-                stateStore.status,
-                (k, v) => {
-                    const obj = storyStore.statusMap.get(k as StatusIds)!;
-                    return Math.max(Math.min(v, obj.max), obj.min);
-                },
-            );
+            statusCache = createRestrictedMapProxy<StatusValueMap>(stateStore.status, (k, v) => {
+                const obj = storyStore.statusMap.get(k as StatusIds)!;
+                const vl: string | number = obj.default;
+                const isStringStatus = typeof vl === 'string';
+                if (isStringStatus) {
+                    if (typeof v !== 'string') {
+                        Game.error(
+                            new RuntimeError(
+                                6,
+                                `Status "${k}" is a string type, cannot assign number.`,
+                            ),
+                        );
+                    }
+                    return v;
+                }
+                if (typeof v !== 'number') {
+                    Game.error(
+                        new RuntimeError(
+                            7,
+                            `Status "${k}" is a number type, cannot assign string.`,
+                        ),
+                    );
+                }
+                return Math.max(Math.min(v, obj.max), obj.min);
+            });
         }
         return statusCache;
     },

@@ -18,26 +18,40 @@
             <n-progress
                 type="line"
                 :color="RV(qryStatus(item[0]).color)"
-                :percentage="(item[1] * 100) / qryStatus(item[0]).max"
+                :percentage="((item[1] as number) * 100) / qryStatus(item[0]).max"
                 :show-indicator="false"
                 v-if="RV(qryStatus(item[0]).isDisplay) === 'process'"
             />
         </div>
         <div style="margin-left: auto; display: flex">
-            <div v-for="item in number" class="status-div" style="margin-top: 13px">
-                <n-statistic tabular-nums>
+            <div v-for="item in textStatus" class="status-div" style="margin-top: 13px">
+                <n-statistic
+                    v-if="typeof stateStore.qryStatus(qryStatus(item[0]).id) === 'number'"
+                    tabular-nums
+                >
                     <template #label>
                         <span style="font-size: 16px">{{ qryStatus(item[0]).name }}</span>
                     </template>
                     <n-number-animation
                         :active="true"
-                        :to="stateStore.qryStatus(qryStatus(item[0]).id) ?? 0"
+                        :to="(stateStore.qryStatus(qryStatus(item[0]).id) as number) ?? 0"
                         :from="numberFrom.get(qryStatus(item[0]).id)"
                         @finish="onFinish(qryStatus(item[0]).id)"
                     />
                     <template #suffix v-if="qryStatus(item[0]).max < Infinity">
                         <span style="font-size: 12px">/ {{ qryStatus(item[0]).max }}</span>
                     </template>
+                </n-statistic>
+                <n-statistic v-else>
+                    <template #label>
+                        <span style="font-size: 16px">{{ qryStatus(item[0]).name }}</span>
+                    </template>
+                    <span
+                        style="font-size: 18px; font-weight: bold"
+                        :style="`color: ${RV(qryStatus(item[0]).color)}`"
+                    >
+                        {{ stateStore.qryStatus(qryStatus(item[0]).id) }}
+                    </span>
                 </n-statistic>
             </div>
         </div>
@@ -56,7 +70,7 @@ const storyStore = useStoryStore();
 const numberFrom = ref(new Map<string, number>());
 
 function onFinish(id: StatusIds) {
-    numberFrom.value.set(id, stateStore.qryStatus(id));
+    numberFrom.value.set(id, stateStore.qryStatus(id) as number);
 }
 
 const isAllHide = computed(() => {
@@ -67,16 +81,16 @@ const isAllHide = computed(() => {
     return res;
 });
 
+const textStatus = computed(() => {
+    return Array.from(stateStore.status).filter((v) => RV(qryStatus(v[0]).isDisplay) === 'text');
+});
+
 function qryStatus(id: StatusIds) {
     return storyStore.statusMap.get(id)!;
 }
 
 const process = computed(() => {
     return Array.from(stateStore.status).filter((v) => RV(qryStatus(v[0]).isDisplay) === 'process');
-});
-
-const number = computed(() => {
-    return Array.from(stateStore.status).filter((v) => RV(qryStatus(v[0]).isDisplay) === 'number');
 });
 </script>
 

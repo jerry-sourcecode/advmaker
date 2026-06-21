@@ -18,7 +18,7 @@ export const useStateStore = defineStore('state', () => {
 
     const backpack = ref(new Map<ItemIds, number>());
     const shop = ref(new Map<ItemIds, number>());
-    const status = ref(new Map<StatusIds, number>());
+    const status = ref(new Map<StatusIds, number | string>());
     // 记录你认不认识这个角色
     const character = ref(new Map<CharsIds, ADVCharacter>());
     const goodsMap = ref(new Map<string, ADVGoods>());
@@ -31,15 +31,20 @@ export const useStateStore = defineStore('state', () => {
         backpack.value.set(item, currentCount + number);
     }
 
-    function obtainStatus(id: StatusIds, number: number) {
+    function obtainStatus(id: StatusIds, value: number | string) {
         const storyStore = useStoryStore();
-        let ori = status.value.get(id)!;
+        let ori: string | number = status.value.get(id)!;
         const obj = storyStore.statusMap.get(id);
         if (obj === undefined) {
             Game.error(new RuntimeError(2, `Can't Find Status: ${id}.`));
             return;
         }
-        ori += number;
+        if (typeof ori === 'string' || typeof value === 'string') {
+            // string 类型：直接设置值
+            status.value.set(id, value);
+            return;
+        }
+        ori += value;
         ori = Math.max(obj.min, ori);
         ori = Math.min(obj.max, ori);
         status.value.set(id, ori);
@@ -50,7 +55,7 @@ export const useStateStore = defineStore('state', () => {
         return res ?? 0;
     }
 
-    function qryStatus(id: StatusIds) {
+    function qryStatus(id: StatusIds): number | string {
         const res = status.value.get(id);
         if (res === undefined) {
             Game.error(new RuntimeError(2, `Can't Find Status name ${id}.`));
