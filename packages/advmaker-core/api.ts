@@ -33,7 +33,16 @@ import {
 import { useStateStore } from './store/state.ts';
 import { useMessageStore } from './store/message.ts';
 import { Game, RuntimeError } from './game.ts';
-import type { CharsIds, ClueSubjectProxy, GameConfig, IAdv, ItemIds, StatusIds, ClueIds, StatusProxy } from './type/user';
+import type {
+    CharsIds,
+    ClueSubjectProxy,
+    GameConfig,
+    IAdv,
+    ItemIds,
+    StatusIds,
+    ClueIds,
+    StatusProxy,
+} from './type/user';
 import { createRestrictedMapProxy, type MapProxy, RV } from './utils/util.ts';
 import { useEmitter } from './store/emitter.ts';
 import { dice } from './utils/dice.ts';
@@ -75,7 +84,9 @@ export const Adv: IAdv = {
                         stateStore.setStatusBase(prop as StatusIds, value);
                         return true;
                     },
-                    ownKeys() { return Array.from(allowedKeys); },
+                    ownKeys() {
+                        return Array.from(allowedKeys);
+                    },
                     getOwnPropertyDescriptor(_, prop) {
                         if (typeof prop === 'string' && allowedKeys.has(prop as StatusIds))
                             return { enumerable: true, configurable: true };
@@ -95,7 +106,9 @@ export const Adv: IAdv = {
                         stateStore.setStatusBonus(prop as StatusIds, value);
                         return true;
                     },
-                    ownKeys() { return Array.from(allowedKeys); },
+                    ownKeys() {
+                        return Array.from(allowedKeys);
+                    },
                     getOwnPropertyDescriptor(_, prop) {
                         if (typeof prop === 'string' && allowedKeys.has(prop as StatusIds))
                             return { enumerable: true, configurable: true };
@@ -126,7 +139,12 @@ export const Adv: IAdv = {
                     // string 型
                     if (typeof obj.value === 'string') {
                         if (typeof value !== 'string') {
-                            Game.error(new RuntimeError(7, `Status "${id}" is a string type, cannot assign number.`));
+                            Game.error(
+                                new RuntimeError(
+                                    7,
+                                    `Status "${id}" is a string type, cannot assign number.`,
+                                ),
+                            );
                         }
                         stateStore.status.set(id, value);
                         return true;
@@ -134,7 +152,12 @@ export const Adv: IAdv = {
                     // number 型：设置总值
                     if (typeof value === 'number') {
                         stateStore.setStatusTotal(id, value);
-                    } else if (value && typeof value === 'object' && 'base' in value && 'bonus' in value) {
+                    } else if (
+                        value &&
+                        typeof value === 'object' &&
+                        'base' in value &&
+                        'bonus' in value
+                    ) {
                         stateStore.setStatusBase(id, value.base);
                         stateStore.setStatusBonus(id, value.bonus);
                     }
@@ -311,7 +334,7 @@ export const Adv: IAdv = {
             );
             await checker.onSuccess();
             await Game.toNext(checker.success);
-            return true;
+            return { res: true, nat: ori, dirty: pt };
         } else {
             await Adv.print(
                 `检定失败！${desc}目标 ${res} 点，【投掷 ${dc_name}】<b>${ori}</b>${tip}${tip === '' ? '' : ` =<b>${pt}</b>`} 点。`,
@@ -319,7 +342,7 @@ export const Adv: IAdv = {
             );
             await checker.onFail();
             await Game.toNext(checker.fail);
-            return false;
+            return { res: true, nat: ori, dirty: pt };
         }
     },
     if(condition: () => boolean | Promise<boolean>) {

@@ -66,34 +66,40 @@ export type IdsOf<T, K extends string> = T[K] extends Record<string, any> ? keyo
 
 export type StatusAttrIds<T extends GameConfig> =
     T['status'] extends Record<string, any>
-    ? {
-        [K in keyof NonNullable<T['status']>]: NonNullable<T['status']>[K] extends {
-            content: infer C;
-        }
-        ? keyof C
+        ? {
+              [K in keyof NonNullable<T['status']>]: NonNullable<T['status']>[K] extends {
+                  content: infer C;
+              }
+                  ? keyof C
+                  : string;
+          }[keyof NonNullable<T['status']>]
         : string;
-    }[keyof NonNullable<T['status']>]
-    : string;
 
 type ValueOf<T> = T[keyof T];
 
 /** 从配置中提取指定 status key 的精确类型（number 或 string），由 value 字段推断 */
 export type ExtractStatusValueType<TConfig extends GameConfig, K extends string> =
     TConfig['status'] extends Record<string, any>
-    ? ValueOf<{
-        [G in keyof NonNullable<TConfig['status']>]: NonNullable<TConfig['status']>[G] extends {
-            content: infer C;
-        }
-        ? C extends Record<string, any>
-        ? K extends keyof C
-        ? C[K] extends { value: infer V }
-        ? V extends number ? number : V extends string ? string : number
-        : number
-        : never
-        : never
-        : never;
-    }>
-    : number;
+        ? ValueOf<{
+              [G in keyof NonNullable<TConfig['status']>]: NonNullable<
+                  TConfig['status']
+              >[G] extends {
+                  content: infer C;
+              }
+                  ? C extends Record<string, any>
+                      ? K extends keyof C
+                          ? C[K] extends { value: infer V }
+                              ? V extends number
+                                  ? number
+                                  : V extends string
+                                    ? string
+                                    : number
+                              : number
+                          : never
+                      : never
+                  : never;
+          }>
+        : number;
 
 /** 每个 status key 到其精确类型的映射 */
 type StatusValueMap = {
@@ -130,7 +136,7 @@ interface IAdv {
     print(content: MessageContentType, type?: MessageType): Promise<void>;
     showShopPanel(): Promise<void>;
     showSavePanel(): Promise<void>;
-    check(check: ADVUserCheck): Promise<boolean>;
+    check(check: ADVUserCheck): Promise<{ res: boolean; nat: number; dirty: number }>;
     if(condition: () => boolean | Promise<boolean>): ADVCIf;
     elif(condition: () => boolean | Promise<boolean>): ADVCElif;
     else(): ADVCElse;
