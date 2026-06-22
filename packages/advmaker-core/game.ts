@@ -17,7 +17,8 @@ import {
 import { Adv } from './api.ts';
 import { RV } from './utils/util.ts';
 import { useSaveManager } from './store/saveManager.ts';
-import type { CharsIds, GameConfig, ItemIds, StatusIds } from './type/user';
+import { useClueStore } from './store/clue.ts';
+import type { CharsIds, ClueIds, GameConfig, ItemIds, StatusIds } from './type/user';
 
 let lastSceneId: string | null = null;
 
@@ -47,6 +48,8 @@ export class RuntimeError extends Error {
 }
 
 export const Game = {
+    /** 设为 true 可在控制台打印对话脚本结构表，便于调试 */
+    debug: true,
     /**
      * 游戏开始
      */
@@ -100,6 +103,7 @@ export const Game = {
      */
     async speak(dialogId: string) {
         const storyStore = useStoryStore();
+        const messageStore = useMessageStore();
         const dialog = storyStore.dialogMap.get(dialogId);
         await dialog?.onStart();
         if (dialog === undefined) {
@@ -109,17 +113,63 @@ export const Game = {
         if (!Array.isArray(dialog.script)) {
             dialog.script = [dialog.script];
         }
-        if (Array.isArray(dialog.script))
+        if (Array.isArray(dialog.script)) {
+            // debug：打印脚本结构表
+            if (Game.debug) {
+                const rows = dialog.script.map((item, i) => {
+                    let type = '?';
+                    let detail = '';
+                    if (item instanceof ADVCommand) {
+                        const cmd = item as ADVCommand;
+                        type = `CMD:${cmd.type}`;
+                        if (cmd.type === 'if') detail = '→ 条件分支入口';
+                        else if (cmd.type === 'else') detail = '→ else 入口';
+                        else if (cmd.type === 'elif') detail = '→ elif 入口';
+                        else if (cmd.type === 'end') detail = '→ 分支结束';
+                        else if (cmd.type === 'return') detail = '→ 终止脚本';
+                    } else if (Array.isArray(item)) {
+                        type = 'CHOICES';
+                        detail = `${item.length} 个选项`;
+                    } else if (typeof item === 'function') {
+                        type = 'FN';
+                        detail = '回调函数';
+                    } else if (item !== null && typeof item === 'object' && 'type' in item) {
+                        type = 'VNode';
+                        detail = String((item as any).type?.__name ?? (item as any).type ?? '');
+                    } else {
+                        type = 'TEXT';
+                        detail = String(item ?? '').slice(0, 40);
+                    }
+                    return { '#': i, type, detail };
+                });
+                console.groupCollapsed(`📜 对话脚本结构 — id="${dialogId}" (${rows.length} 项)`);
+                console.table(rows, ['#', 'type', 'detail']);
+                console.groupEnd();
+            }
             for (let id = 0; id < dialog.script.length; id++) {
                 if (
                     dialog.script[id] instanceof ADVCommand &&
-                    (dialog.script[id] as ADVCommand).type === 'return'
+                    (dialog.script[id] as ADVCommand).type === 'return' &&
+                    messageStore.ifState.shouldExecute()
                 ) {
+                    if (Game.debug) console.log(`  🔚 [${id}] return → 终止脚本`);
                     break;
+                }
+                if (Game.debug) {
+                    const item = dialog.script[id];
+                    const exec = messageStore.ifState.shouldExecute();
+                    let label = '?';
+                    if (item instanceof ADVCommand) label = `CMD:${(item as ADVCommand).type}`;
+                    else if (Array.isArray(item)) label = `CHOICES(${item.length})`;
+                    else if (typeof item === 'function') label = 'FN';
+                    else label = 'TEXT/VNode';
+                    console.log(
+                        `  ${exec ? '▶️' : '⏭️'} [${id}] ${label}${exec ? '' : ' (跳过)'}`,
+                    );
                 }
                 await Adv.print(dialog.script[id]);
             }
-        else {
+        } else {
             // 不可能到达
             throw Error('Never Reach');
         }
@@ -210,8 +260,23 @@ export const Game = {
                         new RuntimeError(4, `There is already a status with the ID '${statusId}'.`),
                     );
                 }
-                stateStore.status.set(statusId, newStatus.default);
+                stateStore.status.set(
+                    statusId,
+                    typeof newStatus.value === 'number'
+                        ? { base: newStatus.base ?? 0, bonus: newStatus.value - (newStatus.base ?? 0) }
+                        : newStatus.value,
+                );
                 storyStore.statusMap.set(statusId, newStatus);
+            }
+        }
+
+        // 初始化线索专题名称
+        if (config.clue) {
+            const clueStore = useClueStore();
+            for (const subjectKey in config.clue) {
+                const subject = config.clue[subjectKey];
+                clueStore.subjectNames.set(subjectKey as ClueIds, subject.name ?? subjectKey);
+                clueStore.getSubjectProxy(subjectKey as ClueIds);
             }
         }
 

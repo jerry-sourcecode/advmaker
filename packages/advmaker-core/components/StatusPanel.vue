@@ -18,7 +18,9 @@
             <n-progress
                 type="line"
                 :color="RV(qryStatus(item[0]).color)"
-                :percentage="((item[1] as number) * 100) / qryStatus(item[0]).max"
+                :percentage="
+                    ((stateStore.qryStatus(item[0]) as number) * 100) / qryStatus(item[0]).max
+                "
                 :show-indicator="false"
                 v-if="RV(qryStatus(item[0]).isDisplay) === 'process'"
             />

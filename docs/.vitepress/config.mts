@@ -4,6 +4,7 @@ import { defineConfig } from 'vitepress';
 export default defineConfig({
     title: 'ADVMaker docs',
     description: 'Documents for ADVMaker',
+    head: [['link', { rel: 'icon', href: '/icon.png' }]],
     themeConfig: {
         // https://vitepress.dev/reference/default-theme-config
         logo: '/icon.png',
@@ -43,6 +44,7 @@ export default defineConfig({
                     { text: '商店与合成', link: '/3.state/3.3-shop' },
                     { text: '故事', link: '/3.state/3.4-story' },
                     { text: '记忆', link: '/3.state/3.5-memery' },
+                    { text: '线索', link: '/3.state/3.6-clue' },
                 ],
             },
             {

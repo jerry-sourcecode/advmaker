@@ -8,12 +8,49 @@
                         <div v-for="att in gp[1]">
                             <div v-if="RV(qry_status(att).isDisplay) !== 'none'">
                                 <span>{{ qry_status(att).name }}：</span>
-                                <span :style="`color: ${RV(qry_status(att).color)}`" class="bold">{{
-                                    stateStore.qryStatus(att)
-                                }}</span>
-                                <span class="bold" v-if="qry_status(att).max < Infinity">
-                                    / {{ qry_status(att).max }}</span
+                                <!-- 有 base>0：显示 基础值 + 加值 -->
+                                <template
+                                    v-if="
+                                        qry_status(att).base !== undefined &&
+                                        qry_status(att).base! > 0
+                                    "
                                 >
+                                    <span class="bold">{{ qry_status(att).base }}</span>
+                                    <span
+                                        :style="`color: ${RV(qry_status(att).color)}`"
+                                        class="bold"
+                                        v-if="
+                                            (stateStore.qryStatus(att) as number) -
+                                                qry_status(att).base! !==
+                                            0
+                                        "
+                                    >
+                                        {{
+                                            (stateStore.qryStatus(att) as number) -
+                                                qry_status(att).base! >=
+                                            0
+                                                ? '+'
+                                                : ''
+                                        }}{{
+                                            (stateStore.qryStatus(att) as number) -
+                                            qry_status(att).base!
+                                        }}
+                                    </span>
+                                </template>
+                                <!-- 无 base：显示总值 -->
+                                <template v-else>
+                                    <span
+                                        :style="`color: ${RV(qry_status(att).color)}`"
+                                        class="bold"
+                                        >{{ stateStore.qryStatus(att) }}</span
+                                    >
+                                </template>
+                                <span class="bold" v-if="qry_status(att).max < Infinity">
+                                    <span v-if="qry_status(att).max !== 100">
+                                        / {{ qry_status(att).max }}
+                                    </span>
+                                    <span v-else>%</span>
+                                </span>
                             </div>
                         </div>
                     </div>

@@ -193,7 +193,9 @@ export class ADVUserStatus {
     name?: string;
     max?: number;
     min?: number;
-    default: number | string = 0;
+    /** 技能基础值（CoC 风格）。设定后该状态将被视为 base+bonus 结构，bonus = 当前值 - base。不设定则为普通数值状态。 */
+    base?: number;
+    value: number | string = 0;
     color?: VlAndFn<string>;
     isDisplay?: VlAndFn<displayType>;
 
@@ -208,18 +210,22 @@ export class ADVStatus extends ADVUserStatus {
     id: StatusIds;
     max: number;
     min: number;
-    default: number | string;
+    value: number | string;
     color: VlAndFn<string>;
     group: string;
     isDisplay: VlAndFn<displayType>;
+    /** 技能基础值，undefined 表示普通状态 */
+    base?: number;
 
     constructor(obj: ADVUserStatus, id: StatusIds, group: string) {
         super(obj);
         this.name = obj.name ?? id;
         this.id = id;
         this.max = obj.max ?? Infinity;
-        this.min = obj.min ?? 0;
-        this.default = obj.default;
+        this.base = typeof obj.value === 'number' ? (obj.base ?? 0) : obj.base;
+        // 当 base 设定时，min 默认取 base（技能值不应低于基础值）
+        this.min = obj.min ?? (obj.base !== undefined ? obj.base : 0);
+        this.value = obj.value;
         this.color = obj.color ?? 'black';
         this.isDisplay = obj.isDisplay ?? 'hide';
         this.group = group;

@@ -33,17 +33,21 @@ import {
 import { useStateStore } from './store/state.ts';
 import { useMessageStore } from './store/message.ts';
 import { Game, RuntimeError } from './game.ts';
-import type { CharsIds, GameConfig, IAdv, ItemIds, StatusIds, StatusValueMap } from './type/user';
+import type { CharsIds, ClueSubjectProxy, GameConfig, IAdv, ItemIds, StatusIds, ClueIds, StatusProxy } from './type/user';
 import { createRestrictedMapProxy, type MapProxy, RV } from './utils/util.ts';
 import { useEmitter } from './store/emitter.ts';
 import { dice } from './utils/dice.ts';
 import { useAudioStore } from './store/audio.ts';
 import { useBattleStore } from './store/battle.ts';
+import { useClueStore } from './store/clue.ts';
 
 let backpackCache: MapProxy<Record<ItemIds, number>> | null = null;
-let statusCache: MapProxy<StatusValueMap> | null = null;
+let statusCache: StatusProxy | null = null;
+let statusBaseProxy: StatusProxy | null = null;
+let statusBonusProxy: StatusProxy | null = null;
 let charsCache: MapProxy<Record<CharsIds, ADVCharacter>> | null = null;
 let goodsCache: MapProxy<Record<ItemIds, number>> | null = null;
+let clueCache: MapProxy<Record<ClueIds, ClueSubjectProxy>> | null = null;
 
 export const Adv: IAdv = {
     get bag() {
@@ -57,31 +61,95 @@ export const Adv: IAdv = {
         if (!statusCache) {
             const stateStore = useStateStore();
             const storyStore = useStoryStore();
-            statusCache = createRestrictedMapProxy<StatusValueMap>(stateStore.status, (k, v) => {
-                const obj = storyStore.statusMap.get(k as StatusIds)!;
-                const vl: string | number = obj.default;
-                const isStringStatus = typeof vl === 'string';
-                if (isStringStatus) {
-                    if (typeof v !== 'string') {
-                        Game.error(
-                            new RuntimeError(
-                                6,
-                                `Status "${k}" is a string type, cannot assign number.`,
-                            ),
-                        );
+            const allowedKeys = new Set(stateStore.status.keys());
+
+            // 子代理：base
+            if (!statusBaseProxy) {
+                statusBaseProxy = new Proxy({} as StatusProxy, {
+                    get(_, prop: string) {
+                        const raw = stateStore.getStatusRaw(prop as StatusIds);
+                        if (typeof raw === 'object' && raw !== null) return raw.base;
+                        return 0;
+                    },
+                    set(_, prop: string, value: number) {
+                        stateStore.setStatusBase(prop as StatusIds, value);
+                        return true;
+                    },
+                    ownKeys() { return Array.from(allowedKeys); },
+                    getOwnPropertyDescriptor(_, prop) {
+                        if (typeof prop === 'string' && allowedKeys.has(prop as StatusIds))
+                            return { enumerable: true, configurable: true };
+                        return undefined;
+                    },
+                }) as StatusProxy;
+            }
+            // 子代理：bonus
+            if (!statusBonusProxy) {
+                statusBonusProxy = new Proxy({} as StatusProxy, {
+                    get(_, prop: string) {
+                        const raw = stateStore.getStatusRaw(prop as StatusIds);
+                        if (typeof raw === 'object' && raw !== null) return raw.bonus;
+                        return 0;
+                    },
+                    set(_, prop: string, value: number) {
+                        stateStore.setStatusBonus(prop as StatusIds, value);
+                        return true;
+                    },
+                    ownKeys() { return Array.from(allowedKeys); },
+                    getOwnPropertyDescriptor(_, prop) {
+                        if (typeof prop === 'string' && allowedKeys.has(prop as StatusIds))
+                            return { enumerable: true, configurable: true };
+                        return undefined;
+                    },
+                }) as StatusProxy;
+            }
+
+            statusCache = new Proxy({} as StatusProxy, {
+                get(_, prop: string) {
+                    if (prop === 'base') return statusBaseProxy;
+                    if (prop === 'bonus') return statusBonusProxy;
+                    if (typeof prop === 'symbol') return undefined;
+                    if (!allowedKeys.has(prop as StatusIds)) {
+                        throw new Error(`Status "${prop}" is not defined.`);
                     }
-                    return v;
-                }
-                if (typeof v !== 'number') {
-                    Game.error(
-                        new RuntimeError(
-                            7,
-                            `Status "${k}" is a number type, cannot assign string.`,
-                        ),
-                    );
-                }
-                return Math.max(Math.min(v, obj.max), obj.min);
-            });
+                    const raw = stateStore.getStatusRaw(prop as StatusIds);
+                    if (typeof raw === 'string') return raw;
+                    // number 型：返回总值
+                    if (!raw) return 0;
+                    return raw.base + raw.bonus;
+                },
+                set(_, prop: string, value: any) {
+                    if (typeof prop !== 'string') return false;
+                    const id = prop as StatusIds;
+                    const obj = storyStore.statusMap.get(id);
+                    if (!obj) return false;
+                    // string 型
+                    if (typeof obj.value === 'string') {
+                        if (typeof value !== 'string') {
+                            Game.error(new RuntimeError(7, `Status "${id}" is a string type, cannot assign number.`));
+                        }
+                        stateStore.status.set(id, value);
+                        return true;
+                    }
+                    // number 型：设置总值
+                    if (typeof value === 'number') {
+                        stateStore.setStatusTotal(id, value);
+                    } else if (value && typeof value === 'object' && 'base' in value && 'bonus' in value) {
+                        stateStore.setStatusBase(id, value.base);
+                        stateStore.setStatusBonus(id, value.bonus);
+                    }
+                    return true;
+                },
+                ownKeys() {
+                    return Array.from(allowedKeys);
+                },
+                getOwnPropertyDescriptor(_, prop) {
+                    if (typeof prop === 'string' && allowedKeys.has(prop as StatusIds)) {
+                        return { enumerable: true, configurable: true };
+                    }
+                    return undefined;
+                },
+            }) as StatusProxy;
         }
         return statusCache;
     },
@@ -100,6 +168,15 @@ export const Adv: IAdv = {
             goodsCache = createRestrictedMapProxy<Record<ItemIds, number>>(stateStore.shop);
         }
         return goodsCache;
+    },
+    get clue() {
+        if (!clueCache) {
+            const clueStore = useClueStore();
+            clueCache = createRestrictedMapProxy<Record<ClueIds, ClueSubjectProxy>>(
+                clueStore.subjectProxyMap,
+            );
+        }
+        return clueCache;
     },
     get audio() {
         return useAudioStore();
@@ -241,7 +318,7 @@ export const Adv: IAdv = {
                 'system',
             );
             await checker.onFail();
-            await Game.toNext(checker.success);
+            await Game.toNext(checker.fail);
             return false;
         }
     },

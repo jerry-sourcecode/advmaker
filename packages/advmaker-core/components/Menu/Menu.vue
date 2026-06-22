@@ -61,7 +61,7 @@ import { Icon } from '@iconify/vue';
 import Attu from './Attu.vue';
 import { computed, ref } from 'vue';
 import Bag from './Bag.vue';
-import Story from './Story.vue';
+import Story from './story/Story.vue';
 import { useEmitter } from '../../store/emitter.ts';
 import { useStoryStore } from '../../store/story.ts';
 
