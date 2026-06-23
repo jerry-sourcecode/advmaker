@@ -38,10 +38,12 @@ import type {
     ClueSubjectProxy,
     GameConfig,
     IAdv,
+    TimeAPI,
     ItemIds,
     StatusIds,
     ClueIds,
     StatusProxy,
+    StatusValueAccessor,
 } from './type/user';
 import { createRestrictedMapProxy, type MapProxy, RV } from './utils/util.ts';
 import { useEmitter } from './store/emitter.ts';
@@ -49,14 +51,75 @@ import { dice } from './utils/dice.ts';
 import { useAudioStore } from './store/audio.ts';
 import { useBattleStore } from './store/battle.ts';
 import { useClueStore } from './store/clue.ts';
+import { useTimeStore } from './store/time.ts';
 
 let backpackCache: MapProxy<Record<ItemIds, number>> | null = null;
 let statusCache: StatusProxy | null = null;
 let statusBaseProxy: StatusProxy | null = null;
 let statusBonusProxy: StatusProxy | null = null;
+let statusHardProxy: StatusProxy | null = null;
+let statusExtremeProxy: StatusProxy | null = null;
 let charsCache: MapProxy<Record<CharsIds, ADVCharacter>> | null = null;
 let goodsCache: MapProxy<Record<ItemIds, number>> | null = null;
 let clueCache: MapProxy<Record<ClueIds, ClueSubjectProxy>> | null = null;
+/** 每个 status 的访问器缓存，确保 Adv.status.FastTalk === Adv.status.FastTalk */
+const statusAccessorCache = new Map<StatusIds, StatusValueAccessor>();
+
+/**
+ * 为指定 status id 创建增强访问器对象。
+ * 该对象可当 number 使用（valueOf/toString/Symbol.toPrimitive），
+ * 同时提供 .value / .base / .bonus / .hard / .extreme 属性。
+ */
+function createStatusValueAccessor(
+    id: StatusIds,
+    stateStore: ReturnType<typeof useStateStore>,
+): StatusValueAccessor {
+    function getRaw(): { base: number; bonus: number } | string | undefined {
+        return stateStore.getStatusRaw(id);
+    }
+    function getTotal(): number {
+        const raw = getRaw();
+        if (typeof raw === 'object' && raw !== null) return raw.base + raw.bonus;
+        return 0;
+    }
+
+    return {
+        get value() {
+            return getTotal();
+        },
+        get base() {
+            const raw = getRaw();
+            return typeof raw === 'object' && raw !== null ? raw.base : 0;
+        },
+        set base(v: number) {
+            stateStore.setStatusBase(id, v);
+        },
+        get bonus() {
+            const raw = getRaw();
+            return typeof raw === 'object' && raw !== null ? raw.bonus : 0;
+        },
+        set bonus(v: number) {
+            stateStore.setStatusBonus(id, v);
+        },
+        get hard() {
+            return Math.floor(getTotal() / 2);
+        },
+        get extreme() {
+            return Math.floor(getTotal() / 5);
+        },
+        valueOf(): number {
+            return getTotal();
+        },
+        toString(): string {
+            return String(getTotal());
+        },
+        [Symbol.toPrimitive](hint: string): number | string {
+            const total = getTotal();
+            if (hint === 'string') return String(total);
+            return total;
+        },
+    } as unknown as StatusValueAccessor;
+}
 
 export const Adv: IAdv = {
     get bag() {
@@ -116,23 +179,74 @@ export const Adv: IAdv = {
                     },
                 }) as StatusProxy;
             }
+            // 子代理：hard（困难成功 = 总值 / 2，向下取整，只读）
+            if (!statusHardProxy) {
+                statusHardProxy = new Proxy({} as StatusProxy, {
+                    get(_, prop: string) {
+                        const raw = stateStore.getStatusRaw(prop as StatusIds);
+                        if (typeof raw === 'object' && raw !== null)
+                            return Math.floor((raw.base + raw.bonus) / 2);
+                        if (typeof raw === 'string') return 0;
+                        return 0;
+                    },
+                    set() {
+                        return false;
+                    },
+                    ownKeys() {
+                        return Array.from(allowedKeys);
+                    },
+                    getOwnPropertyDescriptor(_, prop) {
+                        if (typeof prop === 'string' && allowedKeys.has(prop as StatusIds))
+                            return { enumerable: true, configurable: true };
+                        return undefined;
+                    },
+                }) as StatusProxy;
+            }
+            // 子代理：extreme（极难成功 = 总值 / 5，向下取整，只读）
+            if (!statusExtremeProxy) {
+                statusExtremeProxy = new Proxy({} as StatusProxy, {
+                    get(_, prop: string) {
+                        const raw = stateStore.getStatusRaw(prop as StatusIds);
+                        if (typeof raw === 'object' && raw !== null)
+                            return Math.floor((raw.base + raw.bonus) / 5);
+                        if (typeof raw === 'string') return 0;
+                        return 0;
+                    },
+                    set() {
+                        return false;
+                    },
+                    ownKeys() {
+                        return Array.from(allowedKeys);
+                    },
+                    getOwnPropertyDescriptor(_, prop) {
+                        if (typeof prop === 'string' && allowedKeys.has(prop as StatusIds))
+                            return { enumerable: true, configurable: true };
+                        return undefined;
+                    },
+                }) as StatusProxy;
+            }
 
             statusCache = new Proxy({} as StatusProxy, {
                 get(_, prop: string) {
                     if (prop === 'base') return statusBaseProxy;
                     if (prop === 'bonus') return statusBonusProxy;
-                    if (typeof prop === 'symbol') return undefined;
+                    if (prop === 'hard') return statusHardProxy;
+                    if (prop === 'extreme') return statusExtremeProxy;
                     if (!allowedKeys.has(prop as StatusIds)) {
                         throw new Error(`Status "${prop}" is not defined.`);
                     }
-                    const raw = stateStore.getStatusRaw(prop as StatusIds);
+                    const id = prop as StatusIds;
+                    const raw = stateStore.getStatusRaw(id);
                     if (typeof raw === 'string') return raw;
-                    // number 型：返回总值
-                    if (!raw) return 0;
-                    return raw.base + raw.bonus;
+                    // number 型：返回增强访问器（带缓存，可当 number 使用）
+                    let accessor = statusAccessorCache.get(id);
+                    if (!accessor) {
+                        accessor = createStatusValueAccessor(id, stateStore);
+                        statusAccessorCache.set(id, accessor);
+                    }
+                    return accessor;
                 },
                 set(_, prop: string, value: any) {
-                    if (typeof prop !== 'string') return false;
                     const id = prop as StatusIds;
                     const obj = storyStore.statusMap.get(id);
                     if (!obj) return false;
@@ -203,6 +317,23 @@ export const Adv: IAdv = {
     },
     get audio() {
         return useAudioStore();
+    },
+    get time(): TimeAPI {
+        const timeStore = useTimeStore();
+        const stateStore = useStateStore();
+        return {
+            advance(minutes: number) {
+                if (!timeStore.enabled) return;
+                timeStore.advance(minutes);
+                stateStore.status.set('__time__' as StatusIds, timeStore.barStr);
+            },
+            get str() {
+                return timeStore.enabled ? timeStore.barStr : '';
+            },
+            get full() {
+                return timeStore.enabled ? timeStore.fullStr : '';
+            },
+        };
     },
     recipeControl(id: ItemIds) {
         return new ADVRecipeController(id);
@@ -342,7 +473,7 @@ export const Adv: IAdv = {
             );
             await checker.onFail();
             await Game.toNext(checker.fail);
-            return { res: true, nat: ori, dirty: pt };
+            return { res: false, nat: ori, dirty: pt };
         }
     },
     if(condition: () => boolean | Promise<boolean>) {

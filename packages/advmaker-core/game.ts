@@ -18,6 +18,7 @@ import { Adv } from './api.ts';
 import { RV } from './utils/util.ts';
 import { useSaveManager } from './store/saveManager.ts';
 import { useClueStore } from './store/clue.ts';
+import { useTimeStore } from './store/time.ts';
 import type { CharsIds, ClueIds, GameConfig, ItemIds, StatusIds } from './type/user';
 
 let lastSceneId: string | null = null;
@@ -117,7 +118,7 @@ export const Game = {
             // debug：打印脚本结构表
             if (Game.debug) {
                 const rows = dialog.script.map((item, i) => {
-                    let type = '?';
+                    let type;
                     let detail = '';
                     if (item instanceof ADVCommand) {
                         const cmd = item as ADVCommand;
@@ -163,9 +164,7 @@ export const Game = {
                     else if (Array.isArray(item)) label = `CHOICES(${item.length})`;
                     else if (typeof item === 'function') label = 'FN';
                     else label = 'TEXT/VNode';
-                    console.log(
-                        `  ${exec ? '▶️' : '⏭️'} [${id}] ${label}${exec ? '' : ' (跳过)'}`,
-                    );
+                    console.log(`  ${exec ? '▶️' : '⏭️'} [${id}] ${label}${exec ? '' : ' (跳过)'}`);
                 }
                 await Adv.print(dialog.script[id]);
             }
@@ -263,7 +262,10 @@ export const Game = {
                 stateStore.status.set(
                     statusId,
                     typeof newStatus.value === 'number'
-                        ? { base: newStatus.base ?? 0, bonus: newStatus.value - (newStatus.base ?? 0) }
+                        ? {
+                              base: newStatus.base ?? 0,
+                              bonus: newStatus.value - (newStatus.base ?? 0),
+                          }
                         : newStatus.value,
                 );
                 storyStore.statusMap.set(statusId, newStatus);
@@ -277,6 +279,37 @@ export const Game = {
                 const subject = config.clue[subjectKey];
                 clueStore.subjectNames.set(subjectKey as ClueIds, subject.name ?? subjectKey);
                 clueStore.getSubjectProxy(subjectKey as ClueIds);
+            }
+        }
+
+        // 初始化游戏内时间（同时注册 __time__ 状态）
+        if (config.time?.start) {
+            const timeStore = useTimeStore();
+            const match = config.time.start.match(
+                /^(\d{4})-(\d{1,2})-(\d{1,2})\s+(\d{1,2}):(\d{1,2})$/,
+            );
+            if (match) {
+                const showDate = config.time.showDate ?? false;
+                timeStore.init(
+                    parseInt(match[1], 10),
+                    parseInt(match[2], 10),
+                    parseInt(match[3], 10),
+                    parseInt(match[4], 10),
+                    parseInt(match[5], 10),
+                    showDate,
+                );
+                // 注册 __time__ 为 string 型状态，用于状态栏显示
+                if (!stateStore.status.has('__time__' as StatusIds)) {
+                    stateStore.status.set('__time__' as StatusIds, '');
+                    const timeStatus = new ADVStatus(
+                        { value: '', isDisplay: 'text', name: '' } as any,
+                        '__time__' as StatusIds,
+                        '',
+                    );
+                    storyStore.statusMap.set('__time__' as StatusIds, timeStatus);
+                }
+                // 同步初始值
+                stateStore.status.set('__time__' as StatusIds, timeStore.barStr);
             }
         }
 

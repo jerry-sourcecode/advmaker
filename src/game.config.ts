@@ -479,11 +479,7 @@ export default Adv.defineConfig({
 
     // 菜单显示
     menu: {
-        bag: true,
-        attu: true,
         shop: false,
-        save: true,
-        story: false,
     },
 
     clue: {

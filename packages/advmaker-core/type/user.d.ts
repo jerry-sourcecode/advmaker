@@ -6,7 +6,6 @@ import {
     ADVCharacter,
     ADVCIf,
     type ADVCReturn,
-    ADVIf,
     ADVUserCharacter,
     ADVUserCheck,
     ADVUserDialog,
@@ -52,6 +51,12 @@ export interface GameConfig {
     gameName?: string;
     judgmentMode?: 'd20' | 'percent';
     clue?: RecordWithoutId<ADVUserClueSubject>;
+    time?: {
+        /** 游戏开始时间，格式 'YYYY-MM-DD HH:mm'，如 '1925-09-12 08:00' */
+        start: string;
+        /** 是否在状态栏显示日期（MM-DD），默认 false */
+        showDate?: boolean;
+    };
     menu?: {
         bag?: boolean;
         attu?: boolean;
@@ -112,11 +117,39 @@ export type StatusIds = StatusAttrIds<typeof gameConfig>;
 type CharsIds = IdsOf<typeof gameConfig, 'character'>;
 export type ClueIds = IdsOf<typeof gameConfig, 'clue'>;
 
+// ========== 状态值访问器 ==========
+/** 对 number 型状态的增强访问器。通过 `number & { ... }` 交叉类型使得 TypeScript 同时将其视为 number。 */
+export type StatusValueAccessor = number & {
+    /** 当前总值（base + bonus），只读 */
+    readonly value: number;
+    /** 基础值，可读写 */
+    base: number;
+    /** 加值，可读写 */
+    bonus: number;
+    /** CoC 困难成功阈值：Math.floor(总值 / 2)，只读 */
+    readonly hard: number;
+    /** CoC 极难成功阈值：Math.floor(总值 / 5)，只读 */
+    readonly extreme: number;
+};
+
 // ========== 状态代理 ==========
-/** number 型返回 number，string 型返回 string；.base/.bonus 子代理读写基础值和加值 */
-export type StatusProxy = StatusValueMap & {
+/**
+ * number 型返回 StatusValueAccessor（可当 number 使用），string 型返回 string。
+ *
+ * 推荐写法：Adv.status.FastTalk.hard（新）
+ * 兼容写法：Adv.status.hard.FastTalk（旧，仍可用）
+ */
+export type StatusProxy = {
+    [K in StatusIds]: StatusValueMap[K] extends string ? string : StatusValueAccessor;
+} & {
+    /** @deprecated 旧语法，推荐使用 Adv.status.xxx.base */
     base: Record<StatusIds, number>;
+    /** @deprecated 旧语法，推荐使用 Adv.status.xxx.bonus */
     bonus: Record<StatusIds, number>;
+    /** @deprecated 旧语法，推荐使用 Adv.status.xxx.hard */
+    hard: Record<StatusIds, number>;
+    /** @deprecated 旧语法，推荐使用 Adv.status.xxx.extreme */
+    extreme: Record<StatusIds, number>;
 };
 
 interface IAdv {
@@ -126,6 +159,7 @@ interface IAdv {
     get goods(): MapProxy<Record<ItemIds, number>>;
     get clue(): MapProxy<Record<ClueIds, ClueSubjectProxy>>;
     get audio(): ReturnType<typeof useAudioStore>;
+    get time(): TimeAPI;
     recipeControl(id: ItemIds): ADVRecipeController;
     defineConfig<TConfig extends GameConfig>(config: TConfig): TConfig;
     defineRecipe(id: ItemIds, gd: ADVUserGoods): void;
@@ -143,4 +177,20 @@ interface IAdv {
     end(): ADVCEnd;
     return(): ADVCReturn;
     startBattle(setting: ADVBattle): Promise<boolean | 'flee'>;
+}
+
+// ========== 时间系统 API ==========
+export interface TimeAPI {
+    /**
+     * 推进游戏内时间
+     * @param minutes 要增加的分钟数（正整数）
+     */
+    advance(minutes: number): void;
+    /**
+     * 当前时间字符串（不带秒）
+     * 状态栏显示用：根据配置可能是 "HH:MM" 或 "MM-DD HH:MM"
+     */
+    readonly str: string;
+    /** 完整日期时间字符串 "YYYY-MM-DD HH:MM 星期X"，用于 Menu Story 展示 */
+    readonly full: string;
 }
