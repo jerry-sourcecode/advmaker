@@ -11,6 +11,8 @@ const props = defineProps<{
     check?: ADVUserCheck;
     maxTimes?: number;
     onChoose?: () => void;
+    /** 设为 true 相当于 next="null"，选择后故事暂停，优先级高于 next */
+    stop?: boolean;
 }>();
 
 const slots = useSlots();
@@ -53,7 +55,7 @@ onMounted(() => {
     const userChoice: ADVUserChoice = {
         content: contentVNode,
         visible: props.visible,
-        next: props.next,
+        next: props.stop ? null : props.next,
         check: props.check,
         maxTimes: props.maxTimes,
         onChoose: composedOnChoose,

@@ -17,6 +17,14 @@ import AStory from '../components/AStory.vue';
 import { useBattleStore } from '../store/battle.ts';
 import Battle from '../components/battle/Battle.vue';
 
+const props = withDefaults(
+    defineProps<{
+        /** 是否自动推断 next（默认 true）。设为 false 后所有场景和对话的 next 默认为 null，需手动指定 */
+        autoNext?: boolean;
+    }>(),
+    { autoNext: true },
+);
+
 const storyStore = useStoryStore();
 const stateStore = useStateStore();
 const battleStore = useBattleStore();
@@ -65,7 +73,7 @@ watch(showMemoryModel, (nv: boolean, ov: boolean) => {
 
 <template>
     <div style="display: none">
-        <AStory>
+        <AStory :auto-next="props.autoNext">
             <slot />
         </AStory>
     </div>

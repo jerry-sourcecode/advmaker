@@ -7,6 +7,14 @@ import { provide, onMounted, ref } from 'vue';
 import { Adv } from '../api';
 import type { ADVUserNext, MessageContentType } from '../data/model';
 
+const props = withDefaults(
+    defineProps<{
+        /** 是否自动推断 next（默认 true）。设为 false 后所有场景和对话的 next 默认为 null，需手动指定 */
+        autoNext?: boolean;
+    }>(),
+    { autoNext: true },
+);
+
 interface SceneReg {
     id: string;
     name: string;
@@ -48,22 +56,27 @@ onMounted(() => {
         }
     }
 
-    // 2. 调用 Adv.appendScene（优先使用 prop.next，否则自动推断）
+    // 2. 调用 Adv.appendScene（优先使用 prop.next，否则根据 autoNext 决定）
     for (const s of scenes.value) {
-        const next = s.userNext !== undefined ? s.userNext : (firstDialogOfScene.get(s.id) ?? null);
+        const next =
+            s.userNext !== undefined
+                ? s.userNext
+                : props.autoNext
+                  ? (firstDialogOfScene.get(s.id) ?? null)
+                  : null;
         Adv.appendScene(s.id, {
             name: s.name,
             next,
         });
     }
 
-    // 3. 调用 Adv.appendDialog（优先使用 prop.next，否则自动推断全局下一个）
+    // 3. 调用 Adv.appendDialog（优先使用 prop.next，否则根据 autoNext 决定）
     for (let i = 0; i < dialogs.value.length; i++) {
         const cur = dialogs.value[i];
         const next =
             cur.userNext !== undefined
                 ? cur.userNext
-                : i + 1 < dialogs.value.length
+                : props.autoNext && i + 1 < dialogs.value.length
                   ? dialogs.value[i + 1].id
                   : null;
         Adv.appendDialog(cur.id, {

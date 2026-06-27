@@ -13,6 +13,8 @@ const message = useMessageStore();
 const props = defineProps<{
     id?: string;
     next?: ADVUserNext;
+    /** 设为 true 相当于 :next="null"，故事在此暂停，优先级高于 next */
+    stop?: boolean;
 }>();
 
 const sceneId = inject<string | null>('sceneId', null);
@@ -47,7 +49,7 @@ onMounted(() => {
     // ── 补丁：自动闭合未配对的 if 块 ──
     autoCloseIfs(script.value);
 
-    registerDialog(dialogId, sceneId ?? undefined, script.value, props.next);
+    registerDialog(dialogId, sceneId ?? undefined, script.value, props.stop ? null : props.next);
 });
 
 function autoCloseIfs(arr: MessageContentType[]) {

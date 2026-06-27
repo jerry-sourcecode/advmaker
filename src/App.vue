@@ -30,7 +30,7 @@
                     "
                 />
             </ADialog>
-            <ADialog :next="null" id="ask">
+            <ADialog stop id="ask">
                 <ALine>你想去哪里调查？</ALine>
                 <AOptions>
                     <AOption next="askResident" :max-times="1">
@@ -89,7 +89,7 @@
             </ADialog>
         </AScene>
         <AScene id="checkSurroundings" name="墓地周边">
-            <ADialog :next="null">
+            <ADialog stop>
                 <ALine>
                     墓地周围的植被比较茂盛，但打理得还不错，墓穴与墓碑之间点缀着许多高大的灌木和古老的树木。这片墓地显然已经存在好多年了。你看见一名园艺工正在公墓的另一头清理杂草。听见调查员靠近，他转过身并挥手示意。
                 </ALine>
