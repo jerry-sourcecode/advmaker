@@ -1,0 +1,9 @@
+{
+    "js/ts.tsdk.path": "node_modules\\typescript\\lib",
+    "js/ts.preferences.autoImportFileExcludePatterns": [
+        "**/packages/advmaker-core/userComponent/**",
+        "**/packages/advmaker-core/data/**",
+        "**/packages/advmaker-core/api/**",
+        "**/packages/advmaker-core/components/**"
+    ]
+}

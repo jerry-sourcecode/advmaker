@@ -5,7 +5,10 @@
     "types": "index.ts",
     "private": true,
     "exports": {
-        ".": "./index.js",
+        ".": {
+            "types": "./index.ts",
+            "default": "./index.ts"
+        },
         "./*": null
     }
 }
