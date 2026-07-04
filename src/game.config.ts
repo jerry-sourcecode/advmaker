@@ -290,8 +290,6 @@ export default Adv.defineConfig({
                     value: 0, // 基础00% + 无加点
                     isDisplay: 'hide',
                 },
-
-                // 四、侦查感知类
                 Appraise: {
                     name: '估价鉴定',
                     max: 100,
@@ -314,7 +312,7 @@ export default Adv.defineConfig({
                     isDisplay: 'hide',
                 },
                 SpotHidden: {
-                    name: '搜寻隐藏物品',
+                    name: '侦查',
                     max: 100,
                     base: 25,
                     value: 50, // 基础25% + 最大加值25
@@ -496,4 +494,9 @@ export default Adv.defineConfig({
             name: '托马斯·金博尔',
         },
     },
+
+    time: {
+        start: '1922-09-20 06:00',
+        showDate: true
+    }
 });
