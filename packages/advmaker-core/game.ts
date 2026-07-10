@@ -154,7 +154,7 @@ export const Game = {
                     messageStore.ifState.shouldExecute()
                 ) {
                     if (Game.debug) console.log(`  🔚 [${id}] return → 终止脚本`);
-                    break;
+                    return;
                 }
                 if (Game.debug) {
                     const item = dialog.script[id];
@@ -263,9 +263,9 @@ export const Game = {
                     statusId,
                     typeof newStatus.value === 'number'
                         ? {
-                              base: newStatus.base ?? 0,
-                              bonus: newStatus.value - (newStatus.base ?? 0),
-                          }
+                            base: newStatus.base ?? 0,
+                            bonus: newStatus.value - (newStatus.base ?? 0),
+                        }
                         : newStatus.value,
                 );
                 storyStore.statusMap.set(statusId, newStatus);

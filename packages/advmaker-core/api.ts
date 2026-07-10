@@ -581,7 +581,7 @@ export class ADVRecipeController {
         const stateStore = useStateStore();
         const x = stateStore.goodsMap.get(this.id)!;
         x.need = x.need.filter((v) => {
-            return v.id !== recId;
+            return v.id !== recId as any;
         });
         if (x.need.length === 0) {
             Game.error(new RuntimeError(5, `No recipe for goods id ${this.id}.`));

@@ -465,16 +465,6 @@ export default Adv.defineConfig({
         },
     },
 
-    // 物品（书籍）
-    items: {
-        forbiddenBook: {
-            name: '死灵之书',
-            summary: '一本充满禁忌知识的古书',
-            desc: '封面刻有诡异的符号，散发着不祥的气息。',
-            lore: '据说阅读此书会让人疯狂。',
-        },
-    },
-
     // 菜单显示
     menu: {
         shop: false,
