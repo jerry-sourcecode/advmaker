@@ -39,7 +39,8 @@ export const useStateStore = defineStore('state', () => {
     function obtainItem(item: ItemIds, number: number = 1) {
         const currentCount = backpack.value.get(item) || 0;
         if (currentCount + number < 0) {
-            Game.error(new RuntimeError(1, 'Item count cannot be negative.'));
+            Game.error(new RuntimeError(1, '物品数量不能为负数 / Item count cannot be negative.'));
+            return;
         }
         backpack.value.set(item, currentCount + number);
     }
@@ -54,7 +55,7 @@ export const useStateStore = defineStore('state', () => {
     function qryStatus(id: StatusIds): number | string {
         const res = status.value.get(id);
         if (res === undefined) {
-            Game.error(new RuntimeError(2, `Can't Find Status name ${id}.`));
+            Game.error(new RuntimeError(2, `找不到状态 / Status not found: ${id}.`));
             return 0;
         }
         if (typeof res === 'string') return res;

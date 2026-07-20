@@ -4,8 +4,6 @@
             async () => {
                 checkResult = await Adv.check({
                     target: props.target ?? 0,
-                    success: null,
-                    fail: null,
                     dice: props.dice,
                     targetDesc: props.targetDesc,
                     modifier: props.modifier,

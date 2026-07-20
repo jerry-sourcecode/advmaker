@@ -41,16 +41,20 @@ export class RuntimeError extends Error {
     code: number;
     reason: string;
     constructor(code: number, reason: string) {
-        code = (code % 100) + 100;
-        super(`Error Code ${code}: ${reason}`);
-        this.code = code;
+        if (!Number.isInteger(code) || code < 1 || code > 99) {
+            throw new Error(
+                `RuntimeError code must be an integer in [1, 99], got: ${code}`,
+            );
+        }
+        super(`Error Code ${code + 100}: ${reason}`);
+        this.code = code + 100;
         this.reason = reason;
     }
 }
 
 export const Game = {
     /** 设为 true 可在控制台打印对话脚本结构表，便于调试 */
-    debug: true,
+    debug: false,
     /**
      * 游戏开始
      */
@@ -87,11 +91,11 @@ export const Game = {
         const messageStore = useMessageStore();
         const scene = storyStore.sceneMap.get(sceneId);
         lastSceneId = sceneId;
-        await scene?.onEnter();
         if (scene === undefined) {
-            this.error(new RuntimeError(2, `Can't Find Scene, Id: '${sceneId}'.`));
+            this.error(new RuntimeError(2, `找不到场景 / Scene not found, Id: '${sceneId}'.`));
             return;
         }
+        await scene.onEnter();
 
         stateStore.location = scene.name;
         messageStore.messageList = [];
@@ -106,11 +110,11 @@ export const Game = {
         const storyStore = useStoryStore();
         const messageStore = useMessageStore();
         const dialog = storyStore.dialogMap.get(dialogId);
-        await dialog?.onStart();
         if (dialog === undefined) {
-            this.error(new RuntimeError(2, `Can't Find Dialog, Id: '${dialogId}'.`));
+            this.error(new RuntimeError(2, `找不到对话 / Dialog not found, Id: '${dialogId}'.`));
             return;
         }
+        await dialog.onStart();
         if (!Array.isArray(dialog.script)) {
             dialog.script = [dialog.script];
         }
@@ -181,6 +185,7 @@ export const Game = {
      * @param err 错误对象
      */
     error(err: RuntimeError) {
+        console.error(`[RuntimeError #${err.code}] ${err.reason}`);
         throw err;
     },
     /**
@@ -205,13 +210,15 @@ export const Game = {
                 await this.toNext(storyStore.mainScene);
             }
             const next = storyStore.tryGet(nextAct);
-            if (next === undefined)
-                Game.error(new RuntimeError(2, `Can't Find Scene or Dialog, Id: '${nextAct}'.`));
-            if (next?.type === 'Scene') {
+            if (next === undefined) {
+                Game.error(new RuntimeError(2, `找不到场景或对话 / Scene or Dialog not found, Id: '${nextAct}'.`));
+                return;
+            }
+            if (next.type === 'Scene') {
                 if (lastSceneId !== null) storyStore.sceneMap.get(lastSceneId)?.onLeave();
                 await Game.enter(next.id);
             }
-            if (next?.type === 'Dialog') {
+            if (next.type === 'Dialog') {
                 if (next.in !== undefined && lastSceneId !== next.in)
                     await Game.enter(next.in, true);
                 await Game.speak(next.id);
@@ -256,7 +263,7 @@ export const Game = {
                 const newStatus = new ADVStatus(status, statusId, name);
                 if (stateStore.status.has(statusId)) {
                     Game.error(
-                        new RuntimeError(4, `There is already a status with the ID '${statusId}'.`),
+                        new RuntimeError(4, `已存在相同ID的状态 / Duplicate status ID: '${statusId}'.`),
                     );
                 }
                 stateStore.status.set(

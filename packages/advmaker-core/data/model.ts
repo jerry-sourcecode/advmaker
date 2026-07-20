@@ -269,7 +269,7 @@ export class ADVGoods extends ADVUserGoods {
 
 export class ADVDice {
     name: string;
-    roll: () => number;
+    roll: (dice: (exp: DiceExpression) => number) => number;
 
     constructor(name: string, roll: () => number) {
         this.name = name;
@@ -282,8 +282,8 @@ export class ADVUserCheck {
     target: VlAndFn<number> = () => 0;
     targetDesc?: string;
     modifier?: { name: string; value: () => number }[];
-    success: ADVUserNext = '';
-    fail: ADVUserNext = '';
+    success?: ADVUserNext;
+    fail?: ADVUserNext;
     onSuccess?: () => VlAndAsync<void>;
     onFail?: () => VlAndAsync<void>;
 
@@ -305,8 +305,8 @@ export class ADVCheck extends ADVUserCheck {
         this.type = 'Check';
         this.targetDesc = obj.targetDesc ?? '';
         this.modifier = obj.modifier ?? [];
-        this.success = fromUserNextToNext(obj.success);
-        this.fail = fromUserNextToNext(obj.fail);
+        this.success = obj.success !== undefined ? fromUserNextToNext(obj.success) : null;
+        this.fail = obj.fail !== undefined ? fromUserNextToNext(obj.fail) : null;
         this.onFail = obj.onFail ?? (() => { });
         this.onSuccess = obj.onSuccess ?? (() => { });
     }
@@ -390,7 +390,7 @@ export class ADVUserSkill<T = ADVEnemy[]> {
     targetNum?: number;
     /**
      * 若动作触发者是玩家，则object是所有敌人目标
-     * 若动作触发者是敌人A，则目标是玩家，objett是敌人A
+     * 若动作触发者是敌人A，则目标是玩家，object是敌人A
      */
     onUse?: (object: T) => void;
     constructor(obj: ADVUserSkill<T>) {

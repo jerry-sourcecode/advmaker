@@ -42,17 +42,7 @@ function dice(input: DiceExpression): number {
         const modifierOp = match[3];
         const modifierVal = match[4] ? Number(match[4]) : 0;
 
-        // === 运行时校验：m 和 n 必须为正整数 ===
-        if (!Number.isInteger(m) || m <= 0) {
-            Game.error(new RuntimeError(3, `骰子数量必须为正整数，得到: ${mStr || '1'}`));
-        }
-        if (!Number.isInteger(n) || n <= 0) {
-            Game.error(new RuntimeError(3, `骰子面数必须为正整数，得到: ${nStr}`));
-        }
-        if (modifierVal !== 0 && !Number.isInteger(modifierVal)) {
-            Game.error(new RuntimeError(3, `修正值必须为整数，得到: ${match[4]}`));
-        }
-
+        // 注：m / n / modifier 已由正则 \d+ 保证为正整数，无需运行时校验
         let result = rollDice(m, n);
         if (modifierOp === '+') {
             result += modifierVal;

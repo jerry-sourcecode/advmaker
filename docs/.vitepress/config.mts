@@ -69,6 +69,13 @@ export default defineConfig({
                     { text: '战斗系统', link: '/5.component/5.9-battle' },
                 ],
             },
+            {
+                text: '第六章 错误处理',
+                items: [
+                    { text: '概况', link: '/6.error/' },
+                    { text: 'RuntimeError 错误码参考', link: '/6.error/6.1-runtime-error' },
+                ],
+            },
         ],
 
         socialLinks: [{ icon: 'github', link: 'https://github.com/vuejs/vitepress' }],

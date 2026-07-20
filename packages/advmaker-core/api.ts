@@ -135,6 +135,17 @@ export const Adv: IAdv = {
             const storyStore = useStoryStore();
             const allowedKeys = new Set(stateStore.status.keys());
 
+            const base = {
+                ownKeys() {
+                    return Array.from(allowedKeys);
+                },
+                getOwnPropertyDescriptor(_: StatusProxy, prop: string | symbol) {
+                    if (typeof prop === 'string' && allowedKeys.has(prop as StatusIds))
+                        return { enumerable: true, configurable: true };
+                    return undefined;
+                },
+            }
+
             // 子代理：base
             if (!statusBaseProxy) {
                 statusBaseProxy = new Proxy({} as StatusProxy, {
@@ -147,14 +158,7 @@ export const Adv: IAdv = {
                         stateStore.setStatusBase(prop as StatusIds, value);
                         return true;
                     },
-                    ownKeys() {
-                        return Array.from(allowedKeys);
-                    },
-                    getOwnPropertyDescriptor(_, prop) {
-                        if (typeof prop === 'string' && allowedKeys.has(prop as StatusIds))
-                            return { enumerable: true, configurable: true };
-                        return undefined;
-                    },
+                    ...base
                 }) as StatusProxy;
             }
             // 子代理：bonus
@@ -169,14 +173,7 @@ export const Adv: IAdv = {
                         stateStore.setStatusBonus(prop as StatusIds, value);
                         return true;
                     },
-                    ownKeys() {
-                        return Array.from(allowedKeys);
-                    },
-                    getOwnPropertyDescriptor(_, prop) {
-                        if (typeof prop === 'string' && allowedKeys.has(prop as StatusIds))
-                            return { enumerable: true, configurable: true };
-                        return undefined;
-                    },
+                    ...base
                 }) as StatusProxy;
             }
             // 子代理：hard（困难成功 = 总值 / 2，向下取整，只读）
@@ -189,17 +186,8 @@ export const Adv: IAdv = {
                         if (typeof raw === 'string') return 0;
                         return 0;
                     },
-                    set() {
-                        return false;
-                    },
-                    ownKeys() {
-                        return Array.from(allowedKeys);
-                    },
-                    getOwnPropertyDescriptor(_, prop) {
-                        if (typeof prop === 'string' && allowedKeys.has(prop as StatusIds))
-                            return { enumerable: true, configurable: true };
-                        return undefined;
-                    },
+                    set: () => false,
+                    ...base
                 }) as StatusProxy;
             }
             // 子代理：extreme（极难成功 = 总值 / 5，向下取整，只读）
@@ -212,17 +200,8 @@ export const Adv: IAdv = {
                         if (typeof raw === 'string') return 0;
                         return 0;
                     },
-                    set() {
-                        return false;
-                    },
-                    ownKeys() {
-                        return Array.from(allowedKeys);
-                    },
-                    getOwnPropertyDescriptor(_, prop) {
-                        if (typeof prop === 'string' && allowedKeys.has(prop as StatusIds))
-                            return { enumerable: true, configurable: true };
-                        return undefined;
-                    },
+                    set: () => false,
+                    ...base
                 }) as StatusProxy;
             }
 
@@ -256,12 +235,21 @@ export const Adv: IAdv = {
                             Game.error(
                                 new RuntimeError(
                                     7,
-                                    `Status "${id}" is a string type, cannot assign number.`,
+                                    `状态 "${id}" 为字符串类型，不能赋值数字 / Status "${id}" is a string type, cannot assign number.`,
                                 ),
                             );
                         }
                         stateStore.status.set(id, value);
                         return true;
+                    }
+                    // number 型：拒绝字符串赋值
+                    if (typeof value === 'string') {
+                        Game.error(
+                            new RuntimeError(
+                                6,
+                                `状态 "${id}" 为数字类型，不能赋值字符串 / Status "${id}" is a number type, cannot assign string.`,
+                            ),
+                        );
                     }
                     // number 型：设置总值
                     if (typeof value === 'number') {
@@ -277,15 +265,7 @@ export const Adv: IAdv = {
                     }
                     return true;
                 },
-                ownKeys() {
-                    return Array.from(allowedKeys);
-                },
-                getOwnPropertyDescriptor(_, prop) {
-                    if (typeof prop === 'string' && allowedKeys.has(prop as StatusIds)) {
-                        return { enumerable: true, configurable: true };
-                    }
-                    return undefined;
-                },
+                ...base
             }) as StatusProxy;
         }
         return statusCache;
@@ -346,7 +326,7 @@ export const Adv: IAdv = {
     defineRecipe(id: ItemIds, gd: ADVUserGoods) {
         const obj = new ADVGoods(gd, id);
         if (obj.need.length === 0) {
-            Game.error(new RuntimeError(5, `No recipe for goods id ${id}.`));
+            Game.error(new RuntimeError(5, `物品合成配方为空 / No recipe for goods: ${id}.`));
         }
         const stateStore = useStateStore();
         if (stateStore.goodsMap.has(id)) {
@@ -437,7 +417,7 @@ export const Adv: IAdv = {
         let pt = 0;
         let dc_name;
         if (typeof dc === 'object') {
-            pt = dc.roll();
+            pt = dc.roll(dice);
             dc_name = dc.name;
         } else {
             pt = dice(dc);
@@ -513,7 +493,7 @@ export const Adv: IAdv = {
 function checkHasSameId(id: string) {
     const storyStore = useStoryStore();
     if (storyStore.usedSceneAndDialogId.has(id)) {
-        Game.error(new RuntimeError(4, `There is already a dialog or scene with the ID '${id}'.`));
+        Game.error(new RuntimeError(4, `已存在相同ID的场景或对话 / Duplicate scene or dialog ID: '${id}'.`));
     }
     storyStore.usedSceneAndDialogId.add(id);
 }
@@ -584,7 +564,7 @@ export class ADVRecipeController {
             return v.id !== recId as any;
         });
         if (x.need.length === 0) {
-            Game.error(new RuntimeError(5, `No recipe for goods id ${this.id}.`));
+            Game.error(new RuntimeError(5, `物品合成配方为空 / No recipe for goods: ${this.id}.`));
         }
     }
     defineRecipe(...rec: ADVRecipe[]) {
