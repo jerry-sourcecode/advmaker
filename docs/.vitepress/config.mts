@@ -45,6 +45,7 @@ export default defineConfig({
                     { text: '故事', link: '/3.state/3.4-story' },
                     { text: '记忆', link: '/3.state/3.5-memery' },
                     { text: '线索', link: '/3.state/3.6-clue' },
+                    { text: '时间', link: '/3.state/3.7-time' },
                 ],
             },
             {

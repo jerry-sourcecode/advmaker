@@ -197,7 +197,10 @@ export const Game = {
         const stateStore = useStateStore();
         stateStore.last = act;
         const saveManager = useSaveManager();
-        saveManager.autoSave();
+        if (stateStore.location !== '') {
+            // 为了防止在游戏开始时，进入初始场景就进行保存，此时场景为""，导致自动保存中地点为空
+            saveManager.autoSave();
+        }
         const nextAct = RV(act);
         if (typeof nextAct === 'string') {
             if (nextAct.startsWith('__END&')) {

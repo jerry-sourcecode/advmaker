@@ -1,299 +1,307 @@
 {
-	"AShell": {
-		"description": "**故事根容器**。包裹整个游戏内容，负责渲染游戏界面（标题栏、状态栏、对话区域、菜单面板等），以及收集和组织故事内容。所有故事组件必须嵌套在 `AShell` 内部才能正常工作。",
-		"props": [
-			{
-				"name": "auto-next",
-				"type": "boolean",
-				"description": "是否自动推断 `next`。默认为 `true`。设为 `false` 后，所有 `AScene` 和 `ADialog` 的 `next` 默认为 `null`，需手动指定。"
-			}
-		],
-		"slots": [
-			{
-				"name": "default",
-				"type": "",
-				"description": "故事内容插槽。放置 `AScene`、`ADialog` 等故事组件。"
-			}
-		]
-	},
-	"AScene": {
-		"description": "**场景定义组件**。定义一个场景，提供唯一标识 `id` 和显示名称 `name`。自动推断子对话的 `next` 指向该场景的第一个对话。",
-		"props": [
-			{
-				"name": "id",
-				"type": "string",
-				"description": "场景的唯一标识符，全局不可重复。"
-			},
-			{
-				"name": "name",
-				"type": "string",
-				"description": "场景的显示名称，会出现在界面上方的标题栏。"
-			},
-			{
-				"name": "next",
-				"type": "`string | ADVChoice[] | null | (() => ADVUserNext)`",
-				"description": "进入场景后立即执行的动作。不指定时自动推断为场景内第一个对话的 ID。"
-			},
-			{
-				"name": "stop",
-				"type": "boolean",
-				"description": "设为 `true` 相当于 `:next=\"null\"`，故事在此暂停。优先级高于 `next`。"
-			}
-		],
-		"slots": [
-			{
-				"name": "default",
-				"type": "",
-				"description": "场景内容插槽。放置 `ADialog` 等子组件。"
-			}
-		]
-	},
-	"ADialog": {
-		"description": "**对话容器组件**。收集其中的台词、选项、结局等，作为一段完整的对话发送给游戏引擎。自动推断 `next` 指向全局模板中下一个对话的 ID。",
-		"props": [
-			{
-				"name": "id",
-				"type": "string",
-				"description": "对话的唯一标识符。不指定时自动生成（如 `__DIALOG&NUM1`）。"
-			},
-			{
-				"name": "next",
-				"type": "`string | ADVChoice[] | null | (() => ADVUserNext)`",
-				"description": "台词全部播放完毕后执行的动作。不指定时自动推断为下一个对话的 ID，最后一个对话默认为 `null`。"
-			},
-			{
-				"name": "stop",
-				"type": "boolean",
-				"description": "设为 `true` 相当于 `:next=\"null\"`，故事在此暂停。优先级高于 `next`。"
-			}
-		],
-		"slots": [
-			{
-				"name": "default",
-				"type": "",
-				"description": "对话内容插槽。放置 `ALine`、`AOptions`、`AIf`、`ARun`、`ACheck`、`AGoto`、`AEnding`、`AEndDialog` 等子组件。"
-			}
-		]
-	},
-	"ALine": {
-		"description": "**单行台词组件**。显示一句对话文本。采用**延迟求值**策略，插槽中的响应式变量会在执行时刻重新求值，而非挂载时快照。内部仅支持纯文本和自定义 VNode，不得嵌套 A-* 系列组件。",
-		"slots": [
-			{
-				"name": "default",
-				"type": "",
-				"description": "台词内容。可以是纯文本、HTML 字符串或 Vue VNode。"
-			}
-		]
-	},
-	"AOptions": {
-		"description": "**选项组组件**。将多个 `AOption` 打包为选项列表，作为一个整体内容项插入对话脚本。玩家必须做出选择后才会继续后续内容。",
-		"slots": [
-			{
-				"name": "default",
-				"type": "",
-				"description": "放置 `AOption` 组件列表。"
-			}
-		]
-	},
-	"AOption": {
-		"description": "**单个选项组件**。定义一个玩家可点击的选择项。支持自定义显示文字、选择后的反馈内容、条件可见性、最大选择次数和检定。",
-		"props": [
-			{
-				"name": "visible",
-				"type": "`() => boolean`",
-				"description": "动态控制选项是否可见。返回 `false` 时选项不渲染。"
-			},
-			{
-				"name": "next",
-				"type": "`string | ADVChoice[] | null | (() => ADVUserNext)`",
-				"description": "选择后执行的动作。不指定时默认为 `null`。"
-			},
-			{
-				"name": "check",
-				"type": "`ADVUserCheck`",
-				"description": "检定的配置，会在 `next` 生效之前发生。"
-			},
-			{
-				"name": "max-times",
-				"type": "number",
-				"description": "该选项可被选择的最大次数。超过后自动消失，默认 `Infinity`。"
-			},
-			{
-				"name": "on-choose",
-				"type": "`() => void`",
-				"description": "当该选项被选择时触发的回调。"
-			},
-			{
-				"name": "stop",
-				"type": "boolean",
-				"description": "设为 `true` 相当于 `next=\"null\"`，选择后故事暂停。优先级高于 `next`。"
-			}
-		],
-		"slots": [
-			{
-				"name": "content",
-				"type": "",
-				"description": "选项按钮上显示的文字。可以是纯文本、HTML 或 Vue 组件。"
-			},
-			{
-				"name": "default",
-				"type": "",
-				"description": "选择此选项后播放的内容。可以是 `ALine`、`AEnding`、`AGoto` 等。"
-			}
-		]
-	},
-	"AEnding": {
-		"description": "**游戏结局标记组件**。在对话脚本执行到该组件时调用 `Adv.ending(desc)` 结束游戏，显示相应的结局画面。",
-		"props": [
-			{
-				"name": "desc",
-				"type": "string",
-				"description": "结局描述文字，会显示在 Game Over 画面上。"
-			}
-		]
-	},
-	"ARun": {
-		"description": "**运行时执行组件**。在对话脚本执行流程中嵌入任意自定义代码，适合执行状态变更、播放音效、触发动画等副作用。",
-		"props": [
-			{
-				"name": "run",
-				"type": "`() => void | Promise<void>`",
-				"description": "需要执行的函数，支持同步和异步操作。引擎会等待 Promise 完成后再继续。"
-			}
-		]
-	},
-	"AIf": {
-		"description": "**条件分支组件**。根据 `condition` 的返回值决定是否执行其插槽中的内容。与 `AElif`、`AElse` 配合可形成多路条件判断。",
-		"props": [
-			{
-				"name": "condition",
-				"type": "`() => boolean | Promise<boolean>`",
-				"description": "条件函数。**必须是一个函数**而非直接的值，引擎在收集阶段需要延迟求值。返回 `true` 时执行插槽内容。"
-			}
-		],
-		"slots": [
-			{
-				"name": "default",
-				"type": "",
-				"description": "条件满足时执行的内容。"
-			}
-		]
-	},
-	"AElif": {
-		"description": "**“否则如果”分支组件**。与 `AIf` 配合形成多路条件判断。从上到下依次评估条件，只执行第一个满足条件的分支。",
-		"props": [
-			{
-				"name": "condition",
-				"type": "`() => boolean | Promise<boolean>`",
-				"description": "条件函数。必须是一个函数，引擎会延迟求值。"
-			}
-		],
-		"slots": [
-			{
-				"name": "default",
-				"type": "",
-				"description": "条件满足时执行的内容。"
-			}
-		]
-	},
-	"AElse": {
-		"description": "**“否则”分支组件**。当所有 `AIf` / `AElif` 条件都不满足时，执行 `AElse` 中的内容。",
-		"slots": [
-			{ "name": "default", "type": "", "description": "兜底分支内容。" }
-		]
-	},
-	"ACheck": {
-		"description": "**属性检定组件**。封装完整的 TRPG 式属性检定流程：掷骰 → 计算修正 → 比较目标值 → 分流成功/失败分支。向 `#success` 和 `#fail` 插槽暴露检定的原始掷骰值和最终值。",
-		"props": [
-			{
-				"name": "dice",
-				"type": "`ADVDice | DiceExpression`",
-				"description": "骰子表达式，如 `\"d20\"`、`\"2d6\"`、`\"3d8+2\"`。未指定时使用游戏配置中的默认骰子。"
-			},
-			{
-				"name": "target",
-				"type": "`number | (() => number)`",
-				"description": "检定目标值（难度等级 DC）。`d20` 模式下大于等于目标值即为成功，`percent` 模式下小于等于目标值即为成功。可传入函数动态计算。"
-			},
-			{
-				"name": "target-desc",
-				"type": "string",
-				"description": "目标描述文本，会在检定提示中显示（如 \"开锁难度\"）。"
-			},
-			{
-				"name": "modifier",
-				"type": "`{ name: string; value: () => number }[]`",
-				"description": "修正值列表。每个修正项包含名称和取值函数，所有修正值累加到骰子结果上。"
-			},
-			{
-				"name": "on-success",
-				"type": "`() => void | Promise<void>`",
-				"description": "检定成功时的回调函数。"
-			},
-			{
-				"name": "on-fail",
-				"type": "`() => void | Promise<void>`",
-				"description": "检定失败时的回调函数。"
-			}
-		],
-		"events": [
-			{
-				"name": "check",
-				"type": "`(res: boolean, nat: number, dirty: number) => void`",
-				"description": "检定完成时触发。`res` 表示是否成功，`nat` 为原始掷骰值，`dirty` 为最终检定值。"
-			}
-		],
-		"slots": [
-			{
-				"name": "success",
-				"type": "`{ nat: number, dirty: number }`",
-				"description": "检定成功时渲染的内容。可通过作用域插槽获取 `nat`（原始掷骰值）和 `dirty`（最终检定值）。"
-			},
-			{
-				"name": "fail",
-				"type": "`{ nat: number, dirty: number }`",
-				"description": "检定失败时渲染的内容。可通过作用域插槽获取 `nat` 和 `dirty`。"
-			}
-		]
-	},
-	"AGoto": {
-		"description": "**强制跳转组件**。在对话脚本中强制跳转到指定的对话或场景 ID。底层通过 `Adv.goto(tgt)` 实现。",
-		"props": [
-			{
-				"name": "tgt",
-				"type": "string",
-				"description": "目标对话或场景的 ID。"
-			}
-		]
-	},
-	"AEndDialog": {
-		"description": "**提前结束对话组件**。在对话脚本中插入一个提前返回标记，引擎执行到该标记时会立即停止当前对话的后续脚本，并跳转到当前对话的 `next` 指向。不渲染任何 DOM 元素。"
-	},
-	"ABattle": {
-		"description": "**战斗系统组件**。启动一场回合制战斗，通过三个具名插槽 `#success`、`#fail`、`#flee` 分别处理战斗胜利、失败和逃跑三种结果。底层使用 `Adv.startBattle()` 驱动整个战斗流程。",
-		"props": [
-			{
-				"name": "setting",
-				"type": "`ADVUserBattle`",
-				"description": "战斗配置对象，包含敌方阵容、技能、行动顺序和胜负条件。"
-			}
-		],
-		"slots": [
-			{
-				"name": "success",
-				"type": "",
-				"description": "战斗胜利后渲染的内容。"
-			},
-			{
-				"name": "fail",
-				"type": "",
-				"description": "战斗失败后渲染的内容。"
-			},
-			{
-				"name": "flee",
-				"type": "",
-				"description": "玩家选择逃跑后渲染的内容。"
-			}
-		]
-	}
+    "AShell": {
+        "description": "**故事根容器**。包裹整个游戏内容，负责渲染游戏界面（标题栏、状态栏、对话区域、菜单面板等），以及收集和组织故事内容。所有故事组件必须嵌套在 `AShell` 内部才能正常工作。",
+        "props": [
+            {
+                "name": "auto-next",
+                "type": "boolean",
+                "description": "是否自动推断 `next`。默认为 `true`。设为 `false` 后，所有 `AScene` 和 `ADialog` 的 `next` 默认为 `null`，需手动指定。"
+            }
+        ],
+        "slots": [
+            {
+                "name": "default",
+                "type": "",
+                "description": "故事内容插槽。放置 `AScene`、`ADialog` 等故事组件。"
+            }
+        ]
+    },
+    "AScene": {
+        "description": "**场景定义组件**。定义一个场景，提供唯一标识 `id` 和显示名称 `name`。自动推断子对话的 `next` 指向该场景的第一个对话。",
+        "props": [
+            {
+                "name": "id",
+                "type": "string",
+                "description": "场景的唯一标识符，全局不可重复。"
+            },
+            {
+                "name": "name",
+                "type": "string",
+                "description": "场景的显示名称，会出现在界面上方的标题栏。"
+            },
+            {
+                "name": "next",
+                "type": "`string | ADVChoice[] | null | (() => ADVUserNext)`",
+                "description": "进入场景后立即执行的动作。不指定时自动推断为场景内第一个对话的 ID。"
+            },
+            {
+                "name": "stop",
+                "type": "boolean",
+                "description": "设为 `true` 相当于 `:next=\"null\"`，故事在此暂停。优先级高于 `next`。"
+            }
+        ],
+        "slots": [
+            {
+                "name": "default",
+                "type": "",
+                "description": "场景内容插槽。放置 `ADialog` 等子组件。"
+            }
+        ]
+    },
+    "ADialog": {
+        "description": "**对话容器组件**。收集其中的台词、选项、结局等，作为一段完整的对话发送给游戏引擎。自动推断 `next` 指向全局模板中下一个对话的 ID。",
+        "props": [
+            {
+                "name": "id",
+                "type": "string",
+                "description": "对话的唯一标识符。不指定时自动生成（如 `__DIALOG&NUM1`）。"
+            },
+            {
+                "name": "next",
+                "type": "`string | ADVChoice[] | null | (() => ADVUserNext)`",
+                "description": "台词全部播放完毕后执行的动作。不指定时自动推断为下一个对话的 ID，最后一个对话默认为 `null`。"
+            },
+            {
+                "name": "stop",
+                "type": "boolean",
+                "description": "设为 `true` 相当于 `:next=\"null\"`，故事在此暂停。优先级高于 `next`。"
+            }
+        ],
+        "slots": [
+            {
+                "name": "default",
+                "type": "",
+                "description": "对话内容插槽。放置 `ALine`、`AOptions`、`AIf`、`ARun`、`ACheck`、`AGoto`、`AEnding`、`AEndDialog` 等子组件。"
+            }
+        ]
+    },
+    "ALine": {
+        "description": "**单行台词组件**。显示一句对话文本。采用**延迟求值**策略，插槽中的响应式变量会在执行时刻重新求值，而非挂载时快照。内部仅支持纯文本和自定义 VNode，不得嵌套 A-* 系列组件。",
+        "slots": [
+            {
+                "name": "default",
+                "type": "",
+                "description": "台词内容。可以是纯文本、HTML 字符串或 Vue VNode。"
+            }
+        ]
+    },
+    "AOptions": {
+        "description": "**选项组组件**。将多个 `AOption` 打包为选项列表，作为一个整体内容项插入对话脚本。玩家必须做出选择后才会继续后续内容。",
+        "slots": [
+            {
+                "name": "default",
+                "type": "",
+                "description": "放置 `AOption` 组件列表。"
+            }
+        ]
+    },
+    "AOption": {
+        "description": "**单个选项组件**。定义一个玩家可点击的选择项。支持自定义显示文字、选择后的反馈内容、条件可见性、最大选择次数和检定。",
+        "props": [
+            {
+                "name": "visible",
+                "type": "`() => boolean`",
+                "description": "动态控制选项是否可见。返回 `false` 时选项不渲染。"
+            },
+            {
+                "name": "next",
+                "type": "`string | ADVChoice[] | null | (() => ADVUserNext)`",
+                "description": "选择后执行的动作。不指定时默认为 `null`。"
+            },
+            {
+                "name": "check",
+                "type": "`ADVUserCheck`",
+                "description": "检定的配置，会在 `next` 生效之前发生。"
+            },
+            {
+                "name": "max-times",
+                "type": "number",
+                "description": "该选项可被选择的最大次数。超过后自动消失，默认 `Infinity`。"
+            },
+            {
+                "name": "on-choose",
+                "type": "`() => void`",
+                "description": "当该选项被选择时触发的回调。"
+            },
+            {
+                "name": "stop",
+                "type": "boolean",
+                "description": "设为 `true` 相当于 `next=\"null\"`，选择后故事暂停。优先级高于 `next`。"
+            }
+        ],
+        "slots": [
+            {
+                "name": "content",
+                "type": "",
+                "description": "选项按钮上显示的文字。可以是纯文本、HTML 或 Vue 组件。"
+            },
+            {
+                "name": "default",
+                "type": "",
+                "description": "选择此选项后播放的内容。可以是 `ALine`、`AEnding`、`AGoto` 等。"
+            }
+        ]
+    },
+    "AEnding": {
+        "description": "**游戏结局标记组件**。在对话脚本执行到该组件时调用 `Adv.ending(desc)` 结束游戏，显示相应的结局画面。",
+        "props": [
+            {
+                "name": "desc",
+                "type": "string",
+                "description": "结局描述文字，会显示在 Game Over 画面上。"
+            }
+        ]
+    },
+    "ARun": {
+        "description": "**运行时执行组件**。在对话脚本执行流程中嵌入任意自定义代码，适合执行状态变更、播放音效、触发动画等副作用。",
+        "props": [
+            {
+                "name": "run",
+                "type": "`() => void | Promise<void>`",
+                "description": "需要执行的函数，支持同步和异步操作。引擎会等待 Promise 完成后再继续。"
+            }
+        ]
+    },
+    "AIf": {
+        "description": "**条件分支组件**。根据 `condition` 的返回值决定是否执行其插槽中的内容。与 `AElif`、`AElse` 配合可形成多路条件判断。",
+        "props": [
+            {
+                "name": "condition",
+                "type": "`() => boolean | Promise<boolean>`",
+                "description": "条件函数。**必须是一个函数**而非直接的值，引擎在收集阶段需要延迟求值。返回 `true` 时执行插槽内容。"
+            }
+        ],
+        "slots": [
+            {
+                "name": "default",
+                "type": "",
+                "description": "条件满足时执行的内容。"
+            }
+        ]
+    },
+    "AElif": {
+        "description": "**“否则如果”分支组件**。与 `AIf` 配合形成多路条件判断。从上到下依次评估条件，只执行第一个满足条件的分支。",
+        "props": [
+            {
+                "name": "condition",
+                "type": "`() => boolean | Promise<boolean>`",
+                "description": "条件函数。必须是一个函数，引擎会延迟求值。"
+            }
+        ],
+        "slots": [
+            {
+                "name": "default",
+                "type": "",
+                "description": "条件满足时执行的内容。"
+            }
+        ]
+    },
+    "AElse": {
+        "description": "**“否则”分支组件**。当所有 `AIf` / `AElif` 条件都不满足时，执行 `AElse` 中的内容。",
+        "slots": [{ "name": "default", "type": "", "description": "兜底分支内容。" }]
+    },
+    "ACheck": {
+        "description": "**属性检定组件**。封装完整的 TRPG 式属性检定流程：掷骰 → 计算修正 → 比较目标值 → 分流成功/失败分支。向 `#success` 和 `#fail` 插槽暴露检定的原始掷骰值和最终值。",
+        "props": [
+            {
+                "name": "dice",
+                "type": "`ADVDice | DiceExpression`",
+                "description": "骰子表达式，如 `\"d20\"`、`\"2d6\"`、`\"3d8+2\"`。未指定时使用游戏配置中的默认骰子。"
+            },
+            {
+                "name": "target",
+                "type": "`number | (() => number)`",
+                "description": "检定目标值（难度等级 DC）。`d20` 模式下大于等于目标值即为成功，`percent` 模式下小于等于目标值即为成功。可传入函数动态计算。"
+            },
+            {
+                "name": "target-desc",
+                "type": "string",
+                "description": "目标描述文本，会在检定提示中显示（如 \"开锁难度\"）。"
+            },
+            {
+                "name": "modifier",
+                "type": "`{ name: string; value: () => number }[]`",
+                "description": "修正值列表。每个修正项包含名称和取值函数，所有修正值累加到骰子结果上。"
+            },
+            {
+                "name": "on-success",
+                "type": "`() => void | Promise<void>`",
+                "description": "检定成功时的回调函数。"
+            },
+            {
+                "name": "on-fail",
+                "type": "`() => void | Promise<void>`",
+                "description": "检定失败时的回调函数。"
+            }
+        ],
+        "events": [
+            {
+                "name": "check",
+                "type": "`(res: boolean, nat: number, dirty: number) => void`",
+                "description": "检定完成时触发。`res` 表示是否成功，`nat` 为原始掷骰值，`dirty` 为最终检定值。"
+            }
+        ],
+        "slots": [
+            {
+                "name": "success",
+                "type": "`{ nat: number, dirty: number }`",
+                "description": "检定成功时渲染的内容。可通过作用域插槽获取 `nat`（原始掷骰值）和 `dirty`（最终检定值）。"
+            },
+            {
+                "name": "fail",
+                "type": "`{ nat: number, dirty: number }`",
+                "description": "检定失败时渲染的内容。可通过作用域插槽获取 `nat` 和 `dirty`。"
+            }
+        ]
+    },
+    "AGoto": {
+        "description": "**强制跳转组件**。在对话脚本中强制跳转到指定的对话或场景 ID。底层通过 `Adv.goto(tgt)` 实现。",
+        "props": [
+            {
+                "name": "tgt",
+                "type": "string",
+                "description": "目标对话或场景的 ID。"
+            }
+        ]
+    },
+    "AEndDialog": {
+        "description": "**提前结束对话组件**。在对话脚本中插入一个提前返回标记，引擎执行到该标记时会立即停止当前对话的后续脚本，并跳转到当前对话的 `next` 指向。不渲染任何 DOM 元素。"
+    },
+    "ABattle": {
+        "description": "**战斗系统组件**。启动一场回合制战斗，通过三个具名插槽 `#success`、`#fail`、`#flee` 分别处理战斗胜利、失败和逃跑三种结果。底层使用 `Adv.startBattle()` 驱动整个战斗流程。",
+        "props": [
+            {
+                "name": "setting",
+                "type": "`ADVUserBattle`",
+                "description": "战斗配置对象，包含敌方阵容、技能、行动顺序和胜负条件。"
+            }
+        ],
+        "slots": [
+            {
+                "name": "success",
+                "type": "",
+                "description": "战斗胜利后渲染的内容。"
+            },
+            {
+                "name": "fail",
+                "type": "",
+                "description": "战斗失败后渲染的内容。"
+            },
+            {
+                "name": "flee",
+                "type": "",
+                "description": "玩家选择逃跑后渲染的内容。"
+            }
+        ]
+    },
+    "APass": {
+        "description": "**时间组件**，用于在对话中实现时间流逝。",
+        "props": [
+            {
+                "name": "minutes",
+                "type": "number",
+                "description": "流逝的分钟数。"
+            }
+        ]
+    }
 }
