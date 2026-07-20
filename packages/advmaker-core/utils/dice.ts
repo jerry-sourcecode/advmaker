@@ -2,8 +2,6 @@
  * 这个地方用于处理有关 骰子 的代码
  */
 
-import { Game, RuntimeError } from '../game.ts';
-
 export type DiceExpression =
     | `d${number}`
     | `${number}d${number}`
