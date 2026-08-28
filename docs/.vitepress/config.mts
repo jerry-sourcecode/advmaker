@@ -8,6 +8,12 @@ export default defineConfig({
     themeConfig: {
         // https://vitepress.dev/reference/default-theme-config
         logo: '/icon.png',
+        socialLinks: [
+            {
+                icon: "github",
+                link: "https://github.com/jerry-sourcecode/advmaker"
+            }
+        ],
         nav: [
             { text: 'Home', link: '/' },
             { text: 'Examples', link: '/markdown-examples' },
@@ -78,7 +84,5 @@ export default defineConfig({
                 ],
             },
         ],
-
-        socialLinks: [{ icon: 'github', link: 'https://github.com/vuejs/vitepress' }],
     },
 });
