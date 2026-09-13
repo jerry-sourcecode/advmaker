@@ -16,6 +16,7 @@ import ACheck from './userComponent/ACheck.vue';
 import AGoto from './userComponent/AGoto.vue';
 import AEndDialog from './userComponent/AEndDialog.vue';
 import ABattle from './userComponent/ABattle.vue';
+import APass from './userComponent/APass.vue';
 export { Adv } from './api';
 export {
     AShell,
@@ -35,6 +36,7 @@ export {
     ACheck,
     AEndDialog,
     ABattle,
+    APass,
     ADVUserBattle,
     ADVUserSkill,
 };

@@ -8,6 +8,12 @@ export default defineConfig({
     themeConfig: {
         // https://vitepress.dev/reference/default-theme-config
         logo: '/icon.png',
+        socialLinks: [
+            {
+                icon: "github",
+                link: "https://github.com/jerry-sourcecode/advmaker"
+            }
+        ],
         nav: [
             { text: 'Home', link: '/' },
             { text: 'Examples', link: '/markdown-examples' },
@@ -45,6 +51,7 @@ export default defineConfig({
                     { text: '故事', link: '/3.state/3.4-story' },
                     { text: '记忆', link: '/3.state/3.5-memery' },
                     { text: '线索', link: '/3.state/3.6-clue' },
+                    { text: '时间', link: '/3.state/3.7-time' },
                 ],
             },
             {
@@ -77,7 +84,5 @@ export default defineConfig({
                 ],
             },
         ],
-
-        socialLinks: [{ icon: 'github', link: 'https://github.com/vuejs/vitepress' }],
     },
 });
