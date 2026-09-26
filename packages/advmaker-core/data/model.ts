@@ -385,7 +385,7 @@ export class ADVCReturn extends ADVCommand {
 
 export class ADVUserSkill<T = ADVEnemy[]> {
     name: string = '';
-    desc: string = '';
+    desc?: string = '';
     summary?: string;
     targetNum?: number;
     /**

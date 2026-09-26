@@ -2,7 +2,7 @@
     "extends": "@vue/tsconfig/tsconfig.dom.json",
     "compilerOptions": {
         "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-        "types": ["vite/client"],
+        "types": ["vite/client", "Node"],
 
         /* Linting */
         "noUnusedLocals": true,
@@ -10,5 +10,14 @@
         "erasableSyntaxOnly": true,
         "noFallthroughCasesInSwitch": true
     },
-    "include": ["src/**/*.ts", "src/**/*.tsx", "packages/**/*.ts"]
+    "include": [
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "src/**/*.vue",
+        "packages/**/*.ts",
+        "packages/**/*.vue",
+        "main.ts",
+        "type/vite-env.d.ts",
+        "packages/adv-script/script.config.ts"
+    ]
 }

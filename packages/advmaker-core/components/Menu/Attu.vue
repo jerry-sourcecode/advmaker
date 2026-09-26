@@ -74,6 +74,8 @@ const storyStore = useStoryStore();
 const groups = computed(() => {
     const obj = new Map<string, StatusIds[]>();
     stateStore.status.forEach((_, id) => {
+        // 跳过系统内部状态（如 __time__）：它们由引擎维护，仅用于状态栏显示，不属于属性面板
+        if (String(id).startsWith('__')) return;
         const st_obj = storyStore.statusMap.get(id)!;
         if (obj.has(st_obj.group)) {
             const ori = obj.get(st_obj.group)!;

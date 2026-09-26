@@ -71,40 +71,40 @@ export type IdsOf<T, K extends string> = T[K] extends Record<string, any> ? keyo
 
 export type StatusAttrIds<T extends GameConfig> =
     T['status'] extends Record<string, any>
-        ? {
-              [K in keyof NonNullable<T['status']>]: NonNullable<T['status']>[K] extends {
-                  content: infer C;
-              }
-                  ? keyof C
-                  : string;
-          }[keyof NonNullable<T['status']>]
+    ? {
+        [K in keyof NonNullable<T['status']>]: NonNullable<T['status']>[K] extends {
+            content: infer C;
+        }
+        ? keyof C
         : string;
+    }[keyof NonNullable<T['status']>]
+    : string;
 
 type ValueOf<T> = T[keyof T];
 
 /** 从配置中提取指定 status key 的精确类型（number 或 string），由 value 字段推断 */
 export type ExtractStatusValueType<TConfig extends GameConfig, K extends string> =
     TConfig['status'] extends Record<string, any>
-        ? ValueOf<{
-              [G in keyof NonNullable<TConfig['status']>]: NonNullable<
-                  TConfig['status']
-              >[G] extends {
-                  content: infer C;
-              }
-                  ? C extends Record<string, any>
-                      ? K extends keyof C
-                          ? C[K] extends { value: infer V }
-                              ? V extends number
-                                  ? number
-                                  : V extends string
-                                    ? string
-                                    : number
-                              : number
-                          : never
-                      : never
-                  : never;
-          }>
-        : number;
+    ? ValueOf<{
+        [G in keyof NonNullable<TConfig['status']>]: NonNullable<
+            TConfig['status']
+        >[G] extends {
+            content: infer C;
+        }
+        ? C extends Record<string, any>
+        ? K extends keyof C
+        ? C[K] extends { value: infer V }
+        ? V extends number
+        ? number
+        : V extends string
+        ? string
+        : number
+        : number
+        : never
+        : never
+        : never;
+    }>
+    : number;
 
 /** 每个 status key 到其精确类型的映射 */
 type StatusValueMap = {
@@ -117,8 +117,15 @@ export type StatusIds = StatusAttrIds<typeof gameConfig>;
 type CharsIds = IdsOf<typeof gameConfig, 'character'>;
 export type ClueIds = IdsOf<typeof gameConfig, 'clue'>;
 
-// ========== 状态值访问器 ==========
-/** 对 number 型状态的增强访问器。通过 `number & { ... }` 交叉类型使得 TypeScript 同时将其视为 number。 */
+// ========== 状态值访问器（运行时内部使用） ==========
+/**
+ * number 型状态在运行时的内部访问器对象类型。
+ * 该对象可当 number 使用（valueOf/toString/Symbol.toPrimitive），
+ * 同时携带 .value/.base/.bonus/.hard/.extreme 属性。
+ *
+ * 注意：类型层面 `Adv.status.xxx`（number 型）已声明为 `number`，
+ * 增强访问请改用顶层写法：`Adv.status.base.xxx` / `Adv.status.hard.xxx` 等。
+ */
 export type StatusValueAccessor = number & {
     /** 当前总值（base + bonus），只读 */
     readonly value: number;
@@ -134,21 +141,24 @@ export type StatusValueAccessor = number & {
 
 // ========== 状态代理 ==========
 /**
- * number 型返回 StatusValueAccessor（可当 number 使用），string 型返回 string。
+ * number 型状态读写均为 number（读取/设置总值），string 型为 string。
  *
- * 推荐写法：Adv.status.FastTalk.hard（新）
- * 兼容写法：Adv.status.hard.FastTalk（旧，仍可用）
+ * 增强访问器通过顶层 Record 访问：
+ *   - Adv.status.base.FastTalk    基础值（可读写）
+ *   - Adv.status.bonus.FastTalk   加值（可读写）
+ *   - Adv.status.hard.FastTalk    困难成功阈值 Math.floor(总值 / 2)（只读）
+ *   - Adv.status.extreme.FastTalk 极难成功阈值 Math.floor(总值 / 5)（只读）
  */
 export type StatusProxy = {
-    [K in StatusIds]: StatusValueMap[K] extends string ? string : StatusValueAccessor;
+    [K in StatusIds]: StatusValueMap[K] extends string ? string : number;
 } & {
-    /** @deprecated 旧语法，推荐使用 Adv.status.xxx.base */
+    /** 基础值（可读写） */
     base: Record<StatusIds, number>;
-    /** @deprecated 旧语法，推荐使用 Adv.status.xxx.bonus */
+    /** 加值（可读写） */
     bonus: Record<StatusIds, number>;
-    /** @deprecated 旧语法，推荐使用 Adv.status.xxx.hard */
+    /** CoC 困难成功阈值：Math.floor(总值 / 2)，只读 */
     hard: Record<StatusIds, number>;
-    /** @deprecated 旧语法，推荐使用 Adv.status.xxx.extreme */
+    /** CoC 极难成功阈值：Math.floor(总值 / 5)，只读 */
     extreme: Record<StatusIds, number>;
 };
 

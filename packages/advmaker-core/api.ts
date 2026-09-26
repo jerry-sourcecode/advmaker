@@ -66,9 +66,11 @@ let clueCache: MapProxy<Record<ClueIds, ClueSubjectProxy>> | null = null;
 const statusAccessorCache = new Map<StatusIds, StatusValueAccessor>();
 
 /**
- * 为指定 status id 创建增强访问器对象。
+ * 为指定 status id 创建增强访问器对象（运行时内部使用）。
  * 该对象可当 number 使用（valueOf/toString/Symbol.toPrimitive），
  * 同时提供 .value / .base / .bonus / .hard / .extreme 属性。
+ * 类型层面 Adv.status.xxx 声明为 number，增强访问请改用
+ * Adv.status.base / bonus / hard / extreme.xxx 顶层写法。
  */
 function createStatusValueAccessor(
     id: StatusIds,

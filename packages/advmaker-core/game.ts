@@ -60,7 +60,6 @@ export const Game = {
      */
     async start() {
         const storyStore = useStoryStore();
-        const stateStore = useStateStore();
         const messageStore = useMessageStore();
         const saveManager = useSaveManager();
 
@@ -68,10 +67,6 @@ export const Game = {
 
         // 初始化
         messageStore.messageList = [];
-        // 获取默认物品
-        storyStore.objectMap.forEach((value, key) => {
-            stateStore.obtainItem(key, value.default);
-        });
         if (saveManager.shouldRun !== null) {
             const run = saveManager.shouldRun;
             saveManager.shouldRun = null;
@@ -95,10 +90,11 @@ export const Game = {
             this.error(new RuntimeError(2, `找不到场景 / Scene not found, Id: '${sceneId}'.`));
             return;
         }
+        messageStore.messageList = [];
+
         await scene.onEnter();
 
         stateStore.location = scene.name;
-        messageStore.messageList = [];
 
         if (!noNext) await Game.toNext(scene.next);
     },
@@ -247,7 +243,10 @@ export const Game = {
         for (const key in config.items) {
             const itemsKey = key as ItemIds;
             const obj = config.items[itemsKey];
-            storyStore.objectMap.set(itemsKey, new ADVItem(obj, itemsKey));
+            const item = new ADVItem(obj, itemsKey);
+            storyStore.objectMap.set(itemsKey, item);
+            // 提前初始化背包默认数量，使 App setup 阶段即可安全读写 Adv.bag
+            stateStore.obtainItem(itemsKey, item.default);
         }
 
         for (let key in config.character) {

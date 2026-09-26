@@ -18,6 +18,8 @@ import AEndDialog from './userComponent/AEndDialog.vue';
 import ABattle from './userComponent/ABattle.vue';
 import APass from './userComponent/APass.vue';
 export { Adv } from './api';
+export { Game } from './game.ts';
+export { gameReady } from './main.ts';
 export {
     AShell,
     type DiceExpression,
@@ -40,3 +42,16 @@ export {
     ADVUserBattle,
     ADVUserSkill,
 };
+// 类型 re-export：供 VS Code 扩展 / 外部工具生成 .d.ts 使用
+export type {
+    ADVUserScene,
+    ADVUserDialog,
+    ADVUserChoice,
+    ADVUserItem,
+    ADVUserCheck,
+    ADVUserEnemy,
+    ADVEnemy,
+    ADVUserNext,
+    VlAndAsync,
+    VlAndFn,
+} from './data/model.ts';

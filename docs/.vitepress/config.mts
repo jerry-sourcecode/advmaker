@@ -83,6 +83,17 @@ export default defineConfig({
                     { text: 'RuntimeError 错误码参考', link: '/6.error/6.1-runtime-error' },
                 ],
             },
+            {
+                text: '第七章 Adv Script',
+                items: [
+                    { text: '概况', link: '/7.script/' },
+                    { text: '功能一览', link: '/7.script/7.1-overview' },
+                    { text: '词法', link: '/7.script/7.2-symbol' },
+                    { text: '全局配置', link: '/7.script/7.3-config' },
+                    { text: '场景和对话', link: '/7.script/7.4-sceneAndDialog' },
+                    { text: '脚本内容', link: '/7.script/7.5-script' },
+                ],
+            },
         ],
     },
 });

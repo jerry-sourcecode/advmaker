@@ -5,7 +5,7 @@
 <script setup lang="ts">
 import { provide, onMounted, ref } from 'vue';
 import { Adv } from '../api';
-import type { ADVUserNext, MessageContentType } from '../data/model';
+import type { ADVUserNext, MessageContentType, VlAndAsync } from '../data/model';
 
 const props = withDefaults(
     defineProps<{
@@ -19,6 +19,8 @@ interface SceneReg {
     id: string;
     name: string;
     userNext?: ADVUserNext;
+    onEnter?: () => VlAndAsync<void>;
+    onLeave?: () => VlAndAsync<void>;
 }
 
 interface DialogReg {
@@ -31,8 +33,14 @@ interface DialogReg {
 const scenes = ref<SceneReg[]>([]);
 const dialogs = ref<DialogReg[]>([]);
 
-function registerScene(id: string, name: string, userNext?: ADVUserNext) {
-    scenes.value.push({ id, name, userNext });
+function registerScene(
+    id: string,
+    name: string,
+    userNext?: ADVUserNext,
+    onEnter?: () => VlAndAsync<void>,
+    onLeave?: () => VlAndAsync<void>,
+) {
+    scenes.value.push({ id, name, userNext, onEnter, onLeave });
 }
 
 function registerDialog(
@@ -67,6 +75,8 @@ onMounted(() => {
         Adv.appendScene(s.id, {
             name: s.name,
             next,
+            onEnter: s.onEnter,
+            onLeave: s.onLeave,
         });
     }
 
